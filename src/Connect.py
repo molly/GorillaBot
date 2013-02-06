@@ -20,11 +20,14 @@
 # SOFTWARE.
 
 import socket
+import logging
 from time import sleep, time
 
 __all__ = ["Connection"]
 
 class Connection(object):
+    '''Performs the connection to the IRC server.'''
+    
     def __init__(self, host, port, nick, ident, realname, password, chans, logger):
         self._host = host
         self._port = port
@@ -33,11 +36,13 @@ class Connection(object):
         self._realname = realname
         self._password = password
         self._chans = chans
-        self.logger = logger
+        self.logger = logging.getLogger("GB")
         
         self._last_sent = 0
+        self._last_ping_sent = time()
+        self._last_received = time()
         
-        self._fine_and_dandy = True
+        self._fine_and_dandy = True # Status of the socket connection
         
     def __repr__(self):
         '''Return the not-so-pretty representation of Connection.'''
@@ -51,21 +56,32 @@ class Connection(object):
         rep = "{0} is joining {1} on {2} on port {3}."
         return rep.format(self.nick, self.channel, self.host, self.port)
     
+    def _close(self):
+        '''End connection with IRC server, close socket.'''
+        self.logger.debug("Closing.")
+        self._socket.shutdown(socket.SHUT_RDWR) # Shut down before close
+        self._socket.close()
+    
     def _connect(self):
         '''Connect to the IRC server.'''
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             self._socket.connect(self.host, self.port)
         except socket.error:
-            self.logger.exception("Unable to connect to IRC server. "
-                                  "Retrying in 5 seconds.")
-            sleep(5)
+            self.logger.exception("Unable to connect to IRC server. Retrying...")
+            sleep(5) #Wait 5 seconds before retrying
             self._connect()
+            
+        joinlist = ",".join(self.chans)
+        
         self._send("NICK {}".format(self.nick))
+        self.logger.debug("Setting nick: {}".format(self.nick))
         self._send("USER {0} {1} * :{2}".format(self.ident, self.host,
                                                 self.realname))
-        for chan in self.chans:
-            self._send("JOIN {0}".format(chan))
+        self.logger.debug("Authing. Ident: {0}, Host: {1}, Real name: {2}"
+                          .format(self.ident, self.host, self.realname))
+        self._send("JOIN {0}".format(joinlist))
+        self.logger.debug("Joining channels: {}".format(joinlist))
             
     def _part(self, chans, message=None):
         '''Part one or more IRC channels (with optional message).'''
@@ -74,6 +90,18 @@ class Connection(object):
             self._send("PART {0} {1}".format(partlist, message))
         else:
             self._send("PART {}".format(partlist))
+            
+    def _dispatch(self, line):
+        '''Process lines received.'''
+        if line[0] == "PING": # Pong back if a ping message is received
+            self.pong(line[1][1:])
+            
+    def _quit(self, message=None):
+        '''Disconnect from the server (with optional quit message).'''
+        if message:
+            self._send("QUIT: {}".format(message))
+        else:
+            self._send("QUIT")
             
     def _receive(self, size=4096):
         '''Receive messages from the IRC server.'''
@@ -96,13 +124,6 @@ class Connection(object):
         else:
             self.logger.debug(message)
             self._last_sent = time()
-            
-    def _quit(self, message=None):
-        '''Disconnect from the server (with optional quit message).'''
-        if message:
-            self._send("QUIT: {}".format(message))
-        else:
-            self._send("QUIT")
             
     @property
     def host(self):
@@ -139,10 +160,23 @@ class Connection(object):
         '''List of channels to join (e.g., "#wikipedia-en")'''
         return self._chans
     
+    def caffeinate(self):
+        '''Keep the connection open.'''
+        now = time()
+        if now - self._last_received > 150:
+            if self._last_ping_sent > self._last_received:
+                self.logger.debug("Pinging server.")
+                self.ping()
+            elif self._last_ping_sent > 60:
+                self.logger.debug("No ping response in 60 seconds.")
+                self._quit()
+                self._close()
+            
+    
     def loop(self):
         '''Main connection loop.'''
         buffer = ''
-        while 1:
+        while True:
             try:
                 buffer += self._receive()
             except socket.error:
@@ -150,3 +184,13 @@ class Connection(object):
             list_of_lines = buffer.split("\n")
             for line in list_of_lines:
                 line.strip().split()
+            if not self._fine_and_dandy:
+                break
+            
+    def ping(self):
+        '''Ping the host server.'''
+        self._last_ping_sent = time()
+        self._send("PING {}".format(self.host))
+        
+    def pong(self, server):
+        self._send("PONG {}".format(server))
