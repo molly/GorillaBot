@@ -1,8 +1,24 @@
-'''
-Created on Feb 4, 2013
+# Copyright (c) 2013 Molly White
+# Portions copyright (c) 2009-2013 Ben Kurtovic <ben.kurtovic@verizon.net>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
-@author: mollywhite
-'''
 import socket
 from time import sleep, time
 
@@ -25,8 +41,10 @@ class Connection(object):
         
     def __repr__(self):
         '''Return the not-so-pretty representation of Connection.'''
-        rep = "Connection: host={0!r}, port={1!r}, nick={2!r}, ident={3!r}, realname={4!r}, password={5!r}, channel={6!r}"
-        return rep.format(self.host, self.port, self.nick, self.ident, self.realname, self.password, self.chan)
+        rep = "Connection: host={0!r}, port={1!r}, nick={2!r}, ident={3!r}, "
+        "realname={4!r}, password={5!r}, channel={6!r}"
+        return rep.format(self.host, self.port, self.nick, self.ident, self.realname,
+                          self.password, self.chan)
     
     def __str__(self):
         '''Return somewhat prettier representation of Connection.'''
@@ -39,11 +57,13 @@ class Connection(object):
         try:
             self._socket.connect(self.host, self.port)
         except socket.error:
-            self.logger.exception("Unable to connect to IRC server. Retrying in 5 seconds.")
+            self.logger.exception("Unable to connect to IRC server. "
+                                  "Retrying in 5 seconds.")
             sleep(5)
             self._connect()
         self._send("NICK {}".format(self.nick))
-        self._send("USER {0} {1} * :{2}".format(self.ident, self.host, self.realname))
+        self._send("USER {0} {1} * :{2}".format(self.ident, self.host,
+                                                self.realname))
         for chan in self.chans:
             self._send("JOIN {0}".format(chan))
             
