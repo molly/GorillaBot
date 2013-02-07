@@ -20,51 +20,12 @@
 
 from time import strftime
 import os
-from Connect import Connection
 import logging
-from logging import handlers
+from Connect import Connection
+from Config import Configure
 
 class Bot(object):
-    def __init__(self):
-        self.setup_logging("console")
-        
-    def setup_logging(self, log_type="all"):
-        log_type = log_type.lower()
-        inputs = ("all", "none", "console", "file")
-        
-        if log_type not in inputs:
-            raise ValueError
-        
-        if log_type != "none":                
-            self.logger = logging.getLogger("GorillaBot")
-            self.logger.setLevel(logging.DEBUG)
-            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s "
-                                          "- %(message)s")
-            
-            if log_type != "console":   
-                if not os.path.isdir(os.curdir + "/logs"):
-                    os.mkdir(os.curdir + "/logs")
-                    
-                logname = "logs/{0}.log".format(strftime("%H%M_%m%d%y"))
-                # Files are saved in the logs sub-directory as HHMM_mmddyy.log
-                # If the session exceeds 6 hours, each file will have .# appended to
-                # the end, up to five times. After these 30 hours, the logs will
-                #begin to overwrite.
-                filehandler = logging.handlers.TimedRotatingFileHandler(logname,'h',
-                                                                        6,5,None,
-                                                                        False,False)
-                filehandler.setLevel(logging.DEBUG)        
-                filehandler.setFormatter(formatter)
-                self.logger.addHandler(filehandler)
-                
-            if log_type != "file":
-                consolehandler = logging.StreamHandler()
-                consolehandler.setLevel(logging.DEBUG)    
-                consolehandler.setFormatter(formatter)
-                self.logger.addHandler(consolehandler)
-                
-                self.logger.info("Console logger created.")
-                
-            if log_type != "console":
-                self.logger.info("File logger created; "
-                                 "saving logs to {}.".format(logname))
+    def __init__(self, path, default, quiet):
+        self._config_path = path
+        self._config_default = default
+        self._quiet_logging = quiet
