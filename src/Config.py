@@ -32,6 +32,7 @@ class Configure(object):
     def __init__(self, root, default):
         self._config = configparser.ConfigParser()
         self._config_path = os.path.join(root, "config.cfg")
+        self._default = default
         self.logger = logging.getLogger("GorillaBot")
         
         self._options = ("Host", "Port", "Nick", "Ident", "Realname", "Chans")
@@ -168,11 +169,12 @@ class Configure(object):
                 break
         self.logger.debug("Valid configuration file found.")
         reconfigure = ""
-        while reconfigure != "y" and reconfigure !="n":
-            self.print_settings()
-            reconfigure = input("Valid configuration file found. Would you "
-                                "like to reconfigure? ")
-            reconfigure = reconfigure.lower()
-        if reconfigure == "y":
-            self.logger.debug("User has requested to reconfigure.")
-            self.reconfigure()
+        if not self._default:
+            while reconfigure != "y" and reconfigure !="n":
+                self.print_settings()
+                reconfigure = input("Valid configuration file found. Would you "
+                                    "like to reconfigure? ")
+                reconfigure = reconfigure.lower()
+            if reconfigure == "y":
+                self.logger.debug("User has requested to reconfigure.")
+                self.reconfigure()
