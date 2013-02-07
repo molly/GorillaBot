@@ -21,7 +21,6 @@
 import os
 import configparser
 import logging
-import sys
 from time import strftime
 
 __all__ = ["Configure"]
@@ -29,16 +28,17 @@ __all__ = ["Configure"]
 class Configure(object):
     '''Creates, modifies, or opens a configuration file.'''
     
-    def __init__(self, root, default):
+    def __init__(self, root, default, quiet):
         self._config = configparser.ConfigParser()
         self._config_path = os.path.join(root, "config.cfg")
         self._default = default
+        self._quiet = quiet
         self.logger = logging.getLogger("GorillaBot")
         
         self._options = ("Host", "Port", "Nick", "Ident", "Realname", "Chans")
         
-        self.setup_logging("console")        
-        self.load()
+        self._setup_logging("console")        
+        self._load()
         
     def _prompt(self, question, default=None):
         text = question
@@ -54,20 +54,20 @@ class Configure(object):
         
         return answer
         
-    def load(self):
+    def _load(self):
         file = self._config_path
         if os.path.isfile(file):
             try:
                 self._config.read_file(open(self._config_path))
-                self.logger.debug("Opening {}.".format(self._config_path))
-                self.verify()
+                self.logger.info("Opening {}.".format(self._config_path))
+                self._verify()
             except IOError:
                 self.logger.exception("Unable to open {}.".format(self._config_path))
         else:
-            self.logger.debug("No configuration file found. Creating file.")
-            self.make_new(self._config)
+            self.logger.info("No configuration file found. Creating file.")
+            self._make_new(self._config)
     
-    def make_new(self, parser):
+    def _make_new(self, parser):
         self._config = parser
         verify = ""
         while verify != "y":
@@ -79,7 +79,7 @@ class Configure(object):
             realname = self._prompt("Ident", "GorillaBot")
             ident = self._prompt("Realname", "GorillaBot")
             chans = self._prompt("Chans")
-            print("\n------------------------------\n Host: {0}\n Port: {1}\n Nickname: "
+            print("------------------------------\n Host: {0}\n Port: {1}\n Nickname: "
               "{2}\n Real name: {3}\n Identifier: {4}\n Channels:"
               " {5}\n------------------------------".format(host, port, nick,
                                                             realname, ident, chans))
@@ -96,29 +96,30 @@ class Configure(object):
         parser.set("irc", "Ident", ident)
         parser.set("irc", "Chans", chans)
         parser.write(file)
+        self.logger.info("Config file saved.")
         
-    def print_settings(self):
+    def _print_settings(self):
         host = self._config.get("irc", "Host")
         port = self._config.get("irc", "Port")
         nick = self._config.get("irc", "Nick")
         realname = self._config.get("irc", "Realname")
         ident = self._config.get("irc", "Ident")
         chans = self._config.get("irc", "Chans")
-        print("\n------------------------------\n Host: {0}\n Port: {1}\n Nickname: "
+        print("------------------------------\n Host: {0}\n Port: {1}\n Nickname: "
               "{2}\n Real name: {3}\n Identifier: {4}\n Channels:"
               " {5}\n------------------------------".format(host, port, nick,
                                                             realname, ident, chans))
         
-    def reconfigure(self):
+    def _reconfigure(self):
         try:
             os.remove(self._config_path)
         except:
             self.logger.exception("Unable to remove existing config file.")
         else:
             new_config = configparser.ConfigParser()
-            self.make_new(new_config)            
+            self._make_new(new_config)            
         
-    def setup_logging(self, log_type="all"):
+    def _setup_logging(self, log_type="all"):
         log_type = log_type.lower()
         inputs = ("all", "none", "console", "file")
         
@@ -127,7 +128,10 @@ class Configure(object):
         
         if log_type != "none":                
             self.logger = logging.getLogger("GorillaBot")
-            self.logger.setLevel(logging.DEBUG)
+            if self._quiet:
+                self.logger.setLevel(logging.WARNING)
+            else:
+                self.logger.setLevel(logging.DEBUG)
             formatter = logging.Formatter("%(asctime)s - %(filename)s - %(levelname)s"
                                           ": %(message)s")
             
@@ -157,7 +161,7 @@ class Configure(object):
                 self.logger.info("File logger created; "
                                  "saving logs to {}.".format(logname))
                 
-    def verify(self):
+    def _verify(self):
         items = ("host", "port", "nick", "realname", "ident", "chans")
         for option in items:
             exists = self._config.has_option("irc", option)
@@ -165,16 +169,28 @@ class Configure(object):
                 print("Configuration file is not valid. Reconfiguring.")
                 self.logger.info("Configuration file is incorrectly formatted."
                                  " Reconfiguring.")
-                self.reconfigure()
+                self._reconfigure()
                 break
         self.logger.debug("Valid configuration file found.")
         reconfigure = ""
         if not self._default:
             while reconfigure != "y" and reconfigure !="n":
-                self.print_settings()
+                self._print_settings()
                 reconfigure = input("Valid configuration file found. Would you "
                                     "like to reconfigure? ")
                 reconfigure = reconfigure.lower()
             if reconfigure == "y":
                 self.logger.debug("User has requested to reconfigure.")
-                self.reconfigure()
+                self._reconfigure()
+                
+    def get_configuration(self):
+        host = self._config.get("irc", "Host")
+        port = self._config.get("irc", "Port")
+        nick = self._config.get("irc", "Nick")
+        realname = self._config.get("irc", "Realname")
+        ident = self._config.get("irc", "Ident")
+        chans = self._config.get("irc", "Chans")
+        chanlist = chans.split()
+        configuration = {"host":host, "port":port, "nick":nick,"realname":realname,
+                         "ident":ident, "chans":chanlist}
+        return configuration
