@@ -21,13 +21,15 @@
 import argparse
 from os import path
 from Bot import Bot
-from Config import Configure
 import logging
+import sys
 
 def main():
-    print ("Starting GorillaBot.\n")
+    print ("\nStarting GorillaBot.")
     desc = "This is the command-line utility for setting up and running GorillaBot, "
     "a simple IRC bot."
+    
+    # Parse arguments from the command line
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("path", nargs="?", default=path.curdir, help="Path to the"
                         " bot configuration file. Assumes current directory if no"
@@ -35,9 +37,27 @@ def main():
     parser.add_argument("-d", "--default", action="store_true", help="If a valid"
                         " configuration file is found, this will proceed with the"
                         " connection without asking for verification of settings.")
+    parser.add_argument("-q", "--quiet", action="store_true", help="Only log "
+                        "messages with level 'WARNING' or higher.")
     args = parser.parse_args()
+    
+    # Initialize logger
     logger = logging.getLogger("GorillaBot")
-    Configure(args.path, args.default)
+    
+    # Create instance of bot
+    GorillaBot = Bot(args.path, args.default, args.quiet)
+    
+    # Connect to the IRC server
+    time_to_connect = ""
+    while time_to_connect != "y":
+        time_to_connect = input("Connect to the IRC server now? [Y/N/exit] ")
+        time_to_connect = time_to_connect.lower()
+        if time_to_connect == "exit" or time_to_connect == "e":
+            logger.info("User requested to exit the bot.")
+            sys.exit()
+    logger.info("User has asked to connect to the IRC server.")
+    GorillaBot.begin_connection()
+    
 
 if __name__ == "__main__":
     main()
