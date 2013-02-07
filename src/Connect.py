@@ -21,6 +21,7 @@
 
 import socket
 import logging
+from getpass import getpass
 from time import sleep, time
 
 __all__ = ["Connection"]
@@ -28,15 +29,15 @@ __all__ = ["Connection"]
 class Connection(object):
     '''Performs the connection to the IRC server.'''
     
-    def __init__(self, host, port, nick, ident, realname, password, chans, logger):
+    def __init__(self, host, port, nick, ident, realname, chans):
         self._host = host
         self._port = port
         self._nick = nick
         self._ident = ident
         self._realname = realname
-        self._password = password
+        self._password = getpass()
         self._chans = chans
-        self.logger = logging.getLogger("GB")
+        self.logger = logging.getLogger("GorillaBot")
         
         self._last_sent = 0
         self._last_ping_sent = time()
@@ -58,7 +59,7 @@ class Connection(object):
     
     def _close(self):
         '''End connection with IRC server, close socket.'''
-        self.logger.debug("Closing.")
+        self.logger.info("Closing.")
         self._socket.shutdown(socket.SHUT_RDWR) # Shut down before close
         self._socket.close()
     
@@ -75,13 +76,13 @@ class Connection(object):
         joinlist = ",".join(self.chans)
         
         self._send("NICK {}".format(self.nick))
-        self.logger.debug("Setting nick: {}".format(self.nick))
+        self.logger.info("Setting nick: {}".format(self.nick))
         self._send("USER {0} {1} * :{2}".format(self.ident, self.host,
                                                 self.realname))
-        self.logger.debug("Authing. Ident: {0}, Host: {1}, Real name: {2}"
+        self.logger.info("Authing. Ident: {0}, Host: {1}, Real name: {2}"
                           .format(self.ident, self.host, self.realname))
         self._send("JOIN {0}".format(joinlist))
-        self.logger.debug("Joining channels: {}".format(joinlist))
+        self.logger.info("Joining channels: {}".format(joinlist))
             
     def _part(self, chans, message=None):
         '''Part one or more IRC channels (with optional message).'''
@@ -122,7 +123,7 @@ class Connection(object):
             self._fine_and_dandy = False
             self.logger.exception(message + "failed to send.")
         else:
-            self.logger.debug(message)
+            self.logger.info(message)
             self._last_sent = time()
             
     @property
@@ -165,10 +166,10 @@ class Connection(object):
         now = time()
         if now - self._last_received > 150:
             if self._last_ping_sent > self._last_received:
-                self.logger.debug("Pinging server.")
+                self.logger.info("Pinging server.")
                 self.ping()
             elif self._last_ping_sent > 60:
-                self.logger.debug("No ping response in 60 seconds.")
+                self.logger.info("No ping response in 60 seconds.")
                 self._quit()
                 self._close()
             
