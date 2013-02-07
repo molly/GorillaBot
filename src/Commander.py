@@ -19,8 +19,9 @@
 # SOFTWARE.
 
 import argparse
+from os import path
 from Bot import Bot
-from time import strftime
+from Config import Configure
 import logging
 
 def main():
@@ -28,12 +29,15 @@ def main():
     desc = "This is the command-line utility for setting up and running GorillaBot, "
     "a simple IRC bot."
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument("-default", action="store_true")
-    logger = logging.getLogger("GB")
-    logger.info("LOG!")
-    
-    GorillaBot = Bot()
-    parser.parse_args()
-    
+    parser.add_argument("path", nargs="?", default=path.curdir, help="Path to the"
+                        " bot configuration file. Assumes current directory if no"
+                        " path is specified.")
+    parser.add_argument("-d", "--default", action="store_true", help="If a valid"
+                        " configuration file is found, this will proceed with the"
+                        " connection without asking for verification of settings.")
+    args = parser.parse_args()
+    logger = logging.getLogger("GorillaBot")
+    Configure(args.path, args.default)
+
 if __name__ == "__main__":
     main()
