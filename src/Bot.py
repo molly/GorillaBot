@@ -18,14 +18,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from time import strftime
-import os
 import logging
-from Connect import Connection
 from Config import Configure
+from Connect import Connection
 
 class Bot(object):
     def __init__(self, path, default, quiet):
         self._config_path = path
-        self._config_default = default
-        self._quiet_logging = quiet
+        self._default = default
+        self._quiet = quiet
+        self.logger = logging.getLogger("GorillaBot")
+        
+        self._configuration = Configure(self._config_path, self._default, self._quiet)
+        
+    def begin_connection(self):
+        settings = self._configuration.get_configuration()
+        Connection(settings["host"], settings["port"], settings["nick"],
+                   settings["ident"], settings["realname"], settings["chans"])
