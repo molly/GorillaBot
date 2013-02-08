@@ -23,23 +23,22 @@ import socket
 import logging
 from getpass import getpass
 from time import sleep, time
-from Dispatcher import Dispatcher
 
 __all__ = ["Connection"]
 
 class Connection(object):
     '''Performs the connection to the IRC server.'''
     
-    def __init__(self, host, port, nick, ident, realname, chans, nickserv):
+    def __init__(self, bot, host, port, nick, ident, realname, chans):
+        self._bot = bot
         self._host = host
         self._port = port
         self._nick = nick
         self._ident = ident
-        self._nickserv = nickserv
         self._realname = realname
         self._chans = chans
         self.logger = logging.getLogger("GorillaBot")
-        self._dispatcher = Dispatcher()
+        
         
         self._last_sent = 0
         self._last_ping_sent = time()
@@ -88,9 +87,6 @@ class Connection(object):
                                                 self.realname))
         self.logger.info("Authing. Ident: {0}, Host: {1}, Real name: {2}"
                           .format(self.ident, self.host, self.realname))
-        if self._nickserv:
-            self._password = getpass()
-            self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, self._password), True)
         self._send("JOIN {0}".format(joinlist))
         self.logger.info("Joining channels: {}".format(joinlist))
         self.loop()
@@ -106,7 +102,7 @@ class Connection(object):
     def _dispatch(self, line):
         '''Process lines received.'''
         self._last_received = time()
-        self._dispatcher.dispatch(line)
+        self._bot.dispatch(line)
             
     def _quit(self, message=None):
         '''Disconnect from the server (with optional quit message).'''
@@ -234,3 +230,7 @@ class Connection(object):
         for message in self._split(message, 400):
             message = "PRIVMSG {0} :{1}".format(target, message)
             self._send(message, hide)
+   
+    def shut_down(self):
+        self._quit()
+        self._close()

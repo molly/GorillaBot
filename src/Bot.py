@@ -21,7 +21,6 @@
 import logging
 from Config import Configure
 from Connect import Connection
-from Dispatcher import Dispatcher
 
 class Bot(object):
     def __init__(self, path, default, quiet):
@@ -32,7 +31,13 @@ class Bot(object):
         
         self._configuration = Configure(self._config_path, self._default, self._quiet)
         
-    def begin_connection(self, nickserv):
+    def begin_connection(self):
         settings = self._configuration.get_configuration()
-        GorillaConnection = Connection(settings["host"], settings["port"], settings["nick"],
-                   settings["ident"], settings["realname"], settings["chans"], nickserv)
+        GorillaConnection = Connection(self, settings["host"], settings["port"], settings["nick"],
+                   settings["ident"], settings["realname"], settings["chans"])
+        
+    def dispatch(self, line):
+        print (line)
+
+    def process_number(self, message_number, line):
+        pass

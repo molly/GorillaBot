@@ -56,15 +56,7 @@ def main():
             logger.info("User requested to exit the bot.")
             sys.exit()
     logger.info("User has asked to connect to the IRC server.")
-    nickserv = ""
-    while nickserv != "y" and nickserv != "n":
-        nickserv = input("Identify to NickServ? [Y/N] ")
-        nickserv = nickserv.lower()
-    if nickserv == "y":
-        nickserv = True
-    else:
-        nickserv = False
-    GorillaBot.begin_connection(nickserv)
+    GorillaBot.begin_connection()
     
 
 if __name__ == "__main__":
