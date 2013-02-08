@@ -185,7 +185,7 @@ class Configure(object):
                 
     def get_configuration(self):
         host = self._config.get("irc", "Host")
-        port = self._config.get("irc", "Port")
+        port = int(self._config.get("irc", "Port"))
         nick = self._config.get("irc", "Nick")
         realname = self._config.get("irc", "Realname")
         ident = self._config.get("irc", "Ident")

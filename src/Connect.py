@@ -23,27 +23,31 @@ import socket
 import logging
 from getpass import getpass
 from time import sleep, time
+from Dispatcher import Dispatcher
 
 __all__ = ["Connection"]
 
 class Connection(object):
     '''Performs the connection to the IRC server.'''
     
-    def __init__(self, host, port, nick, ident, realname, chans):
+    def __init__(self, host, port, nick, ident, realname, chans, nickserv):
         self._host = host
         self._port = port
         self._nick = nick
         self._ident = ident
+        self._nickserv = nickserv
         self._realname = realname
-        self._password = getpass()
         self._chans = chans
         self.logger = logging.getLogger("GorillaBot")
+        self._dispatcher = Dispatcher()
         
         self._last_sent = 0
         self._last_ping_sent = time()
         self._last_received = time()
         
         self._fine_and_dandy = True # Status of the socket connection
+        
+        self._connect()
         
     def __repr__(self):
         '''Return the not-so-pretty representation of Connection.'''
@@ -60,14 +64,17 @@ class Connection(object):
     def _close(self):
         '''End connection with IRC server, close socket.'''
         self.logger.info("Closing.")
-        self._socket.shutdown(socket.SHUT_RDWR) # Shut down before close
+        try:
+            self._socket.shutdown(socket.SHUT_RDWR) # Shut down before close
+        except socket.error:
+            pass #Socket is already closed
         self._socket.close()
     
     def _connect(self):
         '''Connect to the IRC server.'''
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            self._socket.connect(self.host, self.port)
+            self._socket.connect((self._host, self._port))
         except socket.error:
             self.logger.exception("Unable to connect to IRC server. Retrying...")
             sleep(5) #Wait 5 seconds before retrying
@@ -81,8 +88,12 @@ class Connection(object):
                                                 self.realname))
         self.logger.info("Authing. Ident: {0}, Host: {1}, Real name: {2}"
                           .format(self.ident, self.host, self.realname))
+        if self._nickserv:
+            self._password = getpass()
+            self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, self._password), True)
         self._send("JOIN {0}".format(joinlist))
         self.logger.info("Joining channels: {}".format(joinlist))
+        self.loop()
             
     def _part(self, chans, message=None):
         '''Part one or more IRC channels (with optional message).'''
@@ -94,8 +105,8 @@ class Connection(object):
             
     def _dispatch(self, line):
         '''Process lines received.'''
-        if line[0] == "PING": # Pong back if a ping message is received
-            self.pong(line[1][1:])
+        self._last_received = time()
+        self._dispatcher.dispatch(line)
             
     def _quit(self, message=None):
         '''Disconnect from the server (with optional quit message).'''
@@ -112,19 +123,36 @@ class Connection(object):
             self._fine_and_dandy = False
         return message
         
-    def _send(self, message):
+    def _send(self, message, hide=False):
         '''Send messages to the IRC server.'''
-        time_since_send = time() - self.last_sent
+        time_since_send = time() - self._last_sent
         if time_since_send < 1:
             sleep(1-time_since_send)
         try:
-            self.socket.sendall(message + "\r\n")
+            self._socket.sendall(bytes((message + "\r\n"), 'UTF-8'))
         except socket.error:
             self._fine_and_dandy = False
-            self.logger.exception(message + "failed to send.")
+            self.logger.exception("Message " + message + " failed to send.")
         else:
-            self.logger.info(message)
+            if not hide:
+                self.logger.info("Sending message: " + message)
             self._last_sent = time()
+            
+    def _split(self, msgs, maxlen=400, maxsplits=5):
+        """Split a large message into multiple messages smaller than maxlen."""
+        words = msgs.split(" ")
+        splits = 0
+        while words and splits < maxsplits:
+            splits += 1
+            if len(words[0]) > maxlen:
+                word = words.pop(0)
+                yield word[:maxlen]
+                words.insert(0, word[maxlen:])
+            else:
+                msg = []
+                while words and len(" ".join(msg + [words[0]])) <= maxlen:
+                    msg.append(words.pop(0))
+                yield " ".join(msg)
             
     @property
     def host(self):
@@ -165,10 +193,11 @@ class Connection(object):
         '''Keep the connection open.'''
         now = time()
         if now - self._last_received > 150:
-            if self._last_ping_sent > self._last_received:
+            if self._last_ping_sent < self._last_received:
                 self.logger.info("Pinging server.")
                 self.ping()
-            elif self._last_ping_sent > 60:
+                self._last_ping_sent = now
+            elif now - self._last_ping_sent > 60:
                 self.logger.info("No ping response in 60 seconds.")
                 self._quit()
                 self._close()
@@ -179,14 +208,18 @@ class Connection(object):
         buffer = ''
         while True:
             try:
-                buffer += self._receive()
+                buffer += str(self._receive())
             except socket.error:
+                self._fine_and_dandy = False
                 break
-            list_of_lines = buffer.split("\n")
+            list_of_lines = buffer.split("\\r\\n")
             for line in list_of_lines:
-                line.strip().split()
+                line = line.strip().split()
+                self._dispatch(line)
             if not self._fine_and_dandy:
                 break
+            
+            self.caffeinate()
             
     def ping(self):
         '''Ping the host server.'''
@@ -195,3 +228,9 @@ class Connection(object):
         
     def pong(self, server):
         self._send("PONG {}".format(server))
+        
+    def private_message(self, target, message, hide=False):
+        """Send a private message to a target on the server."""
+        for message in self._split(message, 400):
+            message = "PRIVMSG {0} :{1}".format(target, message)
+            self._send(message, hide)

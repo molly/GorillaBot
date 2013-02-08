@@ -19,20 +19,36 @@
 # SOFTWARE.
 
 import logging
-from Config import Configure
 from Connect import Connection
-from Dispatcher import Dispatcher
 
-class Bot(object):
-    def __init__(self, path, default, quiet):
-        self._config_path = path
-        self._default = default
-        self._quiet = quiet
+__all__ = ["Dispatcher"]
+
+class Dispatcher(object):
+    def __init__(self):
         self.logger = logging.getLogger("GorillaBot")
         
-        self._configuration = Configure(self._config_path, self._default, self._quiet)
+    def dispatch(self, line):
+        print (line)
+        if len(line) >=2:
+            if len(line[1]) == 3:
+                message_type = line[1]
+                self.process_number(message_type, line)
+            else: 
+                #self.logger.info(line)
+                if "NickServ" in line[0]:
+                    print (line)
+                    if "identified" in line:
+                        self._logger.info("Successfully identified to NickServ.")
+        else:
+            #self.logger.info(line)
+            pass
         
-    def begin_connection(self, nickserv):
-        settings = self._configuration.get_configuration()
-        GorillaConnection = Connection(settings["host"], settings["port"], settings["nick"],
-                   settings["ident"], settings["realname"], settings["chans"], nickserv)
+    def process_number(self, type, line):
+        if type is '433':
+            self._logger.warning("This nickname is in use.")
+            recover = ""
+            while recover != "y" and recover !="n":
+                recover = input("Would you like to recover this nickname? [Y/N] ")
+                recover = recover.lower()
+                
+                
