@@ -39,7 +39,6 @@ class Connection(object):
         self._chans = chans
         self.logger = logging.getLogger("GorillaBot")
         
-        
         self._last_sent = 0
         self._last_ping_sent = time()
         self._last_received = time()
@@ -84,6 +83,10 @@ class Connection(object):
         '''Process lines received.'''
         self._last_received = time()
         self._bot.dispatch(line)
+        
+    def _join(self):
+        for channel in self._chans:
+            self._send("JOIN {}".format(channel))
             
     def _quit(self, message=None):
         '''Disconnect from the server (with optional quit message).'''
@@ -102,7 +105,7 @@ class Connection(object):
         
     def _send(self, message, hide=False):
         '''Send messages to the IRC server.'''
-        time_since_send = time() - self._last_sent
+        time_since_send = time()                                                                                                                                                                                                                                                                                                                                                                     - self._last_sent
         if time_since_send < 1:
             sleep(1-time_since_send)
         try:
@@ -112,7 +115,7 @@ class Connection(object):
             self.logger.exception("Message " + message + " failed to send.")
         else:
             if not hide:
-                self.logger.info("Sending message: " + message)
+                self.logger.info("Sent message: " + message)
             self._last_sent = time()
             
     def _split(self, msgs, maxlen=400, maxsplits=5):
@@ -200,7 +203,7 @@ class Connection(object):
             self.caffeinate()
             
     def nickserv(self):
-        password = getpass("NickServ password")
+        password = getpass("NickServ password: ")
         self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, password))
 
     def part(self, chans, message=None):

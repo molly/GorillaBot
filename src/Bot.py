@@ -30,9 +30,11 @@ class Bot(object):
         self.logger = logging.getLogger("GorillaBot")
         self._configuration = Configure(self._config_path, self._default, self._quiet)
         settings = self._configuration.get_configuration()
+        
         self.GorillaConnection = Connection(self, settings["host"], settings["port"], settings["nick"],
                    settings["ident"], settings["realname"], settings["chans"])
         self.GorillaConnection._connect()
+        self.GorillaConnection._join()
         
     def dispatch(self, line):
         print (line)
