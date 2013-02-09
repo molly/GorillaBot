@@ -28,16 +28,18 @@ class Bot(object):
         self._default = default
         self._quiet = quiet
         self.logger = logging.getLogger("GorillaBot")
-        
         self._configuration = Configure(self._config_path, self._default, self._quiet)
-        
-    def begin_connection(self):
         settings = self._configuration.get_configuration()
-        GorillaConnection = Connection(self, settings["host"], settings["port"], settings["nick"],
+        self.GorillaConnection = Connection(self, settings["host"], settings["port"], settings["nick"],
                    settings["ident"], settings["realname"], settings["chans"])
+        self.GorillaConnection._connect()
         
     def dispatch(self, line):
         print (line)
+        if "NickServ" in line[0]:
+            if "identify" in line:
+                self.logger.info("NickServ has requested identification.")
+                self.GorillaConnection.nickserv()
 
     def process_number(self, message_number, line):
         pass

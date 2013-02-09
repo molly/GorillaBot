@@ -46,8 +46,6 @@ class Connection(object):
         
         self._fine_and_dandy = True # Status of the socket connection
         
-        self._connect()
-        
     def __repr__(self):
         '''Return the not-so-pretty representation of Connection.'''
         rep = "Connection: host={0!r}, port={1!r}, nick={2!r}, ident={3!r}, "
@@ -74,31 +72,14 @@ class Connection(object):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             self._socket.connect((self._host, self._port))
-        except socket.error:
-            self.logger.exception("Unable to connect to IRC server. Retrying...")
-            sleep(5) #Wait 5 seconds before retrying
-            self._connect()
-            
-        joinlist = ",".join(self.chans)
-        
-        self._send("NICK {}".format(self.nick))
-        self.logger.info("Setting nick: {}".format(self.nick))
-        self._send("USER {0} {1} * :{2}".format(self.ident, self.host,
-                                                self.realname))
-        self.logger.info("Authing. Ident: {0}, Host: {1}, Real name: {2}"
-                          .format(self.ident, self.host, self.realname))
-        self._send("JOIN {0}".format(joinlist))
-        self.logger.info("Joining channels: {}".format(joinlist))
-        self.loop()
-            
-    def _part(self, chans, message=None):
-        '''Part one or more IRC channels (with optional message).'''
-        partlist = ",".join(chans)
-        if message:
-            self._send("PART {0} {1}".format(partlist, message))
+        except:
+            self.logger.exception("Unable to connect to IRC server. Check your Internet "
+                                  "connection.")
         else:
-            self._send("PART {}".format(partlist))
-            
+            self._send("NICK {0}".format(self.nick))
+            self._send("USER {0} {1} * :{2}".format(self.ident, self.host, self.realname))
+            self.loop()
+        
     def _dispatch(self, line):
         '''Process lines received.'''
         self._last_received = time()
@@ -107,7 +88,7 @@ class Connection(object):
     def _quit(self, message=None):
         '''Disconnect from the server (with optional quit message).'''
         if message:
-            self._send("QUIT: {}".format(message))
+            self._send("QUIT :{}".format(message))
         else:
             self._send("QUIT")
             
@@ -148,8 +129,8 @@ class Connection(object):
                 msg = []
                 while words and len(" ".join(msg + [words[0]])) <= maxlen:
                     msg.append(words.pop(0))
-                yield " ".join(msg)
-            
+                yield " ".join(msg)          
+      
     @property
     def host(self):
         '''Hostname of the server (e.g., "irc.freenode.net")'''
@@ -209,6 +190,7 @@ class Connection(object):
                 self._fine_and_dandy = False
                 break
             list_of_lines = buffer.split("\\r\\n")
+            buffer = list_of_lines.pop()
             for line in list_of_lines:
                 line = line.strip().split()
                 self._dispatch(line)
@@ -216,6 +198,18 @@ class Connection(object):
                 break
             
             self.caffeinate()
+            
+    def nickserv(self):
+        password = getpass("NickServ password")
+        self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, password))
+
+    def part(self, chans, message=None):
+        '''Part one or more IRC channels (with optional message).'''
+        partlist = ",".join(chans)
+        if message:
+            self._send("PART {0} :{1}".format(partlist, message))
+        else:
+            self._send("PART {}".format(partlist))
             
     def ping(self):
         '''Ping the host server.'''
