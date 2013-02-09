@@ -44,20 +44,8 @@ def main():
     # Initialize logger
     logger = logging.getLogger("GorillaBot")
     
-    # Create instance of bot
+    # Create instance of bot, create connection
     GorillaBot = Bot(args.path, args.default, args.quiet)
-    
-    # Connect to the IRC server
-    time_to_connect = ""
-    while time_to_connect != "y":
-        time_to_connect = input("Connect to the IRC server now? [Y/N/exit] ")
-        time_to_connect = time_to_connect.lower()
-        if time_to_connect == "exit" or time_to_connect == "e":
-            logger.info("User requested to exit the bot.")
-            sys.exit()
-    logger.info("User has asked to connect to the IRC server.")
-    GorillaBot.begin_connection()
-    
 
 if __name__ == "__main__":
     main()

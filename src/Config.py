@@ -33,7 +33,6 @@ class Configure(object):
         self._config_path = os.path.join(root, "config.cfg")
         self._default = default
         self._quiet = quiet
-        self.logger = logging.getLogger("GorillaBot")
         
         self._options = ("Host", "Port", "Nick", "Ident", "Realname", "Chans")
         
