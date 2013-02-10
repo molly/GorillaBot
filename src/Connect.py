@@ -77,17 +77,15 @@ class Connection(object):
         else:
             self._send("NICK {0}".format(self.nick))
             self._send("USER {0} {1} * :{2}".format(self.ident, self.host, self.realname))
+            for channel in self._chans:
+                self._send("JOIN {}".format(channel))
             self.loop()
         
     def _dispatch(self, line):
         '''Process lines received.'''
         self._last_received = time()
         self._bot.dispatch(line)
-        
-    def _join(self):
-        for channel in self._chans:
-            self._send("JOIN {}".format(channel))
-            
+              
     def _quit(self, message=None):
         '''Disconnect from the server (with optional quit message).'''
         if message:
@@ -227,7 +225,11 @@ class Connection(object):
         for message in self._split(message, 400):
             message = "PRIVMSG {0} :{1}".format(target, message)
             self._send(message, hide)
-   
+            
+    def release(self):
+        password = getpass("NickServ password: ")
+        self.private_message("NickServ", "RELEASE {0} {1}".format(self._nick, password))
+        
     def shut_down(self):
         self._quit()
         self._close()
