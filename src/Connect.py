@@ -27,7 +27,7 @@ from time import sleep, time
 __all__ = ["Connection"]
 
 class Connection(object):
-    '''Performs the connection to the IRC server.'''
+    '''Performs the connection to the IRC server and communicates with it.'''
     
     def __init__(self, bot, host, port, nick, ident, realname, chans):
         self._bot = bot
@@ -201,6 +201,7 @@ class Connection(object):
             self.caffeinate()
             
     def nickserv_identify(self):
+        '''Prompt the user to enter their password, then identify to NickServ.'''
         password = getpass("NickServ password: ")
         self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, password), True)
 

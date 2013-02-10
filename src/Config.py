@@ -40,6 +40,7 @@ class Configure(object):
         self._load()
         
     def _prompt(self, question, default=None):
+        '''Prompt a user for input. If there is a default set, display it.'''
         text = question
         if default:
             text += " [DEFAULT: {}]".format(default)
@@ -54,6 +55,7 @@ class Configure(object):
         return answer
         
     def _load(self):
+        '''Try to load a configuration file.'''
         file = self._config_path
         if os.path.isfile(file):
             try:
@@ -67,6 +69,7 @@ class Configure(object):
             self._make_new(self._config)
     
     def _make_new(self, parser):
+        '''Create a new configuration file.'''
         self._config = parser
         verify = ""
         while verify != "y":
@@ -98,6 +101,7 @@ class Configure(object):
         self.logger.info("Config file saved.")
         
     def _print_settings(self):
+        '''Display the settings in a configuration file.'''
         host = self._config.get("irc", "Host")
         port = self._config.get("irc", "Port")
         nick = self._config.get("irc", "Nick")
@@ -110,6 +114,7 @@ class Configure(object):
                                                             realname, ident, chans))
         
     def _reconfigure(self):
+        '''Create a new configuration file and overwrite the old one.'''
         try:
             os.remove(self._config_path)
         except:
@@ -119,6 +124,7 @@ class Configure(object):
             self._make_new(new_config)            
         
     def _setup_logging(self, log_type="all"):
+        '''Set up the logging for the bot.'''
         log_type = log_type.lower()
         inputs = ("all", "none", "console", "file")
         
@@ -163,6 +169,7 @@ class Configure(object):
                                  "saving logs to {}.".format(logname))
                 
     def _verify(self):
+        '''Verify that a configuration file is valid.'''
         items = ("host", "port", "nick", "realname", "ident", "chans")
         for option in items:
             exists = self._config.has_option("irc", option)
@@ -177,6 +184,7 @@ class Configure(object):
         if not self._default:
             while reconfigure != "y" and reconfigure !="n":
                 self._print_settings()
+                # Allow reconfiguration even if the config file is valid
                 reconfigure = input("Valid configuration file found. Would you "
                                     "like to reconfigure? ")
                 reconfigure = reconfigure.lower()
@@ -185,6 +193,7 @@ class Configure(object):
                 self._reconfigure()
                 
     def get_configuration(self):
+        '''Return configuration as a dictionary.'''
         host = self._config.get("irc", "Host")
         port = int(self._config.get("irc", "Port"))
         nick = self._config.get("irc", "Nick")
