@@ -9,12 +9,44 @@ The bot receives commands in one of three ways:
 In the examples below, I use the `!command` syntax, but the other two would work equally well.
 
 ##Commands
+###All users
+* commands
+* help
 * hug
 * glomp
 * link
 * tacklehug
 * user
 * usertalk
+
+###Bot admins only
+* join
+* part
+* quit
+
+### Commands ###
+    !commands
+    !command
+    
+Prints the list of all-user commands. Links to this page for further information.
+
+```irc
+<GorillaWarfare> !commands
+<GorillaBot> I know the following commands: commands, help, hug, link, user,
+             usertalk. For further documentation, see http://git.io/pNQS6g
+```
+
+### Help ###
+    !help
+    
+Prints a help message identifying the bot, telling the user how to view the command list, and directing them to this page.
+
+```irc
+<GorillaWarfare> !help
+<GorillaBot> Hello, I'm your friendly neighborhood GorillaBot!
+             I perform a number of commands that you can view by typing !commands.
+             Alternatively, you can see my documentation at http://git.io/pNQS6g.
+```
 
 ### Hug ###
     !hug [user]
@@ -32,7 +64,7 @@ Hugs the specified user. If no user is specified, the bot hugs the whole channel
 ### Join ###
     !join #channel
     
-Joins the specified channel.
+Limited to bot admins. Joins the specified channel.
 
 ### Link ###
 
@@ -48,6 +80,12 @@ Provide a link to a Wikipedia article.
 <GorillaWarfare> !link {{Welcome}}
 <GorillaBot> http://en.wikipedia.org/wiki/Template:Welcome
 ```
+
+### Part ###
+
+    !part #channel
+
+Limited to bot admins. Parts from the specified channel.
 
 ### User ###
 
