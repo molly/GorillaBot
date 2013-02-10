@@ -78,6 +78,10 @@ class Bot(object):
             self.logger.error("Nickname is already in use. Closing connection.")
             self.GorillaConnection._quit()
             self.GorillaConnection._close()
+        elif message_number == "442":
+            # ERR_NOTONCHANNEL - You're not in that channel
+            self.logger.info("You tried to part from {}, but you are not in that "
+                             "channel.".format(line[3]))
         elif message_number == "470":
             self.logger.error("Unable to join channel {}.".format(line[3]))
             self.logger.info("Forwarded to {}. Parting from this channel.".format(line[4]))

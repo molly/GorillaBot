@@ -28,11 +28,13 @@ __all__ = ["Responder"]
 class Responder(object):
     '''Checks for commands, responds to them appropriately.'''
     def __init__(self, connection):
+        self._admins = ["GorillaWarfare"]
         self._GorillaConnection = connection
         self._GorillaResponses = response_list()
         self.logger = logging.getLogger("GorillaBot")
         self.bot_nick = self._GorillaConnection.nick
-        self.command_list = ["hug", "join", "link", "user", "usertalk"]
+        self.admin_command_list = ["join", "part", "quit"]
+        self.command_list = ["commands", "help", "hug", "link", "user", "usertalk"]
         
     def check_addressed(self):
         '''Checks for commands formatted as "GorillaBot: command" or "GorillaBot: !command"'''
@@ -48,12 +50,24 @@ class Responder(object):
         else:
             command = command_message[0]
         command = command.lower()
+        
         if command in ["hug", "hugs", "glomp", "glomps", "tacklehug", "tacklehugs"]:
             command = "hug"
+        elif command in ["command", "commands"]:
+            command = "commands"
+        
+        #Check if a valid command    
         if command in self.command_list:
             command = "self." + command + "({})".format(command_message[1:])
             self.logger.info("Executing {}.".format(command))
             exec(command)
+        elif command in self.admin_command_list:
+            if self.sender_nick in self._admins:
+                command = "self." + command + "({})".format(command_message[1:])
+                self.logger.info("Executing {}.".format(command))
+                exec(command)
+            else:
+                self.say("Hey! You can't do that!")
         else:
             print("{} is not a command!".format(command))
             
@@ -63,6 +77,18 @@ class Responder(object):
             if word[0] == "!":
                 return self.message[idx:]
         return False
+    
+    def commands(self, message):
+        '''Display a list of commands the bot recognizes.'''
+        commands = ", ".join(self.command_list)
+        self.say("I know the following commands: {}. For further documentation, see "
+                 "http://git.io/pNQS6g".format(commands))
+    
+    def help(self, message):
+        '''Display a help message.'''
+        self.say("Hello, I'm your friendly neighborhood GorillaBot! I perform a number of commands"
+                 " that you can view by typing !commands. Alternatively, you can see my "
+                 "documentation at http://git.io/pNQS6g.")
     
     def hug(self, message):
         '''Hug the user back, or hug the user who hugged the bot.'''
@@ -75,7 +101,7 @@ class Responder(object):
             self.me(self._GorillaResponses.hug(self.sender_nick, message[0]))
             
     def join(self, message):
-        '''Join a channel.'''
+        '''ADMIN: Join a channel.'''
         if len(message) == 1:
             channel = message[0]
             self._GorillaConnection._send("JOIN {}".format(channel))
@@ -140,6 +166,11 @@ class Responder(object):
                     self.logger.debug("Received message beginning with an exclamation mark: {}".format(command))
                     self.check_command(command)
                     
+    def part(self, message):
+        '''Part from a channel.'''
+        channel = message[0]
+        self._GorillaConnection.part(channel)
+            
     def say(self, message):
         '''Say something to the channel or, if the command was received in a private message, in
         a private message to the user.'''
