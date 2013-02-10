@@ -204,13 +204,12 @@ class Connection(object):
         password = getpass("NickServ password: ")
         self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, password), True)
 
-    def part(self, chans, message=None):
+    def part(self, chan, message=None):
         '''Part one or more IRC channels (with optional message).'''
-        partlist = ",".join(chans)
         if message:
-            self._send("PART {0} :{1}".format(partlist, message))
+            self._send("PART {0} :{1}".format(chan, message))
         else:
-            self._send("PART {}".format(partlist))
+            self._send("PART {}".format(chan))
             
     def ping(self):
         '''Ping the host server.'''

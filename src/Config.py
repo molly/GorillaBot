@@ -130,11 +130,11 @@ class Configure(object):
             if self._quiet:
                 self.logger.setLevel(logging.WARNING)
             else:
-                self.logger.setLevel(logging.INFO)
-            formatter = logging.Formatter("%(asctime)s - %(filename)s - %(levelname)s"
-                                          ": %(message)s")
+                self.logger.setLevel(logging.DEBUG)
             
             if log_type != "console":   
+                file_formatter = logging.Formatter("%(asctime)s - %(filename)s - %(levelname)s"
+                                                   ": %(message)s")
                 if not os.path.isdir(os.curdir + "/logs"):
                     os.mkdir(os.curdir + "/logs")
                     
@@ -146,12 +146,14 @@ class Configure(object):
                 filehandler = logging.handlers.TimedRotatingFileHandler(logname,'h',
                                                                         6,5,None,
                                                                         False,False)      
-                filehandler.setFormatter(formatter)
+                filehandler.setFormatter(file_formatter)
                 self.logger.addHandler(filehandler)
                 
             if log_type != "file":
+                console_formatter = logging.Formatter("%(asctime)s - %(levelname)s"
+                                                      ": %(message)s", datefmt="%I:%M:%S %p")
                 consolehandler = logging.StreamHandler() 
-                consolehandler.setFormatter(formatter)
+                consolehandler.setFormatter(console_formatter)
                 self.logger.addHandler(consolehandler)
                 
                 self.logger.info("Console logger created.")
