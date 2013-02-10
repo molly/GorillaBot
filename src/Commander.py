@@ -23,9 +23,11 @@ from os import path
 from Bot import Bot
 
 def main():
-    print(" __   __   __                    __   __  ___ "
-          "\n/ _` /  \ |__) | |    |     /\  |__) /  \  |  "
-          "\n\__> \__/ |  \ | |___ |___ /~~\ |__) \__/  |  ")
+    print('\n  ."`".'
+          '\n / _=_ \\ \x1b[32m      __   __   __  . .    .     __   __   __  ___\x1b[0m'
+          '\n(,(oYo),) \x1b[32m    / _` /  \ |__) | |    |    |__| |__) /  \  |  \x1b[0m'
+          '\n|   "   | \x1b[32m    \__| \__/ |  \ | |___ |___ |  | |__) \__/  |  \x1b[0m'
+          '\n \(\_/)/\n')
     
     desc = "This is the command-line utility for setting up and running GorillaBot, "
     "a simple IRC bot."
