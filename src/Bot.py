@@ -40,12 +40,12 @@ class Bot(object):
         if "NickServ" in line[0]:
             if "identify" in line:
                 self.logger.info("NickServ has requested identification.")
-                self.GorillaConnection.nickserv()
+                self.GorillaConnection.nickserv_identify()
             elif "identified" in line:
                 self.logger.info("You have successfully identified as {}.".format(line[2]))
             elif ":Invalid" in line:
                 self.logger.info("You've entered an incorrect password. Please re-enter.")
-                self.GorillaConnection.nickserv()
+                self.GorillaConnection.nickserv_identify()
         elif len(line[1])==3:
             self.process_number(line[1], line)
 

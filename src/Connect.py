@@ -200,9 +200,9 @@ class Connection(object):
             
             self.caffeinate()
             
-    def nickserv(self):
+    def nickserv_identify(self):
         password = getpass("NickServ password: ")
-        self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, password))
+        self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, password), True)
 
     def part(self, chans, message=None):
         '''Part one or more IRC channels (with optional message).'''
@@ -225,10 +225,6 @@ class Connection(object):
         for message in self._split(message, 400):
             message = "PRIVMSG {0} :{1}".format(target, message)
             self._send(message, hide)
-            
-    def release(self):
-        password = getpass("NickServ password: ")
-        self.private_message("NickServ", "RELEASE {0} {1}".format(self._nick, password))
         
     def shut_down(self):
         self._quit()
