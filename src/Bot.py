@@ -21,6 +21,7 @@
 import logging
 from Config import Configure
 from Connect import Connection
+from Responder import Responder
 
 class Bot(object):
     def __init__(self, path, default, quiet):
@@ -33,10 +34,14 @@ class Bot(object):
         
         self.GorillaConnection = Connection(self, settings["host"], settings["port"], settings["nick"],
                    settings["ident"], settings["realname"], settings["chans"])
+        self.GorillaResponder = Responder(self.GorillaConnection)
         self.GorillaConnection._connect()
         
     def dispatch(self, line):
         print (line)
+        if "PING" in line[0]:
+            self.logger.info("Ping received. Ponging.")
+            self.GorillaConnection.pong(line[1][1:])
         if "NickServ" in line[0]:
             if "identify" in line:
                 self.logger.info("NickServ has requested identification.")
