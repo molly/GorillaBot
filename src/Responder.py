@@ -20,6 +20,7 @@
 
 import logging
 import re
+from urllib import parse
 
 __all__ = ["Responder"]
 
@@ -28,7 +29,7 @@ class Responder(object):
         self._GorillaConnection = connection
         self.logger = logging.getLogger("GorillaBot")
         self.bot_nick = self._GorillaConnection.nick
-        self.command_list = ["link"]
+        self.command_list = ["link", "user", "usertalk"]
         
     def check_addressed(self):
         #checks for commands formatted as "GorillaBot: command" or "GorillaBot: !command"
@@ -58,18 +59,25 @@ class Responder(object):
         return False
     
     def link(self, message):
-        if "[[" not in message[0]:
-            self.say("You formatted your link incorrectly! Please format the command as !link [[article]].")
+        if "[[" not in message[0] and "{{" not in message[0]:
+            self.say("Please format the command as !link [[article]] or !link {{template}}.")
             return 0
         end_index = ""
         for idx, word in enumerate(self.message):
-            if "]]" in word:
+            if "]]" in word or "}}" in word:
                 end_index = idx
         if type(end_index) != int:
-            self.say("You formatted your link incorrectly! Please format the command as !link [[article]].")
+            self.say("Please format the command as !link [[article]] or !link {{template}}.")
             return 0
         else:
-            self.say("Linking {}.").format(message[:end_index])
+            article_name = ' '.join(message[0:end_index])
+            article_name = article_name.strip("[]{}").replace(" ", "_")
+            url = parse.quote(article_name, safe="/#:")
+            if "{{" in message[0]:
+                url = "http://en.wikipedia.org/wiki/Template:" + url
+            else:
+                url = "http://en.wikipedia.org/wiki/" + url
+            self.say(url)
     
     def parse_message(self, line):
         self.sender_nick = re.search(":(.*?)!~", line[0])
@@ -107,3 +115,17 @@ class Responder(object):
             self._GorillaConnection.private_message(self.sender_nick, message)
         else:
             self._GorillaConnection.private_message(self.chan, message)
+            
+    def user(self, message):
+        username = ' '.join(message[0:])
+        username = username.strip("[]{}").replace(" ", "_")
+        url = parse.quote(username, safe="/#:")
+        url = "http://en.wikipedia.org/wiki/User:" + url
+        self.say(url)
+        
+    def usertalk(self, message):
+        username = ' '.join(message[0:])
+        username = username.strip("[]{}").replace(" ", "_")
+        url = parse.quote(username, safe="/#:")
+        url = "http://en.wikipedia.org/wiki/User_talk:" + url
+        self.say(url)
