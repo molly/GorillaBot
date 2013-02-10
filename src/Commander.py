@@ -21,11 +21,12 @@
 import argparse
 from os import path
 from Bot import Bot
-import logging
-import sys
 
 def main():
-    print ("\nStarting GorillaBot.")
+    print(" __                   _       "
+          "\n/__ _  __ o  |  |  _ |_) _ _|_"
+          "\n\_|(_) |  |  |  | (_||_)(_) |_")
+    
     desc = "This is the command-line utility for setting up and running GorillaBot, "
     "a simple IRC bot."
     
@@ -41,11 +42,8 @@ def main():
                         "messages with level 'WARNING' or higher.")
     args = parser.parse_args()
     
-    # Initialize logger
-    logger = logging.getLogger("GorillaBot")
-    
     # Create instance of bot, create connection
-    GorillaBot = Bot(args.path, args.default, args.quiet)
+    Bot(args.path, args.default, args.quiet)
 
 if __name__ == "__main__":
     main()

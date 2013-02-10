@@ -19,13 +19,69 @@
 # SOFTWARE.
 
 import logging
+import re
 
 __all__ = ["Responder"]
 
 class Responder(object):
     def __init__(self, connection):
         self._GorillaConnection = connection
-    
-    def respond(self, action):
-        pass
+        self.logger = logging.getLogger("GorillaBot")
+        self.bot_nick = self._GorillaConnection.nick
+        self.command_list = ["link"]
         
+    def check_addressed(self):
+        #checks for commands formatted as "GorillaBot: command" or "GorillaBot: !command"
+        if self.message[0] == "GorillaBot:":
+            return self.message[1:]
+        else:
+            return False
+        
+    def check_command(self, command_message):
+        if command_message[0][0] == "!":
+            command = command_message[0][1:]
+        else:
+            command = command_message[0]
+        command = command.tolower()
+        if command in self.command_list:
+            print("{} is a command!".format(command))
+        else:
+            print("{} is not a command!".format(command))
+            
+    def check_exclamation(self):
+        # Checks for commands formatted as "!command"
+        for idx, word in enumerate(self.message):
+            if word[0] == "!":
+                return self.message[idx:]
+        return False
+    
+    def parse_message(self, line):
+        sender_nick = re.search(":(.*?)!~", line[0])
+        if line[2] == self.bot_nick:
+            private = True
+        else:
+            private = False
+            
+        # Format message nicely
+        self.message = list()
+        self.message.append(line[3][1:])
+        if len(line) > 4:
+            for i in range(4,len(line)):
+                self.message.append(line[i])
+                
+        # Check if message contains a command for the bot
+        if private:
+            command = self.message[0:]
+            self.logger.debug("Received private message: {}".format(command))
+            self.check_command(command)
+        else:
+            command = self.check_addressed()
+            if command:
+                self.logger.debug("Received message addressed to the bot: {}".format(command))
+                self.check_command(command)
+            else:
+                command = self.check_exclamation()
+                if command:
+                    self.logger.debug("Received message beginning with an exclamation mark: {}".format(command))
+                    self.check_command(command)
+            
