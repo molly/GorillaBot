@@ -9,8 +9,8 @@ The bot receives commands in one of three ways:
 In the examples below, I use the `!command` syntax, but the other two would work equally well.
 
 ##Commands
-###All users
-* [commands](#commands)
+###[All users](all-user-commands)
+* [commands](#all-user-commands)
 * [help](#help)
 * [hug](#hug)
 * [glomp](#hug)
@@ -19,7 +19,7 @@ In the examples below, I use the `!command` syntax, but the other two would work
 * [user](#user)
 * [usertalk](#usertalk)
 
-###Bot admins only
+###[Bot admins only](bot-admin-commands)
 * [join](#join)
 * [part](#part)
 * [quit](#quit)
