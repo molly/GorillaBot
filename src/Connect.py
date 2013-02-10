@@ -89,7 +89,7 @@ class Connection(object):
     def _quit(self, message=None):
         '''Disconnect from the server (with optional quit message).'''
         if message:
-            self._send("QUIT :{}".format(message))
+            self._send("QUIT :{0}".format(message))
         else:
             self._send("QUIT")
             

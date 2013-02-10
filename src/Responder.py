@@ -58,18 +58,17 @@ class Responder(object):
         
         #Check if a valid command    
         if command in self.command_list:
-            command = "self." + command + "({})".format(command_message[1:])
+            command_method = getattr(self, command_message[1:])
             self.logger.info("Executing {}.".format(command))
-            exec(command)
+            return command_method
         elif command in self.admin_command_list:
+            self.logger.info("{} asked to execute {}.".format(self.sender_nick, command))
             if self.sender_nick in self._admins:
-                command = "self." + command + "({})".format(command_message[1:])
+                command_method = getattr(self, command_message[1:])
                 self.logger.info("Executing {}.".format(command))
-                exec(command)
+                return command_method
             else:
                 self.say("Hey! You can't do that!")
-        else:
-            print("{} is not a command!".format(command))
             
     def check_exclamation(self):
         '''Checks for commands formatted as "!command"'''
@@ -170,6 +169,13 @@ class Responder(object):
         '''Part from a channel.'''
         channel = message[0]
         self._GorillaConnection.part(channel)
+        
+    def quit(self, message):
+        if len(message) > 0:
+            quit_message = ' '.join(message[0:])
+            self._GorillaConnection._quit(quit_message)
+        else:
+            self._GorillaConnection._quit()
             
     def say(self, message):
         '''Say something to the channel or, if the command was received in a private message, in
