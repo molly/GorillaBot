@@ -10,20 +10,21 @@ In the examples below, I use the `!command` syntax, but the other two would work
 
 ##Commands
 ###All users
-* commands
-* help
-* hug
-* glomp
-* link
-* tacklehug
-* user
-* usertalk
+* [commands](#commands)
+* [help](#help)
+* [hug](#hug)
+* [glomp](#hug)
+* [link](#link)
+* [tacklehug](#hug)
+* [user](#user)
+* [usertalk](#usertalk)
 
 ###Bot admins only
-* join
-* part
-* quit
+* [join](#join)
+* [part](#part)
+* [quit](#quit)
 
+## All-user commands ##
 ### Commands ###
     !commands
     !command
@@ -61,10 +62,6 @@ Hugs the specified user. If no user is specified, the bot hugs the whole channel
 <GorillaWarfare> !hug
 *GorillaBot distributes hugs evenly among the channel
 ```
-### Join ###
-    !join #channel
-    
-Limited to bot admins. Joins the specified channel.
 
 ### Link ###
 
@@ -80,12 +77,6 @@ Provide a link to a Wikipedia article.
 <GorillaWarfare> !link {{Welcome}}
 <GorillaBot> http://en.wikipedia.org/wiki/Template:Welcome
 ```
-
-### Part ###
-
-    !part #channel
-
-Limited to bot admins. Parts from the specified channel.
 
 ### User ###
 
@@ -111,3 +102,16 @@ Provide a link to a Wikipedia user talk page.
 <GorillaWarfare> !usertalk GorillaWarfare
 <GorillaBot> http://en.wikipedia.org/wiki/User_talk:GorillaWarfare
 ```
+
+## Bot admin commands ##
+
+### Join ###
+    !join #channel
+    
+Joins the specified channel.
+
+### Part ###
+
+    !part #channel
+
+Parts from the specified channel.
