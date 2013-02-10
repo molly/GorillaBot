@@ -34,7 +34,6 @@ class Bot(object):
         self.GorillaConnection = Connection(self, settings["host"], settings["port"], settings["nick"],
                    settings["ident"], settings["realname"], settings["chans"])
         self.GorillaConnection._connect()
-        self.GorillaConnection._join()
         
     def dispatch(self, line):
         print (line)
@@ -42,6 +41,20 @@ class Bot(object):
             if "identify" in line:
                 self.logger.info("NickServ has requested identification.")
                 self.GorillaConnection.nickserv()
+            elif "identified" in line:
+                self.logger.info("You have successfully identified as {}.".format(line[2]))
+            elif ":Invalid" in line:
+                self.logger.info("You've entered an incorrect password. Please re-enter.")
+                self.GorillaConnection.nickserv()
+        elif len(line[1])==3:
+            self.process_number(line[1], line)
 
     def process_number(self, message_number, line):
-        pass
+        if message_number == "396":
+            # RPL_HOSTHIDDEN - Cloak set.
+            self.logger.info("Cloak set as {}.".format(line[3]))
+        if message_number == "433":
+            # ERR_NICKNAMEINUSE - Nickname is already in use.
+            self.logger.error("Nickname is already in use. Closing connection.")
+            self.GorillaConnection._quit()
+            self.GorillaConnection._close()
