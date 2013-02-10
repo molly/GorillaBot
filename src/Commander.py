@@ -23,9 +23,9 @@ from os import path
 from Bot import Bot
 
 def main():
-    print(" __                   _       "
-          "\n/__ _  __ o  |  |  _ |_) _ _|_"
-          "\n\_|(_) |  |  |  | (_||_)(_) |_")
+    print(" __   __   __                    __   __  ___ "
+          "\n/ _` /  \ |__) | |    |     /\  |__) /  \  |  "
+          "\n\__> \__/ |  \ | |___ |___ /~~\ |__) \__/  |  ")
     
     desc = "This is the command-line utility for setting up and running GorillaBot, "
     "a simple IRC bot."
