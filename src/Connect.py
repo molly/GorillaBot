@@ -215,10 +215,12 @@ class Connection(object):
     def ping(self):
         '''Ping the host server.'''
         self._last_ping_sent = time()
-        self._send("PING {}".format(self.host))
+        self.logger.debug("Pinging host.")
+        self._send("PING {}".format(self.host), True)
         
     def pong(self, server):
-        self._send("PONG {}".format(server))
+        self.logger.debug("Ponging {}".format(server))
+        self._send("PONG {}".format(server), True)
         
     def private_message(self, target, message, hide=False):
         """Send a private message to a target on the server."""

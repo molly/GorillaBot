@@ -130,7 +130,7 @@ class Configure(object):
             if self._quiet:
                 self.logger.setLevel(logging.WARNING)
             else:
-                self.logger.setLevel(logging.DEBUG)
+                self.logger.setLevel(logging.INFO)
             formatter = logging.Formatter("%(asctime)s - %(filename)s - %(levelname)s"
                                           ": %(message)s")
             
@@ -170,7 +170,7 @@ class Configure(object):
                                  " Reconfiguring.")
                 self._reconfigure()
                 break
-        self.logger.debug("Valid configuration file found.")
+        self.logger.info("Valid configuration file found.")
         reconfigure = ""
         if not self._default:
             while reconfigure != "y" and reconfigure !="n":
