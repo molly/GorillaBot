@@ -24,6 +24,10 @@ from Connect import Connection
 from Responder import Responder
 
 class Bot(object):
+    '''
+    The Bot class is the core of the bot. It creates the connection and the responder. All messages
+    that are received come through here, and are dispatched accordingly.
+    '''
     def __init__(self, path, default, quiet):
         self._config_path = path
         self._default = default
@@ -38,6 +42,14 @@ class Bot(object):
         self.GorillaConnection._connect()
         
     def dispatch(self, line):
+        '''
+        Determines the type of message received:
+                If the message is a ping, it pongs back.
+                If the message is from NickServ, it determines identification status.
+                If the message contains a reply code, it forwards it to parse_number.
+                If the message is a PRIVMSG, it forwards it to parse_message.
+        '''
+        
         print(line)
         if "PING" in line[0]:
             self.logger.debug("Ping received.")
@@ -57,6 +69,7 @@ class Bot(object):
             self.GorillaResponder.parse_message(line)
 
     def process_number(self, message_number, line):
+        '''Parses a message with a reply code number and responds accordingly.'''
         if message_number == "396":
             # RPL_HOSTHIDDEN - Cloak set.
             self.logger.info("Cloak set as {}.".format(line[3]))

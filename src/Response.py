@@ -29,6 +29,7 @@ class response_list(object):
                               "flying tackle-hugs {}"]
     
     def hug(self, from_user, to_user, is_self=False):
+        '''Returns a hug message from the hug list, or hugs the user back.'''
         if is_self:
             return "hugs {} back".format(from_user)
         else:
