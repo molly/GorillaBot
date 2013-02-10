@@ -6,6 +6,8 @@ The bot receives commands in one of three ways:
 2. Receiving a message addressed to it directly: `GorillaBot: command` or `GorillaBot: !command`<br/>
 3. Receving a command in a private message: `/msg GorillaBot command`
 
+In the examples below, I use the `!command` syntax, but the other two would work equally well.
+
 ##Commands
 * hug
 * glomp
@@ -27,6 +29,10 @@ Hugs the specified user. If no user is specified, the bot hugs the whole channel
 <GorillaWarfare> !hug
 *GorillaBot distributes hugs evenly among the channel
 ```
+### Join ###
+    !join #channel
+    
+Joins the specified channel.
 
 ### Link ###
 
