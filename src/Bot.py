@@ -49,8 +49,7 @@ class Bot(object):
                 If the message contains a reply code, it forwards it to parse_number.
                 If the message is a PRIVMSG, it forwards it to parse_message.
         '''
-        
-        print(line)
+
         if "PING" in line[0]:
             self.logger.debug("Ping received.")
             self.GorillaConnection.pong(line[1][1:])

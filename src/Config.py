@@ -136,7 +136,7 @@ class Configure(object):
             if self._quiet:
                 self.logger.setLevel(logging.WARNING)
             else:
-                self.logger.setLevel(logging.DEBUG)
+                self.logger.setLevel(logging.INFO)
             
             if log_type != "console":   
                 file_formatter = logging.Formatter("%(asctime)s - %(filename)s - %(levelname)s"
