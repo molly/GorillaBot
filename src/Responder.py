@@ -20,6 +20,7 @@
 
 import logging
 import re
+from Response import response_list
 from urllib import parse
 
 __all__ = ["Responder"]
@@ -27,9 +28,10 @@ __all__ = ["Responder"]
 class Responder(object):
     def __init__(self, connection):
         self._GorillaConnection = connection
+        self._GorillaResponses = response_list()
         self.logger = logging.getLogger("GorillaBot")
         self.bot_nick = self._GorillaConnection.nick
-        self.command_list = ["link", "user", "usertalk"]
+        self.command_list = ["hug", "link", "user", "usertalk"]
         
     def check_addressed(self):
         #checks for commands formatted as "GorillaBot: command" or "GorillaBot: !command"
@@ -44,6 +46,8 @@ class Responder(object):
         else:
             command = command_message[0]
         command = command.lower()
+        if command in ["hug", "hugs", "glomp", "glomps", "tacklehug", "tacklehugs"]:
+            command = "hug"
         if command in self.command_list:
             command = "self." + command + "({})".format(command_message[1:])
             self.logger.info("Executing {}.".format(command))
@@ -58,6 +62,15 @@ class Responder(object):
                 return self.message[idx:]
         return False
     
+    def hug(self, message):
+        if len(message) == 0:
+            self.me("distributes hugs evenly among the channel")
+        elif message[0] == self.bot_nick:
+            reply = self._GorillaResponses.hug(self.sender_nick, message[0], True)
+            self.me(reply)
+        else:
+            self.me(self._GorillaResponses.hug(self.sender_nick, message[0]))
+
     def link(self, message):
         if "[[" not in message[0] and "{{" not in message[0]:
             self.say("Please format the command as !link [[article]] or !link {{template}}.")
@@ -78,9 +91,13 @@ class Responder(object):
             else:
                 url = "http://en.wikipedia.org/wiki/" + url
             self.say(url)
+            
+    def me(self, message):
+        self.say("\x01ACTION {0}\x01".format(message))
     
     def parse_message(self, line):
-        self.sender_nick = re.search(":(.*?)!~", line[0])
+        r = re.search(":(.*?)!~", line[0])
+        self.sender_nick = r.group(1)
         self.chan = line[2]
         if self.chan == self.bot_nick:
             private = True
