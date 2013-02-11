@@ -1,5 +1,7 @@
 # GorillaBot
-A simple IRC bot to perform a number of yet-to-be-determined functions. Though I'm only really writing it so that I can use it personally, it will be easily-configurable so that anyone can use it.
+GorillaBot is an IRC bot framework written in Python. The bot is initiated from the command line. Once it is connected, it receives [its commands](https://github.com/mollywhite/GorillaBot/blob/master/docs/commands.md) through IRC.
+
+Although I wrote the framework to run _Alfred_, a bot specific to an IRC channel I use frequently, it is easily-configurable to run any bot you like. It will include some optional modules, and any extra functionality can be added by forking the code.
 
 __Author:__ Molly White<br />
 __License:__ [MIT](http://opensource.org/licenses/MIT)<br/>
