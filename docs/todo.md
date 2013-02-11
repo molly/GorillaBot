@@ -9,6 +9,7 @@
 * Gracefully exit on `KeyboardInterrupt`
 * `VERSION` reply
 * Check security
+* Join channels after identifying to NickServ (to avoid issues with invite-only channels that depend on the cloak)
 
 ##Plugins
 ###Wikipedia-related
