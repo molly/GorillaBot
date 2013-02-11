@@ -10,6 +10,11 @@
 * `VERSION` reply
 * Check security
 * Join channels after identifying to NickServ (to avoid issues with invite-only channels that depend on the cloak)
+* Send initialize commands as a response to 004, not immediately
+* Hook commands?
+* Add API section to config file
+* Move string lists, etc. to a data file
+* Modularize commands
 
 ##Plugins
 ###Wikipedia-related
@@ -36,3 +41,6 @@
 * Trout, whale, etc.
 * Banana and/or Batman-related commands
 * Read messages for sad/angry/etc.
+* Magic 8-ball
+* Check if a website is up or down
+* Urban Dictionary
