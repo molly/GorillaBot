@@ -58,15 +58,15 @@ class Responder(object):
         
         #Check if a valid command    
         if command in self.command_list:
-            command_method = getattr(self, command_message[1:])
+            command_method = getattr(self, command)
             self.logger.info("Executing {}.".format(command))
-            return command_method
+            return command_method(command_message[1:])
         elif command in self.admin_command_list:
             self.logger.info("{} asked to execute {}.".format(self.sender_nick, command))
             if self.sender_nick in self._admins:
-                command_method = getattr(self, command_message[1:])
+                command_method = getattr(self, command)
                 self.logger.info("Executing {}.".format(command))
-                return command_method
+                return command_method(command_message[1:])
             else:
                 self.say("Hey! You can't do that!")
             
