@@ -15,6 +15,8 @@
 * Add API section to config file
 * Move string lists, etc. to a data file
 * Modularize commands
+* Throttle some commands (!help, !command, etc.)
+* Only show !help and !command-type commands if they're at the beginning of the sentence
 
 ##Plugins
 ###Wikipedia-related
@@ -38,7 +40,7 @@
 * Stalk users (find out when the bot last saw them online)
 * Translate
 * Weather
-* Trout, whale, etc.
+* Trout, whale, other violent commands
 * Banana and/or Batman-related commands
 * Read messages for sad/angry/etc.
 * Magic 8-ball
