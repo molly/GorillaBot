@@ -20,7 +20,7 @@
 
 import argparse
 from os import path
-from Bot import Bot
+from bot import Bot
 
 def main():
     print('\n  ."`".'

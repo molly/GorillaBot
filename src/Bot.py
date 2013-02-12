@@ -18,16 +18,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import sys
 import logging
-from Config import Configure
-from Connect import Connection
-from Responder import Responder
+from config import Configure
+from connect import Connection
+from loadplugins import PluginManager
+from responder import Responder
 
 class Bot(object):
     '''
     The Bot class is the core of the bot. It creates the connection and the responder. All messages
     that are received come through here, and are dispatched accordingly.
     '''
+    
+    sys.path += ['plugins']
+    
     def __init__(self, path, default, quiet):
         self._config_path = path
         self._default = default
@@ -39,7 +44,9 @@ class Bot(object):
         self.GorillaConnection = Connection(self, settings["host"], settings["port"], settings["nick"],
                    settings["ident"], settings["realname"], settings["chans"])
         self.GorillaResponder = Responder(self.GorillaConnection)
-        self.GorillaConnection._connect()
+        self.GorillaPlugins = PluginManager()
+        self.GorillaPlugins.load_plugins()
+        #self.GorillaConnection._connect()
         
     def dispatch(self, line):
         '''
