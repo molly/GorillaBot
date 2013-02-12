@@ -20,7 +20,6 @@
 
 import logging
 import re
-from Response import response_list
 from urllib import parse
 
 __all__ = ["Responder"]
@@ -30,7 +29,6 @@ class Responder(object):
     def __init__(self, connection):
         self._admins = ["GorillaWarfare"]
         self._GorillaConnection = connection
-        self._GorillaResponses = response_list()
         self.logger = logging.getLogger("GorillaBot")
         self.bot_nick = self._GorillaConnection.nick
         self.admin_command_list = ["join", "part", "quit"]
@@ -94,10 +92,9 @@ class Responder(object):
         if len(message) == 0:
             self.me("distributes hugs evenly among the channel")
         elif message[0] == self.bot_nick:
-            reply = self._GorillaResponses.hug(self.sender_nick, message[0], True)
-            self.me(reply)
+            print("hug")
         else:
-            self.me(self._GorillaResponses.hug(self.sender_nick, message[0]))
+            print("hug")
             
     def join(self, message):
         '''ADMIN: Join a channel.'''
