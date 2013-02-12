@@ -85,9 +85,9 @@ class Responder(object):
     
     def help(self, message):
         '''Display a help message.'''
-        self.say("Hello, I'm your friendly neighborhood GorillaBot! I perform a number of commands"
+        self.say("Hello, I'm your friendly neighborhood {}! I perform a number of commands"
                  " that you can view by typing !commands. Alternatively, you can see my "
-                 "documentation at http://git.io/pNQS6g.")
+                 "documentation at http://git.io/pNQS6g.".format(self.bot_nick))
     
     def hug(self, message):
         '''Hug the user back, or hug the user who hugged the bot.'''
