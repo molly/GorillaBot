@@ -22,7 +22,7 @@ import sys
 import logging
 from config import Configure
 from connect import Connection
-from responder import Responder
+from commandmanager import CommandManager
 
 class Bot(object):
     '''The Bot class is the core of the bot. It creates the connection and the responder. All messages
@@ -40,11 +40,11 @@ class Bot(object):
         self.logger = logging.getLogger("GorillaBot")
         self._configuration = Configure(self._config_path, self._default, self._quiet)
         settings = self._configuration.get_configuration()
+        
         self.GorillaConnection = Connection(self, settings["host"], settings["port"],
                                             settings["nick"], settings["ident"],
                                             settings["realname"], settings["chans"])
-        self.GorillaResponder = Responder(self.GorillaConnection)
-        self.GorillaPlugins.load_plugins()
+        self.GorillaCommander = CommandManager(self, self.GorillaConnection)
         self.GorillaConnection._connect()
         
     def dispatch(self, line):
@@ -53,22 +53,27 @@ class Bot(object):
                 If the message is from NickServ, it determines identification status.
                 If the message contains a reply code, it forwards it to parse_number.
                 If the message is a PRIVMSG, it forwards it to parse_message.'''
+        
+        # Probably will want to remove this at some point in the future, but for now I'm going
+        # to hold on to it for debugging.
+        self.logger.debug(line)
+        
+        # Responds to ping messages. Doesn't bother to send it to the CommandManager.
         if "PING" in line[0]:
             self.logger.debug("Ping received.")
             self.GorillaConnection.pong(line[1][1:])
+            
+        # Identifies messages from NickServ, sends to CommandManager
         elif "NickServ" in line[0]:
-            if "identify" in line:
-                self.logger.info("NickServ has requested identification.")
-                self.GorillaConnection.nickserv_identify()
-            elif "identified" in line:
-                self.logger.info("You have successfully identified as {}.".format(line[2]))
-            elif ":Invalid" in line:
-                self.logger.info("You've entered an incorrect password. Please re-enter.")
-                self.GorillaConnection.nickserv_identify()
+            self.GorillaCommander.nickserv_reply(line)
+            
+        # Identifies server message codes, sends to CommandManager
         elif len(line[1])==3:
-            self.process_number(line[1], line)
+            self.GorillaCommander.process_numcode(line[1], line)
+            
+        # Identifies PRIVMSGs, sends to CommandManager
         elif line[1]=="PRIVMSG":
-            self.GorillaResponder.parse_message(line)
+            self.GorillaCommander.check_command(line)
 
     def process_number(self, message_number, line):
         '''Parses a message with a reply code number and responds accordingly.'''
