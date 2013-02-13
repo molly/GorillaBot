@@ -23,14 +23,23 @@ __all__ = ["Command"]
 import logging
  
 class Command(object):
+    '''Base command class. Provides the structure for each command; intended to be subclassed.'''
+    
+    # Name of the command
     name = None
+    
+    # Other commands that trigger this command
     aliases = []
-    triggers = []
+    
+    # Defines which command formats will trigger this command. "all" by default.
+    triggers = ["all"]
     
     def __init__(self, bot, connection):
+        '''Constructs the command object. Initializes logging.'''
         self.GorillaBot = bot
         self.GorillaConnection = connection
         self.logger = logging.getLogger("GorillaBot")
         
     def execute(self, line):
+        '''Body of the command. Does nothing by default; must be subclassed.'''
         pass

@@ -22,41 +22,37 @@ import sys
 import logging
 from config import Configure
 from connect import Connection
-from loadplugins import PluginManager
 from responder import Responder
 
 class Bot(object):
-    '''
-    The Bot class is the core of the bot. It creates the connection and the responder. All messages
-    that are received come through here, and are dispatched accordingly.
-    '''
+    '''The Bot class is the core of the bot. It creates the connection and the responder. All messages
+    that are received come through here, and are dispatched accordingly.'''
     
     sys.path += ['plugins']
     
     def __init__(self, path, default, quiet):
+        '''Constructs the bot object. Takes path, defualt, and quiet arguments from the command
+        line input and sets the bot accordingly. Initializes logging, creates instances of
+        necessary classes. Loads plugings, begins the connection.'''
         self._config_path = path
         self._default = default
         self._quiet = quiet
         self.logger = logging.getLogger("GorillaBot")
         self._configuration = Configure(self._config_path, self._default, self._quiet)
         settings = self._configuration.get_configuration()
-        
-        self.GorillaConnection = Connection(self, settings["host"], settings["port"], settings["nick"],
-                   settings["ident"], settings["realname"], settings["chans"])
+        self.GorillaConnection = Connection(self, settings["host"], settings["port"],
+                                            settings["nick"], settings["ident"],
+                                            settings["realname"], settings["chans"])
         self.GorillaResponder = Responder(self.GorillaConnection)
-        self.GorillaPlugins = PluginManager()
         self.GorillaPlugins.load_plugins()
-        #self.GorillaConnection._connect()
+        self.GorillaConnection._connect()
         
     def dispatch(self, line):
-        '''
-        Determines the type of message received:
+        '''Determines the type of message received:
                 If the message is a ping, it pongs back.
                 If the message is from NickServ, it determines identification status.
                 If the message contains a reply code, it forwards it to parse_number.
-                If the message is a PRIVMSG, it forwards it to parse_message.
-        '''
-
+                If the message is a PRIVMSG, it forwards it to parse_message.'''
         if "PING" in line[0]:
             self.logger.debug("Ping received.")
             self.GorillaConnection.pong(line[1][1:])
@@ -82,8 +78,7 @@ class Bot(object):
         elif message_number == "433":
             # ERR_NICKNAMEINUSE - Nickname is already in use.
             self.logger.error("Nickname is already in use. Closing connection.")
-            self.GorillaConnection._quit()
-            self.GorillaConnection._close()
+            self.GorillaConnection.shut_down()
         elif message_number == "442":
             # ERR_NOTONCHANNEL - You're not in that channel
             self.logger.info("You tried to part from {}, but you are not in that "

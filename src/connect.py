@@ -30,6 +30,7 @@ class Connection(object):
     '''Performs the connection to the IRC server and communicates with it.'''
     
     def __init__(self, bot, host, port, nick, ident, realname, chans):
+        '''Constructs the connection object. Sets up logging.'''
         self._bot = bot
         self._host = host
         self._port = port
@@ -86,12 +87,9 @@ class Connection(object):
         self._last_received = time()
         self._bot.dispatch(line)
               
-    def _quit(self, message=None):
-        '''Disconnect from the server (with optional quit message).'''
-        if message:
-            self._send("QUIT :{0}".format(message))
-        else:
-            self._send("QUIT")
+    def _quit(self):
+        '''Disconnect from the server.'''
+        self._send("QUIT")
             
     def _receive(self, size=4096):
         '''Receive messages from the IRC server.'''
@@ -177,8 +175,7 @@ class Connection(object):
                 self._last_ping_sent = now
             elif now - self._last_ping_sent > 60:
                 self.logger.info("No ping response in 60 seconds.")
-                self._quit()
-                self._close()
+                self.shut_down()
             
     
     def loop(self):
@@ -206,11 +203,8 @@ class Connection(object):
         self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, password), True)
 
     def part(self, chan, message=None):
-        '''Part one or more IRC channels (with optional message).'''
-        if message:
-            self._send("PART {0} :{1}".format(chan, message))
-        else:
-            self._send("PART {}".format(chan))
+        '''Part one or more IRC channels.'''
+        self._send("PART {}".format(chan))
             
     def ping(self):
         '''Ping the host server.'''
@@ -219,15 +213,17 @@ class Connection(object):
         self._send("PING {}".format(self.host), True)
         
     def pong(self, server):
+        '''Sends a pong reply.'''
         self.logger.debug("Ponging {}".format(server))
         self._send("PONG {}".format(server), True)
         
     def private_message(self, target, message, hide=False):
-        """Send a private message to a target on the server."""
+        '''Send a private message to a target on the server.'''
         for message in self._split(message, 400):
             message = "PRIVMSG {0} :{1}".format(target, message)
             self._send(message, hide)
         
     def shut_down(self):
+        '''Gracefully shuts down.'''
         self._quit()
         self._close()
