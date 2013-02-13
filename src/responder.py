@@ -167,12 +167,8 @@ class Responder(object):
         channel = message[0]
         self._GorillaConnection.part(channel)
         
-    def quit(self, message):
-        if len(message) > 0:
-            quit_message = ' '.join(message[0:])
-            self._GorillaConnection._quit(quit_message)
-        else:
-            self._GorillaConnection._quit()
+    def quit(self):
+        self._GorillaConnection._quit()
             
     def say(self, message):
         '''Say something to the channel or, if the command was received in a private message, in
