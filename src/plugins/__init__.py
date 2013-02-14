@@ -18,4 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+'''All commands should be included in the __all__ list so that they will be recognized by the
+command manager. All commands need to be of the format def command(sender, command_type, line)
+where line is the message text INCLUDING the command and, if addressed directly to the bot, the
+bot name.'''
+
 __all__ = ["admin"]

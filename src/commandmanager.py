@@ -33,6 +33,7 @@ class CommandManager(object):
         self._connection = connection
         self._bot_nick = connection._nick
         self.command_list = {}
+        self.organize_commands()
         
     def check_command(self, line):
         '''Messages of type PRIVMSG will be passed through this function to check if they are
@@ -65,7 +66,7 @@ class CommandManager(object):
             command_type = "private"
         # Check for a message directly addressed to the bot
         elif self._bot_nick in line[0]:
-            if line[1][0] == "1":
+            if line[1][0] == "!":
                 command = line[1][1:]
             else:
                 command = line[1]
@@ -80,16 +81,20 @@ class CommandManager(object):
                         command_type = "exclamation_first"
         
         if command != "":
-            print(command)
-            print(command_type)
-            self.organize_commands()
+            if command in self.command_list:
+                module_name = self.command_list[command]
+                exec_string = "{0}.{1}('{2}','{3}',{4})".format(module_name, command, sender,
+                                                              command_type, line)
+                exec(exec_string)
             
     def organize_commands(self):
         '''Collects commands from the various plugins, organizes them into a dict.'''
         for module in plugins.__all__:
-            exec_string = "self.command_list['{0}'] = [name for name, data in getmembers({0}) if isfunction(data)]".format(module)
-            exec(exec_string)
-        print(self.command_list)
+            module_command_list = []
+            exec("module_command_list += [name for name, data in getmembers({0})"
+                 "if isfunction(data)]".format(module))
+            for module_command in module_command_list:
+                exec("self.command_list['{0}'] = '{1}'".format(module_command, module))
             
     def nickserv_reply(self, line):
         pass
