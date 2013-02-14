@@ -18,8 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-def join():
+def join(sender, command_type, line):
+    print(sender, command_type, line)
     print("joined!")
 
-def part():
+def part(sender, command_type, line):
+    print(sender, command_type, line)
     print("parted!")
