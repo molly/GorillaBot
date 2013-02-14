@@ -83,8 +83,8 @@ class CommandManager(object):
         if command != "":
             if command in self.command_list:
                 module_name = self.command_list[command]
-                exec_string = "{0}.{1}('{2}','{3}',{4})".format(module_name, command, sender,
-                                                              command_type, line)
+                exec_string = "{0}.{1}({2},'{3}','{4}',{5})".format(self.connection, module_name, command, 
+                                                              sender, command_type, line)
                 exec(exec_string)
             
     def organize_commands(self):
