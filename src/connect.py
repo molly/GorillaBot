@@ -198,6 +198,10 @@ class Connection(object):
             
             self.caffeinate()
             
+    def me(self, message, private=False):
+        '''Say an action to the channel.'''
+        self.say("\x01ACTION {0}\x01".format(message), private)
+            
     def nickserv_identify(self):
         '''Prompt the user to enter their password, then identify to NickServ.'''
         password = getpass("NickServ password: ")
@@ -223,6 +227,14 @@ class Connection(object):
         for message in self._split(message, 400):
             message = "PRIVMSG {0} :{1}".format(target, message)
             self._send(message, hide)
+            
+    def say(self, message, private=False):
+        '''Say something to the channel or in a private message to the user
+        that sent a command.'''
+        if private:
+            self..private_message(self.sender_nick, message)            
+        else:
+            self.private_message(self.chan, message)
         
     def shut_down(self):
         '''Gracefully shuts down.'''
