@@ -4,7 +4,7 @@ GorillaBot was designed to be easily extensible. Adding commands is relatively s
 
 1. Either edit an existing `.py` file in the `/plugins` directory, or create a new file.
 2. If you choose to add a new file, append the file name (sans the file extension) to the `__all__` variable in the `__init__.py` file in `/plugins`.
-3. Create the command function in the following format: `def [commandname](sender, command_type, line).
+3. Create the command function in the following format: `def [commandname](sender, command_type, line)`.
 
 ##Notes
 
