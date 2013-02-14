@@ -1,0 +1,6 @@
+#Adding plugins
+
+GorillaBot was designed to be easily extensible. Adding commands is relatively simple:
+
+1. Either edit an existing `.py` file in the `/plugins` directory, or create a new file.
+    1.1 If you choose to add a new file, append the file name (sans the file extensions) to the `__all__` variable in the `__init__.py` file in `/plugins`.
