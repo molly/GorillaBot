@@ -18,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from inspect import getmembers, isfunction
 import re
 import plugins
 from plugins import *
@@ -86,7 +87,7 @@ class CommandManager(object):
     def organize_commands(self):
         '''Collects commands from the various plugins, organizes them into a dict.'''
         for module in plugins.__all__:
-            exec_string = "self.command_list['{0}'] = {0}.__all__".format(module)
+            exec_string = "self.command_list['{0}'] = [name for name, data in getmembers({0}) if isfunction(data)]".format(module)
             exec(exec_string)
         print(self.command_list)
             
