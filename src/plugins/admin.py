@@ -23,6 +23,7 @@ def _is_admin(connection, sender, chan):
         return True
     else:
         connection.say("Ask a bot admin to perform this for you.", chan, sender)
+        return False
 
 def join(connection, sender, chan, command_type, line):
     if _is_admin(connection, sender, chan):
