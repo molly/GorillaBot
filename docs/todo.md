@@ -21,6 +21,7 @@
 * Allow command aliases
 * Allow bot admins to be added and removed while the bot is live
     * Store in config file?
+* Add regex matching to trigger commands (be sure to throttle)
 
 ##Plugins
 ###Wikipedia-related
