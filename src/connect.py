@@ -38,6 +38,7 @@ class Connection(object):
         self._ident = ident
         self._realname = realname
         self._chans = chans
+        self.admins = ["GorillaWarfare"] # To be changed later
         self.logger = logging.getLogger("GorillaBot")
         
         self._last_sent = 0
