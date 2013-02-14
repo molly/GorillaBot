@@ -46,8 +46,8 @@ class CommandManager(object):
             sender = r.group(1)
         line.pop(0)
         private = False
-        raw_chan = line.pop(0)
-        if raw_chan == self._bot_nick:
+        chan = line.pop(0)
+        if chan == self._bot_nick:
             private = True
         line[0] = line[0][1:]
         # line is now a list containing just the message contents.
@@ -83,8 +83,8 @@ class CommandManager(object):
         if command != "":
             if command in self.command_list:
                 module_name = self.command_list[command]
-                exec_string = "{0}.{1}({2},'{3}','{4}',{5})".format(self.connection, module_name, command, 
-                                                              sender, command_type, line)
+                exec_string = "{0}.{1}({2},'{3}','{4}','{5}',{6})".format(self.connection, module_name, command, 
+                                                              sender, chan, command_type, line)
                 exec(exec_string)
             
     def organize_commands(self):
