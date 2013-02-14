@@ -18,10 +18,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-def join(connection, sender, command_type, line):
-    print(sender, command_type, line)
-    print("joined!")
+def _is_admin(connection, sender, chan):
+    if sender in connection.admins:
+        return True
+    else:
+        connection.say("Ask a bot admin to perform this for you.", chan, sender)
 
-def part(connection, sender, command_type, line):
-    print(sender, command_type, line)
-    print("parted!")
+def join(connection, sender, chan, command_type, line):
+    if _is_admin(connection, sender, chan):
+        print("joined!")
+
+def part(connection, sender, chan, command_type, line):
+    if _is_admin(connection, sender, chan):
+        print("parted!")
