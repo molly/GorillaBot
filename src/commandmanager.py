@@ -19,15 +19,19 @@
 # SOFTWARE.
 
 import re
+import plugins
+from plugins import *
 
 __all__ = ["CommandManager"]
 
 class CommandManager(object):
     
     def __init__(self, bot, connection):
+        '''Determines if a message is in fact a command, stores a list of all valid commands.'''
         self._bot = bot
         self._connection = connection
         self._bot_nick = connection._nick
+        self.command_list = {}
         
     def check_command(self, line):
         '''Messages of type PRIVMSG will be passed through this function to check if they are
@@ -77,7 +81,15 @@ class CommandManager(object):
         if command != "":
             print(command)
             print(command_type)
-
+            self.organize_commands()
+            
+    def organize_commands(self):
+        '''Collects commands from the various plugins, organizes them into a dict.'''
+        for module in plugins.__all__:
+            exec_string = "self.command_list['{0}'] = {0}.__all__".format(module)
+            exec(exec_string)
+        print(self.command_list)
+            
     def nickserv_reply(self, line):
         pass
     

@@ -24,11 +24,11 @@ from config import Configure
 from connect import Connection
 from commandmanager import CommandManager
 
+sys.path += ['plugins'] 
+
 class Bot(object):
     '''The Bot class is the core of the bot. It creates the connection and the responder. All messages
     that are received come through here, and are dispatched accordingly.'''
-    
-    sys.path += ['plugins']
     
     def __init__(self, path, default, quiet):
         '''Constructs the bot object. Takes path, defualt, and quiet arguments from the command

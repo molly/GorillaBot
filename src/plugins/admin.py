@@ -18,4 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = ["admin"]
+__all__ = ["join", "part"]
+
+def join():
+    print("joined!")
+
+def part():
+    print("parted!")
