@@ -19,6 +19,8 @@
 * Only show !help and !command-type commands if they're at the beginning of the sentence
 * Allow part and quit commands to display a message as well
 * Allow command aliases
+* Allow bot admins to be added and removed while the bot is live
+    * Store in config file?
 
 ##Plugins
 ###Wikipedia-related
