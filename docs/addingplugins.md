@@ -24,15 +24,15 @@ This is obviously a bit unweildy, so the CommandManager formats the message befo
 `sender` is the name of the user, stripped of the cloak and other unnecessary characters. From the example above, the CommandManager would assign `sender` as `GorillaWarfare`.
 
 ####Command type
-`command_type` is the way in which the bot received the command. As discussed in the [command documentation](https://github.com/mollywhite/GorillaBot/blob/development/docs/commands.md), the bot can receive messages in any of three ways. The bot actually records how it receives the message as one of four types:
+`command_type` is the way in which the bot received the command. As discussed in the [command documentation](https://github.com/mollywhite/GorillaBot/blob/development/docs/commands.md), the bot can receive messages in any of three ways. The bot records the type of command in case you wish to restrict which type triggers a command. The bot actually records how it receives the message as one of _four_ types:
 
-`private`: The commanding user sent the command to the bot via a private message (using, for example, `\msg GorillaBot command`).
+1. `private`: The commanding user sent the command to the bot via a private message (using, for example, `\msg GorillaBot command`).
 
-`direct`: The commanding user addressed the command to the bot in a public channel by using the bot's nick (for example, `GorillaBot: command`).
+2. `direct`: The commanding user addressed the command to the bot in a public channel by using the bot's nick (for example, `GorillaBot: command`).
 
-`exclamation`: The commanding user preceded a command in a public channel with an exclamation point _anywhere in the message_ (for example, ``You should perform !command``).
+3. `exclamation`: The commanding user preceded a command in a public channel with an exclamation point _anywhere in the message_ (for example, ``You should perform !command``).
 
-`exclamation_first`: The commanding user preceded a command in a public channel with an exclamation point, and this command was the first word in the message. The example above would not be categorized as this type because `!command` was not the first word in the message. A message like `!command should be performed` would, however, be categorized as this type.
+4. `exclamation_first`: The commanding user preceded a command in a public channel with an exclamation point, and this command was the first word in the message. The example above would not be categorized as this type because `!command` was not the first word in the message. A message like `!command should be performed` would, however, be categorized as this type.
 
 ####Line
 The `line` argument is the rest of the message: the trailing bit, but not the prefix, command, or parameters. From the example above, `line` would be `Hello world!`. You'll notice that it is not `:Hello world!` -- the preceding colon is also stripped from the message. Also keep in mind that if a user formats a command as `!link [[this article]]`, `line` consists of `!link [[this article]]`, not just `[[this article]]`. Removal of the command from the line and identification of any specific command parameters must be performed in the command body.
