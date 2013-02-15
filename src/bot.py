@@ -65,7 +65,7 @@ class Bot(object):
             
         # Identifies messages from NickServ, sends to CommandManager
         elif "NickServ" in line[0]:
-            self.GorillaCommander.nickserv_reply(line)
+            self.GorillaCommander.nickserv_parse(line)
             
         # Identifies server message codes, sends to CommandManager
         elif len(line[1])==3:
