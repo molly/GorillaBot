@@ -172,7 +172,13 @@ class Connection(object):
     def dispatch(self, line):
         '''Process lines received.'''
         self._last_received = time()
-        self._bot.dispatch(line)         
+        self._bot.dispatch(line)      
+        
+    def join(self, chans):   
+        '''Join a list of channels.'''
+        for chan in chans:
+            self.logger.info("Joining {}.".format(chan))
+            self._send("JOIN {}".format(chan))
     
     def loop(self):
         '''Main connection loop.'''
@@ -202,10 +208,11 @@ class Connection(object):
         password = getpass("NickServ password: ")
         self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, password), True)
 
-    def part(self, chan, message=None):
+    def part(self, chans):
         '''Part one or more IRC channels.'''
-        self.logger.info("Parting from {}.".format(chan))
-        self._send("PART {}".format(chan))
+        for chan in chans:
+            self.logger.info("Parting from {}.".format(chan))
+            self._send("PART {}".format(chan))
             
     def ping(self):
         '''Ping the host server.'''
