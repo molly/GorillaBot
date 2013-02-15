@@ -57,7 +57,7 @@ class Connection(object):
     def __str__(self):
         '''Return somewhat prettier representation of Connection.'''
         rep = "{0} is joining {1} on {2} on port {3}."
-        return rep.format(self.nick, self.channel, self.host, self.port)
+        return rep.format(self.nick, self.chans, self.host, self.port)
     
     def _close(self):
         '''End connection with IRC server, close socket.'''
@@ -82,15 +82,6 @@ class Connection(object):
             for channel in self._chans:
                 self._send("JOIN {}".format(channel))
             self.loop()
-        
-    def _dispatch(self, line):
-        '''Process lines received.'''
-        self._last_received = time()
-        self._bot.dispatch(line)
-              
-    def _quit(self):
-        '''Disconnect from the server.'''
-        self._send("QUIT")
             
     def _receive(self, size=4096):
         '''Receive messages from the IRC server.'''
@@ -178,6 +169,10 @@ class Connection(object):
                 self.logger.info("No ping response in 60 seconds.")
                 self.shut_down()
             
+    def dispatch(self, line):
+        '''Process lines received.'''
+        self._last_received = time()
+        self._bot.dispatch(line)         
     
     def loop(self):
         '''Main connection loop.'''
@@ -192,7 +187,7 @@ class Connection(object):
             buffer = list_of_lines.pop()
             for line in list_of_lines:
                 line = line.strip().split()
-                self._dispatch(line)
+                self.dispatch(line)
             if not self._fine_and_dandy:
                 break
             
@@ -209,6 +204,7 @@ class Connection(object):
 
     def part(self, chan, message=None):
         '''Part one or more IRC channels.'''
+        self.logger.info("Parting from {}.".format(chan))
         self._send("PART {}".format(chan))
             
     def ping(self):
@@ -224,9 +220,13 @@ class Connection(object):
         
     def private_message(self, target, message, hide=False):
         '''Send a private message to a target on the server.'''
-        for message in self._split(message, 400):
-            message = "PRIVMSG {0} :{1}".format(target, message)
-            self._send(message, hide)
+        for msg in self._split(message, 400):
+            privmsg = "PRIVMSG {0} :{1}".format(target, msg)
+            self._send(privmsg, hide)
+              
+    def quit(self):
+        '''Disconnect from the server.'''
+        self._send("QUIT")
             
     def say(self, message, channel, sender=None, private=False):
         '''Say something to the channel or in a private message to the user
@@ -236,11 +236,12 @@ class Connection(object):
                 self.private_message(sender, message)  
             else:
                 raise ValueError
-                self.logger.exception("Incorrectly-formatted call to 'say'")
+                self.logger.exception("Incorrectly-formatted call to 'say'.")
         else:
             self.private_message(channel, message)
         
     def shut_down(self):
         '''Gracefully shuts down.'''
-        self._quit()
+        self.logger.info("Shutting down.")
+        self.quit()
         self._close()

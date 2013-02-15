@@ -138,7 +138,7 @@ class Configure(object):
             if self._quiet:
                 self.logger.setLevel(logging.WARNING)
             else:
-                self.logger.setLevel(logging.INFO)
+                self.logger.setLevel(logging.DEBUG)
             
             #Create the file logger
             if log_type != "console":   

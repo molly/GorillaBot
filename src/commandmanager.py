@@ -19,6 +19,7 @@
 # SOFTWARE.
 
 from inspect import getmembers, isfunction
+import logging
 import re
 import plugins
 from plugins import *
@@ -32,6 +33,7 @@ class CommandManager(object):
         self._bot = bot
         self._connection = connection
         self._bot_nick = connection._nick
+        self.logger = logging.getLogger("GorillaBot")
         self.command_list = {}
         self.organize_commands()
         
@@ -74,6 +76,7 @@ class CommandManager(object):
         #Check for a message preceded by an exclamation point
         else:
             for idx, word in enumerate(line):
+                self.logger.debug(word)
                 if word[0] == "!":
                     command = word[1:]
                     command_type = "exclamation"
@@ -83,7 +86,7 @@ class CommandManager(object):
         if command != "":
             if command in self.command_list:
                 module_name = self.command_list[command]
-                exec_string = "{0}.{1}({2},'{3}','{4}','{5}',{6})".format(module_name, command, self.connection,
+                exec_string = "{0}.{1}({2},'{3}','{4}','{5}',{6})".format(module_name, command, self._connection,
                                                               sender, chan, command_type, line)
                 exec(exec_string)
             
