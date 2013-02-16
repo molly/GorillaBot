@@ -177,8 +177,10 @@ class Connection(object):
     def join(self, chans):   
         '''Join a list of channels.'''
         for chan in chans:
-            self.logger.info("Joining {}.".format(chan))
-            self._send("JOIN {}".format(chan))
+            if chan[0] == "#":
+                self.logger.info("Joining {}.".format(chan))
+                self._send("JOIN {}".format(chan))
+                self._chans.append(chan)
     
     def loop(self):
         '''Main connection loop.'''
@@ -211,8 +213,10 @@ class Connection(object):
     def part(self, chans):
         '''Part one or more IRC channels.'''
         for chan in chans:
-            self.logger.info("Parting from {}.".format(chan))
-            self._send("PART {}".format(chan))
+            if chan[0] == "#" and chan in self._chans:
+                self.logger.info("Parting from {}.".format(chan))
+                self._send("PART {}".format(chan))
+                self._chans.remove(chan)
             
     def ping(self):
         '''Ping the host server.'''

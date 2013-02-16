@@ -85,7 +85,7 @@ class CommandManager(object):
         if command != "":
             if command in self.command_list:
                 module_name = self.command_list[command]
-                exec_string = "{0}.{1}({2},'{3}','{4}','{5}',{6})".format(module_name, command, self._connection,
+                exec_string = "{0}.{1}(self._connection,'{2}','{3}','{4}',{5})".format(module_name, command,
                                                               sender, chan, command_type, line)
                 exec(exec_string)
             
