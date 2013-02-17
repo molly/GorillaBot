@@ -38,7 +38,7 @@ class Configure(object):
         self._quiet = quiet
         self._options = ("Host", "Port", "Nick", "Ident", "Realname", "Chans")
         
-        self._setup_logging("console")        
+        self._setup_logging("all")        
         self._load()
         
     def _prompt(self, question, default=None):
