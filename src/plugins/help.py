@@ -17,3 +17,20 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
+def commands(connection, sender, chan, command_type, line):
+    '''Display a list of commands the bot recognizes.'''
+    if command_type == "private":
+        commands = ", ".join(connection._commands)
+        connection.say("I know the following commands: {}. For further documentation, see "
+                 "http://git.io/pNQS6g".format(commands), sender)
+    else:
+        connection.say("Documentation of my commands is available at "
+                 "http://git.io/pNQS6g", chan)
+
+def help(connection, sender, chan, command_type, line):
+    '''Display a help message.'''
+    print(sender)
+    connection.say("Hello, I'm your friendly neighborhood {}! I perform a number of commands"
+             " that you can view by typing !commands in a private message, or going to "
+             "http://git.io/pNQS6g.".format(connection._nick), chan)

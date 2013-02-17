@@ -3,20 +3,25 @@
 ##General
 * Reconnect after the bot is disconnected from the server or the socket is closed
   * Failsafe/limit so that if something goes wrong, the bot doesn't repeatedly disconnect and reconnect
-* Kill switch in case something does go wrong with the bot
-* Allow some modules to be loaded on request
+* ~~Kill switch in case something does go wrong with the bot~~
+* ~~Allow some modules to be loaded on request~~
   * Learn new commands?
 * Gracefully exit on `KeyboardInterrupt`
 * `VERSION` reply
 * Check security
 * Join channels after identifying to NickServ (to avoid issues with invite-only channels that depend on the cloak)
 * Send initialize commands as a response to 004, not immediately
-* Hook commands?
+* ~~Hook commands?~~
 * Add API section to config file
-* Move string lists, etc. to a data file
-* Modularize commands
+* ~~Move string lists, etc. to a data file~~
+* ~~Modularize commands~~
 * Throttle some commands (!help, !command, etc.)
-* Only show !help and !command-type commands if they're at the beginning of the sentence
+* ~~Only show !help and !command-type commands if they're at the beginning of the sentence~~
+* Allow part and quit commands to display a message as well
+* Allow command aliases
+* ~~Allow bot admins to be added and removed while the bot is live~~
+    * Store in config file?
+* Add regex matching to trigger commands (be sure to throttle)
 
 ##Plugins
 ###Wikipedia-related

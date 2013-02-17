@@ -21,6 +21,7 @@
 import os
 import configparser
 import logging
+from logging import handlers
 from time import strftime
 
 __all__ = ["Configure"]
@@ -29,11 +30,12 @@ class Configure(object):
     '''Creates, modifies, or opens a configuration file.'''
     
     def __init__(self, root, default, quiet):
+        '''Constructs the configure object. Gets the path for the configuration file, assigns the
+        logging type. Tries to load the configuration file.'''
         self._config = configparser.ConfigParser()
         self._config_path = os.path.join(root, "config.cfg")
         self._default = default
         self._quiet = quiet
-        
         self._options = ("Host", "Port", "Nick", "Ident", "Realname", "Chans")
         
         self._setup_logging("console")        
@@ -136,8 +138,9 @@ class Configure(object):
             if self._quiet:
                 self.logger.setLevel(logging.WARNING)
             else:
-                self.logger.setLevel(logging.INFO)
+                self.logger.setLevel(logging.DEBUG)
             
+            #Create the file logger
             if log_type != "console":   
                 file_formatter = logging.Formatter("%(asctime)s - %(filename)s - %(levelname)s"
                                                    ": %(message)s")
@@ -145,16 +148,18 @@ class Configure(object):
                     os.mkdir(os.curdir + "/logs")
                     
                 logname = "logs/{0}.log".format(strftime("%H%M_%m%d%y"))
+                
                 # Files are saved in the logs sub-directory as HHMM_mmddyy.log
                 # If the session exceeds 6 hours, each file will have .# appended to
                 # the end, up to five times. After these 30 hours, the logs will
                 #begin to overwrite.
-                filehandler = logging.handlers.TimedRotatingFileHandler(logname,'h',
-                                                                        6,5,None,
-                                                                        False,False)      
+                filehandler = logging.handlers.TimedRotatingFileHandler(logname,'h',6,5,None,False,False)      
                 filehandler.setFormatter(file_formatter)
+                filehandler.setLevel(logging.DEBUG)
                 self.logger.addHandler(filehandler)
-                
+                self.logger.info("File logger created; saving logs to {}.".format(logname))
+            
+            # Create the console logger    
             if log_type != "file":
                 console_formatter = logging.Formatter("%(asctime)s - %(levelname)s"
                                                       ": %(message)s", datefmt="%I:%M:%S %p")
@@ -163,10 +168,6 @@ class Configure(object):
                 self.logger.addHandler(consolehandler)
                 
                 self.logger.info("Console logger created.")
-                
-            if log_type != "console":
-                self.logger.info("File logger created; "
-                                 "saving logs to {}.".format(logname))
                 
     def _verify(self):
         '''Verify that a configuration file is valid.'''
@@ -179,6 +180,7 @@ class Configure(object):
                                  " Reconfiguring.")
                 self._reconfigure()
                 break
+            
         self.logger.info("Valid configuration file found.")
         reconfigure = ""
         if not self._default:

@@ -18,20 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from random import choice
+'''All commands should be included in the __all__ list so that they will be recognized by the
+command manager. All commands need to be of the format def command(sender, command_type, line)
+where line is the message text INCLUDING the command and, if addressed directly to the bot, the
+bot name.'''
 
-__all__ = ["response_list"]
-
-class response_list(object):
-    def __init__(self):
-        self._list_of_hugs = ["attaches to {}'s leg",
-                              "glomps {}",
-                              "flying tackle-hugs {}"]
-    
-    def hug(self, from_user, to_user, is_self=False):
-        '''Returns a hug message from the hug list, or hugs the user back.'''
-        if is_self:
-            return "hugs {} back".format(from_user)
-        else:
-            return choice(self._list_of_hugs).format(to_user)
-            
+__all__ = ["actions", "admin", "help", "link"]
