@@ -85,7 +85,7 @@ class CommandManager(object):
         if command != "":
             if command in self.command_list:
                 module_name = self.command_list[command]
-                exec_string = "{0}.{1}(self._connection,'{2}','{3}','{4}',{5})".format(module_name, command,
+                exec_string = "{0}(self._connection,'{1}','{2}','{3}',{4})".format(module_name,
                                                               sender, chan, command_type, line)
                 exec(exec_string)
             
@@ -99,7 +99,7 @@ class CommandManager(object):
                 
                 # Prevents private functions from being displayed or executed from IRC
                 if module_command[0] != "_":
-                    exec("self.command_list['{0}'] = '{1}'".format(module_command, module))
+                    exec("self.command_list['{0}'] = '{1}.{0}'".format(module_command, module))
             
     def nickserv_parse(self, line):
         '''Parses a message from NickServ and responds accordingly.'''
@@ -107,6 +107,7 @@ class CommandManager(object):
             self.logger.info("NickServ has requested identification.")
             self._connection.nickserv_identify()
         elif "identified" in line:
+            self._connection._password = self._connection._tentative_password
             self.logger.info("You have successfully identified as {}.".format(line[2]))
         elif ":Invalid" in line:
             self.logger.info("You've entered an incorrect password. Please re-enter.")
@@ -125,7 +126,7 @@ class CommandManager(object):
             # TODO: Change response to something more productive than shutting down.
             self.logger.error("Nickname is already in use. Closing connection.")
             self._connection.quit()
-            self.connection.shut_down()
+            self._connection.shut_down()
         elif numcode == "442":
             # ERR_NOTONCHANNEL - You're not in that channel
             self.logger.info("You tried to part from {}, but you are not in that "
