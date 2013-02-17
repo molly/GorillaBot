@@ -38,6 +38,7 @@ class Connection(object):
         self._ident = ident
         self._realname = realname
         self._chans = chans
+        self._password = None
         self.admins = ["GorillaWarfare"] # To be changed later
         self.logger = logging.getLogger("GorillaBot")
         
@@ -45,22 +46,27 @@ class Connection(object):
         self._last_ping_sent = time()
         self._last_received = time()
         
-        self._fine_and_dandy = True # Status of the socket connection
+        self._running = False
+        self._reconnect_tries = 0 # Number of times the bot has auto-reconnected
+        self._try_reconnect = True
         
     def __repr__(self):
         '''Return the not-so-pretty representation of Connection.'''
         rep = "Connection: host={0!r}, port={1!r}, nick={2!r}, ident={3!r}, "
-        "realname={4!r}, password={5!r}, channel={6!r}"
-        return rep.format(self.host, self.port, self.nick, self.ident, self.realname,
-                          self.password, self.chan)
+        "realname={4!r}, channel={5!r}"
+        return rep.format(self._host, self._port, self._nick, self._ident, self._realname,
+                          self._chans)
     
     def __str__(self):
         '''Return somewhat prettier representation of Connection.'''
         rep = "{0} is joining {1} on {2} on port {3}."
-        return rep.format(self.nick, self.chans, self.host, self.port)
+        return rep.format(self._nick, self._chans, self._host, self._port)
     
-    def _close(self):
+    def _close(self, retry = False):
         '''End connection with IRC server, close socket.'''
+        self._running = False
+        if not retry:
+            self._try_reconnect = False
         self.logger.info("Closing.")
         try:
             self._socket.shutdown(socket.SHUT_RDWR) # Shut down before close
@@ -73,33 +79,45 @@ class Connection(object):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             self._socket.connect((self._host, self._port))
-        except:
+        except Exception:
             self.logger.exception("Unable to connect to IRC server. Check your Internet "
                                   "connection.")
         else:
-            self._send("NICK {0}".format(self.nick))
-            self._send("USER {0} {1} * :{2}".format(self.ident, self.host, self.realname))
+            self._send("NICK {0}".format(self._nick))
+            self._send("USER {0} {1} * :{2}".format(self._ident, self._host, self._realname))
             for channel in self._chans:
                 self._send("JOIN {}".format(channel))
             self.loop()
             
     def _receive(self, size=4096):
         '''Receive messages from the IRC server.'''
+        message = ''
         message = self._socket.recv(size)
         if not message:
             raise socket.error(0, "Socket connection broken.")
-            self._fine_and_dandy = False
+            self.shut_down(True)
+            self._running = False
+            self.reconnect()
         return message
+    
+    def _reconnect(self):
+        if self._reconnect_tries < 5 and self._try_reconnect == True:
+            self.logger.debug("Attempting to reconnect ({} earlier tries)."
+                              .format(self._reconnect_tries))
+            sleep(5)
+            self._connect()
+            self._reconnect_tries += 1
         
     def _send(self, message, hide=False):
         '''Send messages to the IRC server.'''
-        time_since_send = time()                                                                                                                                                                                                                                                                                                                                                                     - self._last_sent
+        time_since_send = time() - self._last_sent
         if time_since_send < 1:
             sleep(1-time_since_send)
         try:
             self._socket.sendall(bytes((message + "\r\n"), 'UTF-8'))
         except socket.error:
-            self._fine_and_dandy = False
+            self._running = False
+            self._reconnect()
             self.logger.exception("Message " + message + " failed to send.")
         else:
             if not hide:
@@ -121,53 +139,19 @@ class Connection(object):
                 while words and len(" ".join(msg + [words[0]])) <= maxlen:
                     msg.append(words.pop(0))
                 yield " ".join(msg)          
-      
-    @property
-    def host(self):
-        '''Hostname of the server (e.g., "irc.freenode.net")'''
-        return self._host
-    
-    @property
-    def port(self):
-        '''Port on which we are connecting (e.g., 6667)'''
-        return self._port
-    
-    @property
-    def nick(self):
-        '''Nickname of the bot (e.g., GorillaBot)'''
-        return self._nick
-    
-    @property
-    def ident(self):
-        '''Ident on the server (e.g., GorillaBot)'''
-        return self._ident
-    
-    @property
-    def realname(self):
-        '''Real name (as would be displayed in WHOIS, e.g. GorillaBot)'''
-        return self._realname
-    
-    @property
-    def password(self):
-        '''Password for identifying to services'''
-        return self._password
-    
-    @property
-    def chans(self):
-        '''List of channels to join (e.g., "#wikipedia-en")'''
-        return self._chans
     
     def caffeinate(self):
         '''Keep the connection open.'''
         now = time()
+        print(now)
+        print(now-self._last_received)
         if now - self._last_received > 150:
             if self._last_ping_sent < self._last_received:
                 self.logger.info("Pinging server.")
                 self.ping()
-                self._last_ping_sent = now
             elif now - self._last_ping_sent > 60:
                 self.logger.info("No ping response in 60 seconds.")
-                self.shut_down()
+                self.shut_down(True)
             
     def dispatch(self, line):
         '''Process lines received.'''
@@ -185,18 +169,21 @@ class Connection(object):
     def loop(self):
         '''Main connection loop.'''
         buffer = ''
+        self._running = True
         while True:
             try:
                 buffer += str(self._receive())
             except socket.error:
-                self._fine_and_dandy = False
+                self._running = False
+                self._reconnect()
                 break
             list_of_lines = buffer.split("\\r\\n")
             buffer = list_of_lines.pop()
             for line in list_of_lines:
                 line = line.strip().split()
                 self.dispatch(line)
-            if not self._fine_and_dandy:
+            if not self._running:
+                self._reconnect()
                 break
             
             self.caffeinate()
@@ -207,8 +194,13 @@ class Connection(object):
             
     def nickserv_identify(self):
         '''Prompt the user to enter their password, then identify to NickServ.'''
-        password = getpass("NickServ password: ")
-        self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, password), True)
+        if not self._password:
+            self._tentative_password = getpass("NickServ password: ")
+            self.private_message("NickServ", "IDENTIFY {0} {1}"
+                                 .format(self._nick, self._tentative_password), True)
+        else:
+            self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, self._password),
+                                 True)
 
     def part(self, chans):
         '''Part one or more IRC channels.'''
@@ -222,7 +214,7 @@ class Connection(object):
         '''Ping the host server.'''
         self._last_ping_sent = time()
         self.logger.debug("Pinging host.")
-        self._send("PING {}".format(self.host), True)
+        self._send("PING {}".format(self._host), True)
         
     def pong(self, server):
         '''Sends a pong reply.'''
@@ -251,8 +243,8 @@ class Connection(object):
         else:
             self.private_message(channel, message)
         
-    def shut_down(self):
+    def shut_down(self, retry=False):
         '''Gracefully shuts down.'''
         self.logger.info("Shutting down.")
         self.quit()
-        self._close()
+        self._close(retry)

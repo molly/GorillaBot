@@ -32,6 +32,7 @@ def addadmin(connection, sender, chan, command_type, line):
         line.pop(0)
         for user in line:
             connection.admins.append(user)
+            connection.say("{} is now a bot admin.".format(user), chan)
             
 def adminlist(connection, sender, chan, command_type, line):
     '''Prints a list of bot administrators.'''
@@ -59,6 +60,15 @@ def part(connection, sender, chan, command_type, line):
         line.pop(0)
         connection.part(line)
         
+def quit(connection, sender, chan, command_type, line):
+    '''Quits IRC, shuts down the bot.'''
+    if _is_admin(connection, sender, chan):
+        connection.shut_down()
+
+def shutdown(connection, sender, chan, command_type, line):
+    '''Alias for quit'''
+    quit(connection, sender, chan, command_type, line)
+
 def removeadmin(connection, sender, chan, command_type, line):
     '''Removes an admin from the list of bot admins.'''
     if (_is_admin(connection, sender, chan) and command_type != "exclamation"):
