@@ -23,4 +23,4 @@ command manager. All commands need to be of the format def command(sender, comma
 where line is the message text INCLUDING the command and, if addressed directly to the bot, the
 bot name.'''
 
-__all__ = ["actions", "admin", "help"]
+__all__ = ["actions", "admin", "help", "link"]
