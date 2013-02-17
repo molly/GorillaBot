@@ -8,7 +8,7 @@ __License:__ [MIT](http://opensource.org/licenses/MIT)<br/>
 __Status:__ In development
 
 ## Installation
-_Please note that GorillaBot is still in development, and any code you download may be incomplete or non-functional. Once I reach a stable release, the master branch will contain the release version and a development branch will contain additional, in-progress code._
+_Download code from the master branch. Code in the development branch is often incomplete._
 
 1. Run `python3 Commander.py` from the source directory. This will step you through creating a configuration file if you don't have one already. If you already have a configuration file, it will verify its validity and check if you'd like to change it.
 2. Enter any information in the command line prompts.
