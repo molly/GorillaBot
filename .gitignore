@@ -35,4 +35,5 @@ nosetests.xml
 .pydevproject
 
 *.cfg
+*.log
 src/.DS_Store
