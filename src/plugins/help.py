@@ -18,9 +18,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-'''All commands should be included in the __all__ list so that they will be recognized by the
-command manager. All commands need to be of the format def command(sender, command_type, line)
-where line is the message text INCLUDING the command and, if addressed directly to the bot, the
-bot name.'''
+def commands(connection, sender, chan, command_type, line):
+    '''Display a list of commands the bot recognizes.'''
+    if command_type == "private":
+        commands = ", ".join(connection._commands)
+        connection.say("I know the following commands: {}. For further documentation, see "
+                 "http://git.io/pNQS6g".format(commands), sender)
+    else:
+        connection.say("Documentation of my commands is available at "
+                 "http://git.io/pNQS6g", chan)
 
-__all__ = ["actions", "admin", "help"]
+def help(connection, sender, chan, command_type, line):
+    '''Display a help message.'''
+    print(sender)
+    connection.say("Hello, I'm your friendly neighborhood {}! I perform a number of commands"
+             " that you can view by typing !commands in a private message, or going to "
+             "http://git.io/pNQS6g.".format(connection._nick), chan)

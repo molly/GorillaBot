@@ -39,6 +39,7 @@ class Connection(object):
         self._realname = realname
         self._chans = chans
         self._password = None
+        self._commands = None
         self.admins = ["GorillaWarfare"] # To be changed later
         self.logger = logging.getLogger("GorillaBot")
         

@@ -42,5 +42,9 @@ def flirt(connection, sender, chan, command_type, line):
     pickups = open('plugins/responses/pickuplines.txt')
     lines = pickups.read().splitlines()
     raw_line = choice(lines)
-    flirt_line = re.sub('\{user\}', '{0}', raw_line)
-    connection.say(flirt_line.format(line[0]), chan)
+    if len(line) == 0:
+        flirt_line = re.sub('\{user\}:\s', '', raw_line)
+        connection.say(flirt_line, chan)
+    else:
+        flirt_line = re.sub('\{user\}', '{0}', raw_line)
+        connection.say(flirt_line.format(line[0]), chan)
