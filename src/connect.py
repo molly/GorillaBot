@@ -92,7 +92,6 @@ class Connection(object):
             
     def _receive(self, size=4096):
         '''Receive messages from the IRC server.'''
-        message = ''
         message = self._socket.recv(size)
         if not message:
             raise socket.error(0, "Socket connection broken.")
@@ -144,8 +143,6 @@ class Connection(object):
     def caffeinate(self):
         '''Keep the connection open.'''
         now = time()
-        print(now)
-        print(now-self._last_received)
         if now - self._last_received > 150:
             if self._last_ping_sent < self._last_received:
                 self.logger.info("Pinging server.")
