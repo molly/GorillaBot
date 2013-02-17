@@ -100,6 +100,7 @@ class CommandManager(object):
                 # Prevents private functions from being displayed or executed from IRC
                 if module_command[0] != "_":
                     exec("self.command_list['{0}'] = '{1}.{0}'".format(module_command, module))
+        self._connection._commands = self.command_list
             
     def nickserv_parse(self, line):
         '''Parses a message from NickServ and responds accordingly.'''
