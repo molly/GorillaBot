@@ -45,8 +45,7 @@ class Bot(object):
                                             settings["nick"], settings["ident"],
                                             settings["realname"], settings["chans"])
         self.GorillaCommander = CommandManager(self, self.GorillaConnection)
-        #self.GorillaConnection._connect()
-        self.GorillaCommander.check_command([":CalebDelnay!calebd@localhost", "PRIVMSG", "#mychan", ":GorillaBot,", "!link", "{{Barack", "Obama}}"])
+        self.GorillaConnection._connect()
         
     def dispatch(self, line):
         '''Determines the type of message received:
