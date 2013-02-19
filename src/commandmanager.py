@@ -40,55 +40,67 @@ class CommandManager(object):
     def check_command(self, line):
         '''Messages of type PRIVMSG will be passed through this function to check if they are
         commands.'''
+        # Separates the line into its four parts
+        line_string = " ".join(line)
+        parser = re.compile("^(?::(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
+        r = re.search(parser, line_string)
+        irc_prefix = r.group(1)
+        irc_command = r.group(2)
+        irc_params = r.group(3)
+        irc_trailing = r.group(4)
         
-        # Format message more nicely
-        raw_nick = line.pop(0)
-        r = re.search(":(.*?)!", raw_nick)
-        if r:
-            sender = r.group(1)
-        line.pop(0)
-        private = False
-        chan = line.pop(0)
-        if chan == self._bot_nick:
-            private = True
-        line[0] = line[0][1:]
-        # line is now a list containing just the message contents.
-        
-        # Check if a private message contains a command
-        # First looks for words beginning with an exclamation point. If none are found, it assumes
-        #     the first word of the message is the command.
-        command = ""
-        command_type = ""
-        if private:
-            for word in line:
-                if word[0] == "!":
-                    command = word[1:]
-            if command == "":
-                command = line[0]
-            command_type = "private"
-        # Check for a message directly addressed to the bot
-        elif self._bot_nick in line[0]:
-            if line[1][0] == "!":
-                command = line[1][1:]
+        # Verify a message was sent
+        if irc_trailing != None:
+            # Check if the command was sent via private message to the bot
+            if irc_params == self._bot_nick:
+                private = True
             else:
-                command = line[1]
-            command_type = "direct"
-        #Check for a message preceded by an exclamation point
-        else:
-            for idx, word in enumerate(line):
-                if word[0] == "!":
-                    command = word[1:]
-                    command_type = "exclamation"
-                    if idx == 0:
-                        command_type = "exclamation_first"
-        
-        if command != "":
-            if command in self.command_list:
-                module_name = self.command_list[command]
-                exec_string = "{0}(self._connection,'{1}','{2}','{3}',{4})".format(module_name,
-                                                              sender, chan, command_type, line)
-                exec(exec_string)
+                private = False
+                
+            command = ""
+            command_type = ""
+            command_regex = re.compile("(?:!(\S+))",re.IGNORECASE)
+            if private:
+                command_type = "private"
+                # First check if there's a exclamation-type command
+                command_r = re.search(command_regex, irc_trailing)
+                if command_r != None:
+                    # Exclamation type command was found
+                    command = command_r.group(1)
+                else:
+                    # No exclamation-type command; assume first word of message
+                    command_r = re.search("(\S+)", irc_trailing)
+                    command = command_r.group(1)
+            else:
+                # Check if command was addressed to the bot (with or without exclamation)
+                command_regex = "{}(?::|,|)\s(?:!?(\S+))".format(self._bot_nick)
+                command_r = re.search(command_regex, irc_trailing)
+                if command_r != None:
+                    # Directly-addressed command found
+                    command_type = "direct"
+                    command = command_r.group(1)
+                else:
+                    # Check for exclamation command
+                    command_r = re.search("!(\S+)", irc_trailing)
+                    if command_r != None:
+                        # Exclamation command found
+                        if command_r.start(1) == 1:
+                            # Exclamation command at beginning of message
+                            command_type = "exclamation_first"
+                        else:
+                            # Command is elsewhere in message
+                            command_type = "exclamation"
+                        command = command_r.group(1)
+                        
+            if command != "":
+                if command in self.command_list:
+                    module_name = self.command_list[command]
+                    exec_string = "{0}(self._connection,'{1}','{2}','{3}','{4}')".format(module_name, irc_prefix,
+                                                                                       irc_params, command_type,
+                                                                                       irc_trailing)
+                    exec(exec_string)
             
+        
     def organize_commands(self):
         '''Collects commands from the various plugins, organizes them into a dict.'''
         for module in plugins.__all__:

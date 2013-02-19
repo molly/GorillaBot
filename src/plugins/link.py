@@ -18,31 +18,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import re
 from urllib import parse
 
 def link(connection, sender, chan, command_type, line):
     '''Return a link to the Wikipedia article; formatted as !link [[Article]]'''
-    line.pop(0)
-    if "[[" not in line[0] and "{{" not in line[0]:
-        connection.say("Please format the command as !link [[article]] or !link {{template}}.",
-                       chan)
-        return 0
-    end_index = ""
-    for idx, word in enumerate(line):
-        if "]]" in word or "}}" in word:
-            end_index = idx + 1
-    if type(end_index) != int:
-        connection.say("Please format the command as !link [[article]] or !link {{template}}.", chan)
-        return 0
-    else:
-        article_name = ' '.join(line[0:end_index])
-        article_name = article_name.strip("[]{}").replace(" ", "_")
-        url = parse.quote(article_name, safe="/#:")
-        if "{{" in line[0]:
-            url = "http://en.wikipedia.org/wiki/Template:" + url
+    regex = re.compile("!link\s([\[|\{]{2}(.*)[\]|\}]{2})",re.IGNORECASE)
+    r = re.search(regex, line)
+    if r != None:
+        article_name = r.group(2)
+        if article_name == None:
+            connection.say("Please format the command as !link [[article]] or !link {{template}}.", chan)
+            return 0
         else:
-            url = "http://en.wikipedia.org/wiki/" + url
-        connection.say(url, chan)
+            article_name = article_name.replace(" ", "_")
+            url = parse.quote(article_name, safe="/#:")
+            if "{{" in r.group(1):
+                url = "http://en.wikipedia.org/wiki/Template:" + url
+            else:
+                url = "http://en.wikipedia.org/wiki/" + url
+            connection.say(url, chan)
         
 def user(connection, sender, chan, command_type, line):
     '''Returns a link to the userpage; command formatted as !user Username'''

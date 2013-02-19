@@ -35,7 +35,7 @@ def hug(connection, sender, chan, command_type, line):
         lines = hugs.read().splitlines()
         raw_line = choice(lines)
         hug_line = re.sub('\{target\}', '{0}', raw_line)
-        connection.say(hug_line.format(line[0]), chan)
+        connection.me(hug_line.format(line[0]), chan)
         
 def flirt(connection, sender, chan, command_type, line):
     line.pop(0)
@@ -47,4 +47,4 @@ def flirt(connection, sender, chan, command_type, line):
         connection.say(flirt_line, chan)
     else:
         flirt_line = re.sub('\{user\}', '{0}', raw_line)
-        connection.say(flirt_line.format(line[0]), chan)
+        connection.me(flirt_line.format(line[0]), chan)
