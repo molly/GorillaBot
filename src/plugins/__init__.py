@@ -19,8 +19,8 @@
 # SOFTWARE.
 
 '''All commands should be included in the __all__ list so that they will be recognized by the
-command manager. All commands need to be of the format def command(sender, command_type, line)
-where line is the message text INCLUDING the command and, if addressed directly to the bot, the
-bot name.'''
+command manager. All commands need to be of the format def command(commander, command_type, line)
+where commander is the CommandManager, command_type is the form of command, and line is
+the entire message string.'''
 
 __all__ = ["actions", "admin", "help", "link"]

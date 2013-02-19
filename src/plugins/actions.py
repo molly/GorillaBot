@@ -15,36 +15,48 @@
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# OUT OF OR IN c.con WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
 from random import choice
 import re
 import os
 
-def hug(connection, sender, chan, command_type, line):
-    line.pop(0)
-    if len(line) == 0:
-        connection.me("distributes hugs evenly among the channel.",
-                      chan)
-    elif line[0] == connection._nick:
-        test = "hugs {0} back.".format(sender)
-        connection.me(test, chan)
+def hug(c, channel, command_type, line):
+    regex = re.compile("!?hug\s(\w+)(?:(?:^and)?,\s(\w+))?(?:,?\s?and?\s?(\w+))?",re.IGNORECASE)
+    r = re.search(regex, line)
+    if r:
+        for user in r.groups():
+            if user:
+                if user == c._bot_nick:
+                    sender = c.get_sender(line)
+                    c.con.me("hugs {} back.".format(sender))
+                else:
+                    hugs = open('plugins/responses/hugs.txt')
+                    lines = hugs.read().splitlines()
+                    raw_line = choice(lines)
+                    hug_line = re.sub('\{target\}', user, raw_line)
+                    c.con.me(hug_line, channel)
     else:
-        hugs = open('plugins/responses/hugs.txt')
-        lines = hugs.read().splitlines()
-        raw_line = choice(lines)
-        hug_line = re.sub('\{target\}', '{0}', raw_line)
-        connection.me(hug_line.format(line[0]), chan)
-        
-def flirt(connection, sender, chan, command_type, line):
-    line.pop(0)
-    pickups = open('plugins/responses/pickuplines.txt')
-    lines = pickups.read().splitlines()
+        c.con.me("distributes hugs evenly among the channel.", channel)
+    
+def flirt(c, channel, command_type, line):
+    regex = re.compile("!?flirt(?:\swith)?\s(\w+)(?:(?:^and)?,\s(\w+))?(?:,?\s?and?\s?(\w+))?",re.IGNORECASE)
+    r = re.search(regex, line)
+    flirts = open('plugins/responses/pickuplines.txt')
+    lines = flirts.read().splitlines()
     raw_line = choice(lines)
-    if len(line) == 0:
-        flirt_line = re.sub('\{user\}:\s', '', raw_line)
-        connection.say(flirt_line, chan)
+    if r:
+        for user in r.groups():
+            if user:
+                if user == c._bot_nick:
+                    sender = c.get_sender(line)
+                    flirt_line = re.sub('\{user\}', sender, raw_line)
+                    print(flirt_line)
+                else:
+                    flirt_line = re.sub('\{user\}', user, raw_line)
+                    print(flirt_line)
     else:
-        flirt_line = re.sub('\{user\}', '{0}', raw_line)
-        connection.me(flirt_line.format(line[0]), chan)
+        r = re.search("\{user\}:\s(.*)", raw_line)
+        flirt_line = r.group(1)
+        print(flirt_line)
