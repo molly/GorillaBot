@@ -5,7 +5,7 @@ Although I wrote the framework to run _AlfredBot_, a bot specific to an IRC chan
 
 __Author:__ Molly White<br />
 __License:__ [MIT](http://opensource.org/licenses/MIT)<br/>
-__Status:__ In development
+__Status:__ Unstable
 
 ## Installation
 _Download code from the master branch. Code in the development branch is often incomplete._
