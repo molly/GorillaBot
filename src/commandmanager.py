@@ -31,7 +31,7 @@ class CommandManager(object):
     def __init__(self, bot, connection):
         '''Determines if a message is in fact a command, stores a list of all valid commands.'''
         self._bot = bot
-        self._connection = connection
+        self.con = connection
         self._bot_nick = connection._nick
         self.logger = logging.getLogger("GorillaBot")
         self.command_list = {}
@@ -44,15 +44,13 @@ class CommandManager(object):
         line_string = " ".join(line)
         parser = re.compile("^(?::(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
         r = re.search(parser, line_string)
-        irc_prefix = r.group(1)
-        irc_command = r.group(2)
-        irc_params = r.group(3)
+        channel = r.group(3)
         irc_trailing = r.group(4)
         
         # Verify a message was sent
         if irc_trailing != None:
             # Check if the command was sent via private message to the bot
-            if irc_params == self._bot_nick:
+            if channel == self._bot_nick:
                 private = True
             else:
                 private = False
@@ -95,12 +93,25 @@ class CommandManager(object):
             if command != "":
                 if command in self.command_list:
                     module_name = self.command_list[command]
-                    exec_string = "{0}(self._connection,'{1}','{2}','{3}','{4}')".format(module_name, irc_prefix,
-                                                                                       irc_params, command_type,
-                                                                                       irc_trailing)
+                    exec_string = "{0}(self,'{1}','{2}','{3}')".format(module_name, channel, command_type, line_string)
                     exec(exec_string)
-            
+                    
+    def get_message(self, line):
+        parser = re.compile("^(?::(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
+        r = re.search(parser, line)
+        if r:
+            return r.group(4)
+        else:
+            return None           
         
+    def get_sender(self, line):
+        parser = re.compile("^(?::(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
+        r = re.search(parser, line)
+        if r:
+            return r.group(1)
+        else:
+            return None
+    
     def organize_commands(self):
         '''Collects commands from the various plugins, organizes them into a dict.'''
         for module in plugins.__all__:
@@ -112,19 +123,19 @@ class CommandManager(object):
                 # Prevents private functions from being displayed or executed from IRC
                 if module_command[0] != "_":
                     exec("self.command_list['{0}'] = '{1}.{0}'".format(module_command, module))
-        self._connection._commands = self.command_list
+        self.con._commands = self.command_list
             
     def nickserv_parse(self, line):
         '''Parses a message from NickServ and responds accordingly.'''
         if "identify" in line:
             self.logger.info("NickServ has requested identification.")
-            self._connection.nickserv_identify()
+            self.con.nickserv_identify()
         elif "identified" in line:
-            self._connection._password = self._connection._tentative_password
+            self.con._password = self.con._tentative_password
             self.logger.info("You have successfully identified as {}.".format(line[2]))
         elif ":Invalid" in line:
             self.logger.info("You've entered an incorrect password. Please re-enter.")
-            self._connection.nickserv_identify()
+            self.con.nickserv_identify()
     
     def process_numcode(self, numcode, line):
         '''Parses a message with a reply code number and responds accordingly.'''
@@ -138,8 +149,8 @@ class CommandManager(object):
             # ERR_NICKNAMEINUSE - Nickname is already in use.
             # TODO: Change response to something more productive than shutting down.
             self.logger.error("Nickname is already in use. Closing connection.")
-            self._connection.quit()
-            self._connection.shut_down()
+            self.con.quit()
+            self.con.shut_down()
         elif numcode == "442":
             # ERR_NOTONCHANNEL - You're not in that channel
             self.logger.info("You tried to part from {}, but you are not in that "
@@ -147,4 +158,4 @@ class CommandManager(object):
         elif numcode == "470":
             self.logger.error("Unable to join channel {}.".format(line[3]))
             self.logger.info("You were forwarded to {}. Parting from this channel.".format(line[4]))
-            self._connection.part(line[4])
+            self.con.part(line[4])

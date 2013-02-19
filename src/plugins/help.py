@@ -15,22 +15,21 @@
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# OUT OF OR IN c.con WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-def commands(connection, sender, chan, command_type, line):
+def commands(c, channel, command_type, line):
     '''Display a list of commands the bot recognizes.'''
     if command_type == "private":
-        commands = ", ".join(connection._commands)
-        connection.say("I know the following commands: {}. For further documentation, see "
-                 "http://git.io/pNQS6g".format(commands), sender)
+        commands = ", ".join(c.con._commands)
+        c.con.say("I know the following commands: {}. For further documentation, see "
+                 "http://git.io/pNQS6g".format(commands), channel)
     else:
-        connection.say("Documentation of my commands is available at "
-                 "http://git.io/pNQS6g", chan)
+        c.con.say("Documentation of my commands is available at "
+                 "http://git.io/pNQS6g", channel)
 
-def help(connection, sender, chan, command_type, line):
+def help(c, channel, command_type, line):
     '''Display a help message.'''
-    print(sender)
-    connection.say("Hello, I'm your friendly neighborhood {}! I perform a number of commands"
+    c.con.say("Hello, I'm your friendly neighborhood {}! I perform a number of commands"
              " that you can view by typing !commands in a private message, or going to "
-             "http://git.io/pNQS6g.".format(connection._nick), chan)
+             "http://git.io/pNQS6g.".format(c.con._nick), channel)
