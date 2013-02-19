@@ -41,18 +41,27 @@ def link(connection, sender, chan, command_type, line):
         
 def user(connection, sender, chan, command_type, line):
     '''Returns a link to the userpage; command formatted as !user Username'''
-    line.pop(0)
-    username = ' '.join(line[0:])
-    username = username.strip("[]{}").replace(" ", "_")
-    url = parse.quote(username, safe="/#:")
-    url = "http://en.wikipedia.org/wiki/User:" + url
-    connection.say(url, chan)
+    print(line)
+    regex = re.compile("!user\s(.*)",re.IGNORECASE)
+    r = re.search(regex, line)
+    if r!= None:
+        username = r.group(1)
+        username = username.strip("[]{}").replace(" ", "_")
+        url = parse.quote(username, safe="/#:")
+        url = "http://en.wikipedia.org/wiki/User:" + url
+        connection.say(url, chan)
+    else:
+        connection.say("Please format this command as !usertalk username.", chan)
     
 def usertalk(connection, sender, chan, command_type, line):
     '''Returns a link to the user talk page; command formatted as !usertalk Username'''
-    line.pop(0)
-    username = ' '.join(line[0:])
-    username = username.strip("[]{}").replace(" ", "_")
-    url = parse.quote(username, safe="/#:")
-    url = "http://en.wikipedia.org/wiki/User_talk:" + url
-    connection.say(url, chan)
+    regex = re.compile("!usertalk\s(.*)",re.IGNORECASE)
+    r = re.search(regex, line)
+    if r != None:
+        username = r.group(1)
+        username = username.strip("[]{}").replace(" ", "_")
+        url = parse.quote(username, safe="/#:")
+        url = "http://en.wikipedia.org/wiki/User_talk:" + url
+        connection.say(url, chan)
+    else:
+        connection.say("Please format this command as !usertalk username.", chan)
