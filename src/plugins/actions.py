@@ -20,7 +20,6 @@
 
 from random import choice
 import re
-import os
 
 def hug(c, channel, command_type, line):
     regex = re.compile("!?hug\s(\w+)(?:(?:^and)?,\s(\w+))?(?:,?\s?and?\s?(\w+))?",re.IGNORECASE)
