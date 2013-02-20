@@ -10,7 +10,7 @@ __Status:__ In development
 ## Installation
 _Download code from the master branch. Code in the development branch is often incomplete._
 
-1. Run `python3 Commander.py` from the source directory. This will step you through creating a configuration file if you don't have one already. If you already have a configuration file, it will verify its validity and check if you'd like to change it.
+1. Run `python3 commander.py` from the source directory. This will step you through creating a configuration file if you don't have one already. If you already have a configuration file, it will verify its validity and check if you'd like to change it.
 2. Enter any information in the command line prompts.
 3. Once the command line logger displays that you have successfully connected, command the bot using [these commands](https://github.com/mollywhite/GorillaBot/blob/master/docs/commands.md) on IRC.
 
