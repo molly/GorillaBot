@@ -46,7 +46,7 @@ class CommandManager(object):
         r = re.search(parser, line_string)
         channel = r.group(3)
         irc_trailing = r.group(4)
-        
+
         # Verify a message was sent
         if irc_trailing != None:
             # Check if the command was sent via private message to the bot
@@ -95,6 +95,15 @@ class CommandManager(object):
                     module_name = self.command_list[command]
                     exec_string = "{0}(self,'{1}','{2}','{3}')".format(module_name, channel, command_type, line_string)
                     exec(exec_string)
+            else:
+                # There is no command in the line.
+                self.check_regex(irc_trailing, line_string)
+                
+    def check_regex(self, message, line_string):
+        bat_regex = re.compile("[\W_]batman",re.IGNORECASE)
+        bat_r = re.search(bat_regex, message)
+        if bat_r:
+            exec("batman.alfred(self, channel, 'regex', line_string)")
                     
     def get_message(self, line):
         parser = re.compile("^(?::(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
@@ -159,3 +168,6 @@ class CommandManager(object):
             self.logger.error("Unable to join channel {}.".format(line[3]))
             self.logger.info("You were forwarded to {}. Parting from this channel.".format(line[4]))
             self.con.part(line[4])
+            
+    def throttle(self, command):
+        print(command)
