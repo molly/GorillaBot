@@ -77,9 +77,9 @@ Prints a help message identifying the bot, telling the user how to view the comm
 
 ```irc
 <GorillaWarfare> !help
-<GorillaBot> Hello, I'm your friendly neighborhood GorillaBot!
-             I perform a number of commands that you can view by typing !commands.
-             Alternatively, you can see my documentation at http://git.io/pNQS6g.
+<GorillaBot> Hello, I'm your friendly neighborhood {}! I perform a number of commands
+             that you can view by typing !commands in a private message, or going to
+             http://git.io/pNQS6g.
 ```
 
 ### Hug ###
