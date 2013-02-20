@@ -17,3 +17,12 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN c.con WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
+from random import choice
+
+def alfred(c, channel, command_type, line):
+    alfred = open('plugins/responses/alfred.txt')
+    lines = alfred.read().splitlines()
+    raw_line = choice(lines)
+    if not c.throttle("alfred"):
+        print(raw_line)
