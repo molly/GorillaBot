@@ -46,7 +46,7 @@ class Bot(object):
                                             settings["realname"], settings["chans"])
         self.GorillaCommander = CommandManager(self, self.GorillaConnection)
         #self.GorillaConnection._connect()
-        
+        self.GorillaCommander.check_command([":CalebDelnay!calebd@localhost", "PRIVMSG", "#mychan", ":link", "batman"])
     def dispatch(self, line):
         '''Determines the type of message received:
                 If the message is a ping, it pongs back.
