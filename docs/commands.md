@@ -11,7 +11,7 @@ In the examples below, I use the `!command` syntax, but the other two would work
 ##Commands
 ###[All users](#all-user-commands)
 * [adminlist](#adminlist)
-* [commands](#all-user-commands#commands)
+* [commands](#commands-1)
 * [emergencyshutoff](#emergencyshutoff)
 * [flirt](#flirt)
 * [help](#help)
