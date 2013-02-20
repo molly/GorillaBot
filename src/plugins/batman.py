@@ -24,5 +24,7 @@ def alfred(c, channel, command_type, line):
     alfred = open('plugins/responses/alfred.txt')
     lines = alfred.read().splitlines()
     raw_line = choice(lines)
-    if not c.throttle("alfred"):
+    
+    # Five minute throttle
+    if not c.throttle("alfred", 300):
         print(raw_line)
