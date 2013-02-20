@@ -19,6 +19,7 @@
 # SOFTWARE.
 
 from inspect import getmembers, isfunction
+from time import time
 import logging
 import re
 import plugins
@@ -36,6 +37,7 @@ class CommandManager(object):
         self.logger = logging.getLogger("GorillaBot")
         self.command_list = {}
         self.organize_commands()
+        self._throttle_list = {}
         
     def check_command(self, line):
         '''Messages of type PRIVMSG will be passed through this function to check if they are
@@ -97,9 +99,9 @@ class CommandManager(object):
                     exec(exec_string)
             else:
                 # There is no command in the line.
-                self.check_regex(irc_trailing, line_string)
+                self.check_regex(irc_trailing, channel, line_string)
                 
-    def check_regex(self, message, line_string):
+    def check_regex(self, message, channel, line_string):
         bat_regex = re.compile("[\W_]batman",re.IGNORECASE)
         bat_r = re.search(bat_regex, message)
         if bat_r:
@@ -169,5 +171,15 @@ class CommandManager(object):
             self.logger.info("You were forwarded to {}. Parting from this channel.".format(line[4]))
             self.con.part(line[4])
             
-    def throttle(self, command):
-        print(command)
+    def throttle(self, command, delay=120):
+        '''Keeps track of how often a command is executed, throttling it if it is executed too
+        frequently. Default delay is two minutes, but this can be set for each function.'''
+        now = time()
+        if (command in self._throttle_list and now - self._throttle_list[command] < delay):
+            # Command was executed less than [delay] ago. Throttling command.
+            self.logger.info("Command was executed {} seconds ago. Throttling command until"
+                             " {} seconds have passed.".format(now - self._throttle_list[command],delay))
+            return True
+        else:
+            self._throttle_list[command] = now
+            return False

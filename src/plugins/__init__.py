@@ -23,4 +23,4 @@ command manager. All commands need to be of the format def command(commander, co
 where commander is the CommandManager, command_type is the form of command, and line is
 the entire message string.'''
 
-__all__ = ["actions", "admin", "help", "link"]
+__all__ = ["actions", "batman", "admin", "help", "link"]
