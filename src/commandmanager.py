@@ -102,12 +102,14 @@ class CommandManager(object):
                 self.check_regex(irc_trailing, channel, line_string)
                 
     def check_regex(self, message, channel, line_string):
+        '''Checks an IRC message to see if it matches a regex pattern.'''
         bat_regex = re.compile("[\W_]batman",re.IGNORECASE)
         bat_r = re.search(bat_regex, message)
         if bat_r:
             exec("batman.alfred(self, channel, 'regex', line_string)")
                     
     def get_message(self, line):
+        '''Isolates the trailing message from a full message string.'''
         parser = re.compile("^(?::(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
         r = re.search(parser, line)
         if r:
@@ -116,6 +118,7 @@ class CommandManager(object):
             return None           
         
     def get_sender(self, line):
+        '''Isolates the nick of the sender of the message from a full message string.'''
         parser = re.compile("^(?::(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
         r = re.search(parser, line)
         if r:

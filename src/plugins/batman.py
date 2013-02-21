@@ -21,6 +21,7 @@
 from random import choice
 
 def alfred(c, channel, command_type, line):
+    '''Responds to mentions of Batman with Alfred Pennyworth lines.'''
     alfred = open('plugins/responses/alfred.txt')
     lines = alfred.read().splitlines()
     raw_line = choice(lines)

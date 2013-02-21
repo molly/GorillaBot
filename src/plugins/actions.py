@@ -22,6 +22,7 @@ from random import choice
 import re
 
 def hug(c, channel, command_type, line):
+    '''Hugs a specified user, or hugs the channel in general.'''
     regex = re.compile("!?hug\s(\w+)(?:(?:^and)?,\s(\w+))?(?:,?\s?and?\s?(\w+))?",re.IGNORECASE)
     r = re.search(regex, line)
     if r:
@@ -40,6 +41,7 @@ def hug(c, channel, command_type, line):
         c.con.me("distributes hugs evenly among the channel.", channel)
     
 def flirt(c, channel, command_type, line):
+    '''Flirts at a user, or at no one in particular.'''
     regex = re.compile("!?flirt(?:\swith)?\s(\w+)(?:(?:^and)?,\s(\w+))?(?:,?\s?and?\s?(\w+))?",re.IGNORECASE)
     r = re.search(regex, line)
     flirts = open('plugins/responses/pickuplines.txt')
