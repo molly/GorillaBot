@@ -44,7 +44,10 @@ class CommandManager(object):
         commands.'''
         # Separates the line into its four parts
         line_string = " ".join(line)
-        parser = re.compile("^(?:\S+:(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
+        line_string = line_string.replace("\"", "")
+        line_string = line_string.replace("\'", "")
+        print(line_string)
+        parser = re.compile("(?:\S+?:(\S+)!\S+\s)?([A-Z]+)\s(?:([^:]+)\s)?(?::(.+))?")
         r = re.search(parser, line_string)
         channel = r.group(3)
         irc_trailing = r.group(4)
@@ -115,7 +118,7 @@ class CommandManager(object):
                     
     def get_message(self, line):
         '''Isolates the trailing message from a full message string.'''
-        parser = re.compile("^(?:\S+:(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
+        parser = re.compile("(?:\S+?:(\S+)!\S+\s)?([A-Z]+)\s(?:([^:]+)\s)?(?::(.+))?")
         r = re.search(parser, line)
         if r:
             return r.group(4)
@@ -124,7 +127,7 @@ class CommandManager(object):
         
     def get_sender(self, line):
         '''Isolates the nick of the sender of the message from a full message string.'''
-        parser = re.compile("^(?:\S+:(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
+        parser = re.compile("(?:\S+?:(\S+)!\S+\s)?([A-Z]+)\s(?:([^:]+)\s)?(?::(.+))?")
         r = re.search(parser, line)
         if r:
             return r.group(1)
