@@ -21,12 +21,19 @@
 def commands(c, channel, command_type, line):
     '''Display a list of commands the bot recognizes.'''
     if command_type == "private":
-        commands = ", ".join(c.con._commands)
+        # Any commands you want to hide from the list (e.g. regex-triggered commands)
+        hide_commands = ["alfred"]
+        commands = list(c.con._commands.keys())
+        for remove_command in hide_commands:
+            if remove_command in commands:
+                commands.remove(remove_command)
+        commands = ", ".join(commands)
         c.con.say("I know the following commands: {}. For further documentation, see "
-                 "http://git.io/pNQS6g".format(commands), channel)
+                 "http://git.io/pNQS6g.".format(commands), channel)
     else:
         c.con.say("Documentation of my commands is available at "
-                 "http://git.io/pNQS6g", channel)
+                 "http://git.io/pNQS6g, or see a list by typing this "
+                 "command in a private message.", channel)
 
 def help(c, channel, command_type, line):
     '''Display a help message.'''

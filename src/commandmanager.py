@@ -98,7 +98,7 @@ class CommandManager(object):
             if command != "":
                 if command in self.command_list:
                     module_name = self.command_list[command]
-                    exec_string = """{0}(self,"{1}","{2}","{3}")""".format(str(module_name), str(channel), str(command_type), str(line_string))
+                    exec_string = """{0}(self,"{1}","{2}","{3}")""".format(module_name, channel, command_type, line_string)
                     print(exec_string)
                     exec(exec_string)
             else:
@@ -107,10 +107,11 @@ class CommandManager(object):
                 
     def check_regex(self, message, channel, line_string):
         '''Checks an IRC message to see if it matches a regex pattern.'''
-        bat_regex = re.compile("[\W_]batman",re.IGNORECASE)
+        bat_regex = re.compile("batman",re.IGNORECASE)
         bat_r = re.search(bat_regex, message)
         if bat_r:
-            exec("batman.alfred(self, channel, 'regex', line_string)")
+            exec_string = """batman.alfred(self, "{0}", "regex", "{1}")""".format(channel, line_string)
+            exec(exec_string)
                     
     def get_message(self, line):
         '''Isolates the trailing message from a full message string.'''
