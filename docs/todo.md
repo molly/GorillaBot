@@ -15,13 +15,13 @@
 * Add API section to config file
 * ~~Move string lists, etc. to a data file~~
 * ~~Modularize commands~~
-* Throttle some commands (!help, !command, etc.)
+* ~~Throttle some commands (!help, !command, etc.)~~
 * ~~Only show !help and !command-type commands if they're at the beginning of the sentence~~
 * Allow part and quit commands to display a message as well
 * Allow command aliases
 * ~~Allow bot admins to be added and removed while the bot is live~~
     * Store in config file?
-* Add regex matching to trigger commands (be sure to throttle)
+* ~~Add regex matching to trigger commands (be sure to throttle)~~
 
 ##Plugins
 ###Wikipedia-related

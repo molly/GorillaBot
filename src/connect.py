@@ -156,13 +156,11 @@ class Connection(object):
         self._last_received = time()
         self._bot.dispatch(line)      
         
-    def join(self, chans):   
-        '''Join a list of channels.'''
-        for chan in chans:
-            if chan[0] == "#":
-                self.logger.info("Joining {}.".format(chan))
-                self._send("JOIN {}".format(chan))
-                self._chans.append(chan)
+    def join(self, chan):   
+        '''Join a channel.'''
+        self.logger.info("Joining {}.".format(chan))
+        self._send("JOIN {}".format(chan))
+        self._chans.append(chan)
     
     def loop(self):
         '''Main connection loop.'''
@@ -186,9 +184,9 @@ class Connection(object):
             
             self.caffeinate()
             
-    def me(self, message, channel, sender=None, private=False):
+    def me(self, message, channel):
         '''Say an action to the channel.'''
-        self.say("\x01ACTION {0}\x01".format(message), channel, sender, private)
+        self.say("\x01ACTION {0}\x01".format(message), channel)
             
     def nickserv_identify(self):
         '''Prompt the user to enter their password, then identify to NickServ.'''
@@ -200,13 +198,12 @@ class Connection(object):
             self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, self._password),
                                  True)
 
-    def part(self, chans):
-        '''Part one or more IRC channels.'''
-        for chan in chans:
-            if chan[0] == "#" and chan in self._chans:
-                self.logger.info("Parting from {}.".format(chan))
-                self._send("PART {}".format(chan))
-                self._chans.remove(chan)
+    def part(self, chan):
+        '''Part from an IRC channel.'''
+        if chan[0] == "#" and chan in self._chans:
+            self.logger.info("Parting from {}.".format(chan))
+            self._send("PART {}".format(chan))
+            self._chans.remove(chan)
             
     def ping(self):
         '''Ping the host server.'''
@@ -229,17 +226,10 @@ class Connection(object):
         '''Disconnect from the server.'''
         self._send("QUIT")
             
-    def say(self, message, channel, sender=None, private=False):
+    def say(self, message, channel):
         '''Say something to the channel or in a private message to the user
         that sent a command.'''
-        if private:
-            if sender:
-                self.private_message(sender, message)  
-            else:
-                raise ValueError
-                self.logger.exception("Incorrectly-formatted call to 'say'.")
-        else:
-            self.private_message(channel, message)
+        self.private_message(channel, message)
         
     def shut_down(self, retry=False):
         '''Gracefully shuts down.'''

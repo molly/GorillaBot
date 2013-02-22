@@ -19,6 +19,7 @@
 # SOFTWARE.
 
 from inspect import getmembers, isfunction
+from time import time
 import logging
 import re
 import plugins
@@ -31,64 +32,105 @@ class CommandManager(object):
     def __init__(self, bot, connection):
         '''Determines if a message is in fact a command, stores a list of all valid commands.'''
         self._bot = bot
-        self._connection = connection
+        self.con = connection
         self._bot_nick = connection._nick
         self.logger = logging.getLogger("GorillaBot")
         self.command_list = {}
         self.organize_commands()
+        self._throttle_list = {}
         
     def check_command(self, line):
         '''Messages of type PRIVMSG will be passed through this function to check if they are
         commands.'''
-        
-        # Format message more nicely
-        raw_nick = line.pop(0)
-        r = re.search(":(.*?)!", raw_nick)
-        if r:
-            sender = r.group(1)
-        line.pop(0)
-        private = False
-        chan = line.pop(0)
-        if chan == self._bot_nick:
-            private = True
-        line[0] = line[0][1:]
-        # line is now a list containing just the message contents.
-        
-        # Check if a private message contains a command
-        # First looks for words beginning with an exclamation point. If none are found, it assumes
-        #     the first word of the message is the command.
-        command = ""
-        command_type = ""
-        if private:
-            for word in line:
-                if word[0] == "!":
-                    command = word[1:]
-            if command == "":
-                command = line[0]
-            command_type = "private"
-        # Check for a message directly addressed to the bot
-        elif self._bot_nick in line[0]:
-            if line[1][0] == "!":
-                command = line[1][1:]
+        # Separates the line into its four parts
+        line_string = " ".join(line)
+        parser = re.compile("^(?:\S+:(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
+        r = re.search(parser, line_string)
+        channel = r.group(3)
+        irc_trailing = r.group(4)
+
+        # Verify a message was sent
+        if irc_trailing != None:
+            # Check if the command was sent via private message to the bot
+            if channel == self._bot_nick:
+                private = True
             else:
-                command = line[1]
-            command_type = "direct"
-        #Check for a message preceded by an exclamation point
+                private = False
+                
+            command = ""
+            command_type = ""
+            command_regex = re.compile("(?:!(\S+))",re.IGNORECASE)
+            if private:
+                command_type = "private"
+                # Change channel to sender's nick so that the message is sent as a reply to the 
+                # private message.
+                channel = r.group(1)
+                # First check if there's a exclamation-type command
+                command_r = re.search(command_regex, irc_trailing)
+                if command_r != None:
+                    # Exclamation type command was found
+                    command = command_r.group(1)
+                else:
+                    # No exclamation-type command; assume first word of message
+                    command_r = re.search("(\S+)", irc_trailing)
+                    command = command_r.group(1)
+            else:
+                # Check if command was addressed to the bot (with or without exclamation)
+                command_regex = "{}(?::|,|)\s(?:!?(\S+))".format(self._bot_nick)
+                command_r = re.search(command_regex, irc_trailing)
+                if command_r != None:
+                    # Directly-addressed command found
+                    command_type = "direct"
+                    command = command_r.group(1)
+                else:
+                    # Check for exclamation command
+                    command_r = re.search("!(\S+)", irc_trailing)
+                    if command_r != None:
+                        # Exclamation command found
+                        if command_r.start(1) == 1:
+                            # Exclamation command at beginning of message
+                            command_type = "exclamation_first"
+                        else:
+                            # Command is elsewhere in message
+                            command_type = "exclamation"
+                        command = command_r.group(1)
+                        
+            if command != "":
+                if command in self.command_list:
+                    module_name = self.command_list[command]
+                    exec_string = """{0}(self,"{1}","{2}","{3}")""".format(module_name, channel, command_type, line_string)
+                    print(exec_string)
+                    exec(exec_string)
+            else:
+                # There is no command in the line.
+                self.check_regex(irc_trailing, channel, line_string)
+                
+    def check_regex(self, message, channel, line_string):
+        '''Checks an IRC message to see if it matches a regex pattern.'''
+        bat_regex = re.compile("batman",re.IGNORECASE)
+        bat_r = re.search(bat_regex, message)
+        if bat_r:
+            exec_string = """batman.alfred(self, "{0}", "regex", "{1}")""".format(channel, line_string)
+            exec(exec_string)
+                    
+    def get_message(self, line):
+        '''Isolates the trailing message from a full message string.'''
+        parser = re.compile("^(?:\S+:(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
+        r = re.search(parser, line)
+        if r:
+            return r.group(4)
         else:
-            for idx, word in enumerate(line):
-                if word[0] == "!":
-                    command = word[1:]
-                    command_type = "exclamation"
-                    if idx == 0:
-                        command_type = "exclamation_first"
+            return None           
         
-        if command != "":
-            if command in self.command_list:
-                module_name = self.command_list[command]
-                exec_string = "{0}(self._connection,'{1}','{2}','{3}',{4})".format(module_name,
-                                                              sender, chan, command_type, line)
-                exec(exec_string)
-            
+    def get_sender(self, line):
+        '''Isolates the nick of the sender of the message from a full message string.'''
+        parser = re.compile("^(?:\S+:(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
+        r = re.search(parser, line)
+        if r:
+            return r.group(1)
+        else:
+            return None
+    
     def organize_commands(self):
         '''Collects commands from the various plugins, organizes them into a dict.'''
         for module in plugins.__all__:
@@ -100,19 +142,19 @@ class CommandManager(object):
                 # Prevents private functions from being displayed or executed from IRC
                 if module_command[0] != "_":
                     exec("self.command_list['{0}'] = '{1}.{0}'".format(module_command, module))
-        self._connection._commands = self.command_list
+        self.con._commands = self.command_list
             
     def nickserv_parse(self, line):
         '''Parses a message from NickServ and responds accordingly.'''
         if "identify" in line:
             self.logger.info("NickServ has requested identification.")
-            self._connection.nickserv_identify()
+            self.con.nickserv_identify()
         elif "identified" in line:
-            self._connection._password = self._connection._tentative_password
+            self.con._password = self.con._tentative_password
             self.logger.info("You have successfully identified as {}.".format(line[2]))
         elif ":Invalid" in line:
             self.logger.info("You've entered an incorrect password. Please re-enter.")
-            self._connection.nickserv_identify()
+            self.con.nickserv_identify()
     
     def process_numcode(self, numcode, line):
         '''Parses a message with a reply code number and responds accordingly.'''
@@ -126,8 +168,8 @@ class CommandManager(object):
             # ERR_NICKNAMEINUSE - Nickname is already in use.
             # TODO: Change response to something more productive than shutting down.
             self.logger.error("Nickname is already in use. Closing connection.")
-            self._connection.quit()
-            self._connection.shut_down()
+            self.con.quit()
+            self.con.shut_down()
         elif numcode == "442":
             # ERR_NOTONCHANNEL - You're not in that channel
             self.logger.info("You tried to part from {}, but you are not in that "
@@ -135,4 +177,17 @@ class CommandManager(object):
         elif numcode == "470":
             self.logger.error("Unable to join channel {}.".format(line[3]))
             self.logger.info("You were forwarded to {}. Parting from this channel.".format(line[4]))
-            self._connection.part(line[4])
+            self.con.part(line[4])
+            
+    def throttle(self, command, delay=120):
+        '''Keeps track of how often a command is executed, throttling it if it is executed too
+        frequently. Default delay is two minutes, but this can be set for each function.'''
+        now = time()
+        if (command in self._throttle_list and now - self._throttle_list[command] < delay):
+            # Command was executed less than [delay] ago. Throttling command.
+            self.logger.info("Command was executed {} seconds ago. Throttling command until"
+                             " {} seconds have passed.".format(now - self._throttle_list[command],delay))
+            return True
+        else:
+            self._throttle_list[command] = now
+            return False

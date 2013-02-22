@@ -11,53 +11,59 @@
 # all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERchannelTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# OUT OF OR IN c.con WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import re
 from urllib import parse
 
-def link(connection, sender, chan, command_type, line):
+def link(c, channel, command_type, line):
     '''Return a link to the Wikipedia article; formatted as !link [[Article]]'''
-    line.pop(0)
-    if "[[" not in line[0] and "{{" not in line[0]:
-        connection.say("Please format the command as !link [[article]] or !link {{template}}.",
-                       chan)
-        return 0
-    end_index = ""
-    for idx, word in enumerate(line):
-        if "]]" in word or "}}" in word:
-            end_index = idx + 1
-    if type(end_index) != int:
-        connection.say("Please format the command as !link [[article]] or !link {{template}}.", chan)
-        return 0
-    else:
-        article_name = ' '.join(line[0:end_index])
-        article_name = article_name.strip("[]{}").replace(" ", "_")
-        url = parse.quote(article_name, safe="/#:")
-        if "{{" in line[0]:
-            url = "http://en.wikipedia.org/wiki/Template:" + url
+    regex = re.compile("!?link\s([\[|\{]{2}(.*)[\]|\}]{2})",re.IGNORECASE)
+    r = re.search(regex, line)
+    if r:
+        article_name = r.group(2)
+        if article_name == None:
+            c.con.say("Please format the command as !link [[article]] or !link {{template}}.", channel)
+            return 0
         else:
-            url = "http://en.wikipedia.org/wiki/" + url
-        connection.say(url, chan)
+            article_name = article_name.replace(" ", "_")
+            url = parse.quote(article_name, safe="/#:")
+            if "{{" in r.group(1):
+                url = "http://en.wikipedia.org/wiki/Template:" + url
+            else:
+                url = "http://en.wikipedia.org/wiki/" + url
+            c.con.say(url, channel)
+    else:
+        c.con.say("Please format the command as !link [[article]] or !link {{template}}.", channel)
         
-def user(connection, sender, chan, command_type, line):
+def user(c, channel, command_type, line):
     '''Returns a link to the userpage; command formatted as !user Username'''
-    line.pop(0)
-    username = ' '.join(line[0:])
-    username = username.strip("[]{}").replace(" ", "_")
-    url = parse.quote(username, safe="/#:")
-    url = "http://en.wikipedia.org/wiki/User:" + url
-    connection.say(url, chan)
+    print(line)
+    regex = re.compile("!?user\s(.*)",re.IGNORECASE)
+    r = re.search(regex, line)
+    if r:
+        username = r.group(1)
+        username = username.strip("[]{}").replace(" ", "_")
+        url = parse.quote(username, safe="/#:")
+        url = "http://en.wikipedia.org/wiki/User:" + url
+        c.con.say(url, channel)
+    else:
+        c.con.say("Please format this command as !usertalk username.", channel)
     
-def usertalk(connection, sender, chan, command_type, line):
+def usertalk(c, channel, command_type, line):
     '''Returns a link to the user talk page; command formatted as !usertalk Username'''
-    line.pop(0)
-    username = ' '.join(line[0:])
-    username = username.strip("[]{}").replace(" ", "_")
-    url = parse.quote(username, safe="/#:")
-    url = "http://en.wikipedia.org/wiki/User_talk:" + url
-    connection.say(url, chan)
+    regex = re.compile("!?usertalk\s(.*)",re.IGNORECASE)
+    r = re.search(regex, line)
+    if r:
+        username = r.group(1)
+        username = username.strip("[]{}").replace(" ", "_")
+        url = parse.quote(username, safe="/#:")
+        url = "http://en.wikipedia.org/wiki/User_talk:" + url
+        c.con.say(url, channel)
+    else:
+        c.con.say("Please format this command as !usertalk username.", channel)
