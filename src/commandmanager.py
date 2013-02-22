@@ -44,7 +44,7 @@ class CommandManager(object):
         commands.'''
         # Separates the line into its four parts
         line_string = " ".join(line)
-        parser = re.compile("^(?::(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
+        parser = re.compile("^(?:\S+:(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
         r = re.search(parser, line_string)
         channel = r.group(3)
         irc_trailing = r.group(4)
@@ -95,7 +95,8 @@ class CommandManager(object):
             if command != "":
                 if command in self.command_list:
                     module_name = self.command_list[command]
-                    exec_string = "{0}(self,'{1}','{2}','{3}')".format(module_name, channel, command_type, line_string)
+                    exec_string = """{0}(self,"{1}","{2}","{3}")""".format(str(module_name), str(channel), str(command_type), str(line_string))
+                    print(exec_string)
                     exec(exec_string)
             else:
                 # There is no command in the line.
