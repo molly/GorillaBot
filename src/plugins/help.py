@@ -15,22 +15,28 @@
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# OUT OF OR IN c.con WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-def commands(connection, sender, chan, command_type, line):
+def commands(c, channel, command_type, line):
     '''Display a list of commands the bot recognizes.'''
     if command_type == "private":
-        commands = ", ".join(connection._commands)
-        connection.say("I know the following commands: {}. For further documentation, see "
-                 "http://git.io/pNQS6g".format(commands), sender)
+        # Any commands you want to hide from the list (e.g. regex-triggered commands)
+        hide_commands = ["alfred"]
+        commands = list(c.con._commands.keys())
+        for remove_command in hide_commands:
+            if remove_command in commands:
+                commands.remove(remove_command)
+        commands = ", ".join(commands)
+        c.con.say("I know the following commands: {}. For further documentation, see "
+                 "http://git.io/pNQS6g.".format(commands), channel)
     else:
-        connection.say("Documentation of my commands is available at "
-                 "http://git.io/pNQS6g", chan)
+        c.con.say("Documentation of my commands is available at "
+                 "http://git.io/pNQS6g, or see a list by typing this "
+                 "command in a private message.", channel)
 
-def help(connection, sender, chan, command_type, line):
+def help(c, channel, command_type, line):
     '''Display a help message.'''
-    print(sender)
-    connection.say("Hello, I'm your friendly neighborhood {}! I perform a number of commands"
+    c.con.say("Hello, I'm your friendly neighborhood {}! I perform a number of commands"
              " that you can view by typing !commands in a private message, or going to "
-             "http://git.io/pNQS6g.".format(connection._nick), chan)
+             "http://git.io/pNQS6g.".format(c.con._nick), channel)

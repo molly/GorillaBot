@@ -15,12 +15,17 @@
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# OUT OF OR IN c.con WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-'''All commands should be included in the __all__ list so that they will be recognized by the
-command manager. All commands need to be of the format def command(commander, command_type, line)
-where commander is the CommandManager, command_type is the form of command, and line is
-the entire message string.'''
+from random import choice
 
-__all__ = ["actions", "batman", "admin", "help", "link"]
+def alfred(c, channel, command_type, line):
+    '''Responds to mentions of Batman with Alfred Pennyworth lines.'''
+    if command_type == "regex":
+        # Five minute throttle
+        if not c.throttle("alfred", 300):
+            alfred = open('plugins/responses/alfred.txt')
+            lines = alfred.read().splitlines()
+            raw_line = choice(lines)
+            c.con.say(raw_line, channel)
