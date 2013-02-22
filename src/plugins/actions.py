@@ -30,7 +30,7 @@ def hug(c, channel, command_type, line):
             if user:
                 if user == c._bot_nick:
                     sender = c.get_sender(line)
-                    c.con.me("hugs {} back.".format(sender))
+                    c.con.me("hugs {} back.".format(sender), channel)
                 else:
                     hugs = open('plugins/responses/hugs.txt')
                     lines = hugs.read().splitlines()
@@ -47,17 +47,17 @@ def flirt(c, channel, command_type, line):
     flirts = open('plugins/responses/pickuplines.txt')
     lines = flirts.read().splitlines()
     raw_line = choice(lines)
-    if r:
+    if r and command_type != "private":
         for user in r.groups():
             if user:
                 if user == c._bot_nick:
                     sender = c.get_sender(line)
                     flirt_line = re.sub('\{user\}', sender, raw_line)
-                    print(flirt_line)
+                    c.con.say(flirt_line, channel)
                 else:
                     flirt_line = re.sub('\{user\}', user, raw_line)
-                    print(flirt_line)
+                    c.con.say(flirt_line, channel)
     else:
         r = re.search("\{user\}:\s(.*)", raw_line)
         flirt_line = r.group(1)
-        print(flirt_line)
+        c.con.say(flirt_line, channel)

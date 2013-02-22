@@ -62,6 +62,9 @@ class CommandManager(object):
             command_regex = re.compile("(?:!(\S+))",re.IGNORECASE)
             if private:
                 command_type = "private"
+                # Change channel to sender's nick so that the message is sent as a reply to the 
+                # private message.
+                channel = r.group(1)
                 # First check if there's a exclamation-type command
                 command_r = re.search(command_regex, irc_trailing)
                 if command_r != None:
@@ -111,7 +114,7 @@ class CommandManager(object):
                     
     def get_message(self, line):
         '''Isolates the trailing message from a full message string.'''
-        parser = re.compile("^(?::(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
+        parser = re.compile("^(?:\S+:(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
         r = re.search(parser, line)
         if r:
             return r.group(4)
@@ -120,7 +123,7 @@ class CommandManager(object):
         
     def get_sender(self, line):
         '''Isolates the nick of the sender of the message from a full message string.'''
-        parser = re.compile("^(?::(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
+        parser = re.compile("^(?:\S+:(\S+)!\S+ )?(\S+)(?: (?!:)(.+?))?(?: :(.+))?$", re.MULTILINE)
         r = re.search(parser, line)
         if r:
             return r.group(1)
