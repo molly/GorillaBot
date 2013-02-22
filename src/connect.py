@@ -186,9 +186,9 @@ class Connection(object):
             
             self.caffeinate()
             
-    def me(self, message, channel, sender=None, private=False):
+    def me(self, message, channel):
         '''Say an action to the channel.'''
-        self.say("\x01ACTION {0}\x01".format(message), channel, sender, private)
+        self.say("\x01ACTION {0}\x01".format(message), channel)
             
     def nickserv_identify(self):
         '''Prompt the user to enter their password, then identify to NickServ.'''
@@ -229,17 +229,10 @@ class Connection(object):
         '''Disconnect from the server.'''
         self._send("QUIT")
             
-    def say(self, message, channel, sender=None, private=False):
+    def say(self, message, channel):
         '''Say something to the channel or in a private message to the user
         that sent a command.'''
-        if private:
-            if sender:
-                self.private_message(sender, message)  
-            else:
-                raise ValueError
-                self.logger.exception("Incorrectly-formatted call to 'say'.")
-        else:
-            self.private_message(channel, message)
+        self.private_message(channel, message)
         
     def shut_down(self, retry=False):
         '''Gracefully shuts down.'''
