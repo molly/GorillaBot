@@ -37,6 +37,9 @@ def hug(c, channel, command_type, line):
                     raw_line = choice(lines)
                     hug_line = re.sub('\{target\}', user, raw_line)
                     c.con.me(hug_line, channel)
+    elif command_type == "private":
+        sender = c.get_sender(line)
+        c.con.me("hugs {} back.".format(sender), channel)
     else:
         c.con.me("distributes hugs evenly among the channel.", channel)
     

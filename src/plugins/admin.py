@@ -37,13 +37,16 @@ def addadmin(c, channel, command_type, line):
         if r:
             message = r.group(1).split()
             if len(message) == 1:
-                c.con.admins.append(message)
-                c.con.say("{} is now a bot admin.".format(message), channel)
+                c.con.admins.append(message[0])
+                c.con.say("{} is now a bot admin.".format(message[0]), channel)
             else:
                 for user in message:
                     c.con.admins.append(user)
                 users = ', '.join(message)
                 c.con.say("{} are now bot admins.".format(users), channel)
+        else:
+            c.con.say("Please specify which user to add.", channel)
+            
             
 def adminlist(c, channel, command_type, line):
     '''Prints a list of bot administrators.'''
@@ -61,25 +64,31 @@ def join(c, channel, command_type, line):
         if r:
             chans = r.group(1).split()
             for chan in chans:
-                if chan[0] == "#":
-                    c.con.join(chan)
+                c.con.join(chan)
+        else:
+            c.con.say("Please specify a channel to join (as !join #channel).", channel)
       
 def emergencyshutoff(c, channel, command_type, line):
     '''Allows any user to kill the bot in case it malfunctions in some way.'''
     if command_type == "private":
+        sender = c.get_sender(line)
+        c.logger.error("Emergency shutdown requested by {}.".format(sender))
         c.con.say("Shutting down.", channel)
         c.con.shut_down()
+    else:
+        c.con.say("Please send this as a private message to shut me down.", channel)
 
 def part(c, channel, command_type, line):
     '''Part a list of channels.'''
     if _is_admin(c, channel, line):
-        regex = re.compile("!?join\s(.*)",re.IGNORECASE)
+        regex = re.compile("!?part\s(.*)",re.IGNORECASE)
         r = re.search(regex, line)
         if r:
             chans = r.group(1).split()
             for chan in chans:
-                if chan[0] == "#":
-                    c.con.part(chan)
+                c.con.part(chan)
+        else:
+            c.con.say("Please specify which channel to part (as !part #channel).", channel)
         
 def quit(c, channel, command_type, line):
     '''Quits IRC, shuts down the bot.'''
@@ -104,6 +113,13 @@ def removeadmin(c, channel, command_type, line):
                                   " admin or disconnect the bot before removing yourself.", channel)
                         return 0
                     c.con.admins.remove(user)
-                    c.con.say("{} is no longer a bot admin.".format(user), channel)
                 else:
                     c.con.say("{} is not on the list of bot admins.".format(user), channel)
+                    users.remove(user)
+            if len(users) == 1:
+                c.con.say("{} is no longer a bot admin.".format(users[0]), channel)
+            else:
+                users = ', '.join(users)
+                c.con.say("{} are no longer bot admins.".format(users), channel)
+        else:
+            c.con.say("Please specify which admin to remove.", channel)

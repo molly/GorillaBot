@@ -156,13 +156,11 @@ class Connection(object):
         self._last_received = time()
         self._bot.dispatch(line)      
         
-    def join(self, chans):   
-        '''Join a list of channels.'''
-        for chan in chans:
-            if chan[0] == "#":
-                self.logger.info("Joining {}.".format(chan))
-                self._send("JOIN {}".format(chan))
-                self._chans.append(chan)
+    def join(self, chan):   
+        '''Join a channel.'''
+        self.logger.info("Joining {}.".format(chan))
+        self._send("JOIN {}".format(chan))
+        self._chans.append(chan)
     
     def loop(self):
         '''Main connection loop.'''
@@ -200,13 +198,12 @@ class Connection(object):
             self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, self._password),
                                  True)
 
-    def part(self, chans):
-        '''Part one or more IRC channels.'''
-        for chan in chans:
-            if chan[0] == "#" and chan in self._chans:
-                self.logger.info("Parting from {}.".format(chan))
-                self._send("PART {}".format(chan))
-                self._chans.remove(chan)
+    def part(self, chan):
+        '''Part from an IRC channel.'''
+        if chan[0] == "#" and chan in self._chans:
+            self.logger.info("Parting from {}.".format(chan))
+            self._send("PART {}".format(chan))
+            self._chans.remove(chan)
             
     def ping(self):
         '''Ping the host server.'''

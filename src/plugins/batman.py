@@ -22,10 +22,10 @@ from random import choice
 
 def alfred(c, channel, command_type, line):
     '''Responds to mentions of Batman with Alfred Pennyworth lines.'''
-    alfred = open('plugins/responses/alfred.txt')
-    lines = alfred.read().splitlines()
-    raw_line = choice(lines)
-    
-    # Five minute throttle
-    if not c.throttle("alfred", 300):
-        print(raw_line)
+    if command_type == "regex":
+        # Five minute throttle
+        if not c.throttle("alfred", 300):
+            alfred = open('plugins/responses/alfred.txt')
+            lines = alfred.read().splitlines()
+            raw_line = choice(lines)
+            c.con.say(raw_line, channel)
