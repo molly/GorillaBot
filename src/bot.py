@@ -33,7 +33,7 @@ class Bot(object):
     def __init__(self, path, default, quiet):
         '''Constructs the bot object. Takes path, default, and quiet arguments from the command
         line input and sets the bot accordingly. Initializes logging, creates instances of
-        necessary classes. Loads plugings, begins the connection.'''
+        necessary classes. Loads plugins, begins the connection.'''
         self._config_path = path
         self._default = default
         self._quiet = quiet
