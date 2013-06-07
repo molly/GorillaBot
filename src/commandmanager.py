@@ -20,9 +20,7 @@
 
 from inspect import getmembers, isfunction
 from time import time
-import logging
-import re
-import plugins
+import logging, re, plugins, os
 from plugins import *
 
 __all__ = ["CommandManager"]
@@ -38,6 +36,7 @@ class CommandManager(object):
         self.command_list = {}
         self.organize_commands()
         self._throttle_list = {}
+        self.plugin_path = os.path.dirname(os.path.abspath(__file__)) + '/plugins'
         
     def check_command(self, line):
         '''Messages of type PRIVMSG will be passed through this function to check if they are

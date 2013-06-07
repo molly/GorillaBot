@@ -25,7 +25,7 @@ def alfred(c, channel, command_type, line):
     if command_type == "regex":
         # Five minute throttle
         if not c.throttle("alfred", 300):
-            alfred = open('plugins/responses/alfred.txt')
+            alfred = open(c.plugin_path + '/responses/alfred.txt')
             lines = alfred.read().splitlines()
             raw_line = choice(lines)
             c.con.say(raw_line, channel)
