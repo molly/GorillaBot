@@ -1,5 +1,9 @@
 # To do
 
+##Bugs
+* Flirt and regex commands break everything
+* If something goes wrong, the bot drops off the network
+
 ##General
 * Reconnect after the bot is disconnected from the server or the socket is closed
   * Failsafe/limit so that if something goes wrong, the bot doesn't repeatedly disconnect and reconnect
@@ -22,6 +26,7 @@
 * ~~Allow bot admins to be added and removed while the bot is live~~
     * Store in config file?
 * ~~Add regex matching to trigger commands (be sure to throttle)~~
+* Don't hardcode bot admins
 
 ##Plugins
 ###Wikipedia-related
@@ -51,3 +56,6 @@
 * Magic 8-ball
 * Check if a website is up or down
 * Urban Dictionary
+* Allow users to make the bot say things
+* !tea
+* Ops abilities
