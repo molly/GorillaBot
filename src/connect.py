@@ -19,8 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import socket
-import logging
+import logging, socket, os
 from getpass import getpass
 from time import sleep, time
 

@@ -33,11 +33,13 @@ class Configure(object):
         '''Constructs the configure object. Gets the path for the configuration file, assigns the
         logging type. Tries to load the configuration file.'''
         self._config = configparser.ConfigParser()
-        self._config_path = os.path.join(root, "config.cfg")
+        self._config_path = os.path.dirname(os.path.abspath(__file__)) + "/config.cfg"
+        self.log_path = os.path.dirname(os.path.abspath(__file__)) + "/logs"
         self._default = default
         self._quiet = quiet
         self._options = ("Host", "Port", "Nick", "Ident", "Realname", "Chans")
         
+        print(self._config_path)
         self._setup_logging("all")        
         self._load()
         
@@ -144,10 +146,10 @@ class Configure(object):
             if log_type != "console":   
                 file_formatter = logging.Formatter("%(asctime)s - %(filename)s - %(levelname)s"
                                                    ": %(message)s")
-                if not os.path.isdir(os.curdir + "/logs"):
-                    os.mkdir(os.curdir + "/logs")
+                if not os.path.isdir(self.log_path):
+                    os.mkdir(self.log_path)
                     
-                logname = "logs/{0}.log".format(strftime("%H%M_%m%d%y"))
+                logname = (self.log_path + "/{0}.log").format(strftime("%H%M_%m%d%y"))
                 
                 # Files are saved in the logs sub-directory as HHMM_mmddyy.log
                 # If the session exceeds 6 hours, each file will have .# appended to

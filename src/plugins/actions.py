@@ -32,7 +32,7 @@ def hug(c, channel, command_type, line):
                     sender = c.get_sender(line)
                     c.con.me("hugs {} back.".format(sender), channel)
                 else:
-                    hugs = open('plugins/responses/hugs.txt')
+                    hugs = open(c.plugin_path + '/responses/hugs.txt')
                     lines = hugs.read().splitlines()
                     raw_line = choice(lines)
                     hug_line = re.sub('\{target\}', user, raw_line)
@@ -47,7 +47,7 @@ def flirt(c, channel, command_type, line):
     '''Flirts at a user, or at no one in particular.'''
     regex = re.compile("!?flirt(?:\swith)?\s(\w+)(?:(?:^and)?,\s(\w+))?(?:,?\s?and?\s?(\w+))?",re.IGNORECASE)
     r = re.search(regex, line)
-    flirts = open('plugins/responses/pickuplines.txt')
+    flirts = open(c.plugin_path + '/responses/pickuplines.txt')
     lines = flirts.read().splitlines()
     raw_line = choice(lines)
     if r and command_type != "private":
