@@ -37,7 +37,7 @@ class Configure(object):
         self.log_path = os.path.dirname(os.path.abspath(__file__)) + "/logs"
         self._default = default
         self._quiet = quiet
-        self._options = ("Host", "Port", "Nick", "Ident", "Realname", "Chans")
+        self._options = ("Host", "Port", "Nick", "Ident", "Realname", "Chans", "Botop")
         
         print(self._config_path)
         self._setup_logging("all")        
@@ -85,10 +85,11 @@ class Configure(object):
             realname = self._prompt("Ident", "GorillaBot")
             ident = self._prompt("Realname", "GorillaBot")
             chans = self._prompt("Chans")
+            botop = self._prompt("Bot operator(s)")
             print("------------------------------\n Host: {0}\n Port: {1}\n Nickname: "
               "{2}\n Real name: {3}\n Identifier: {4}\n Channels:"
-              " {5}\n------------------------------".format(host, port, nick,
-                                                            realname, ident, chans))
+              " {5}\n Bot operator(s): {6}\n------------------------------".format(host, port, nick,
+                                                            realname, ident, chans, botop))
             while verify != "y" and verify != "n":
                 verify = input ("Is this configuration correct? [Y/N]: ")
                 verify = verify.lower()
@@ -101,6 +102,7 @@ class Configure(object):
         parser.set("irc", "Realname", realname)
         parser.set("irc", "Ident", ident)
         parser.set("irc", "Chans", chans)
+        parser.set("irc", "Botop", botop)
         parser.write(file)
         self.logger.info("Config file saved.")
         
@@ -112,10 +114,11 @@ class Configure(object):
         realname = self._config.get("irc", "Realname")
         ident = self._config.get("irc", "Ident")
         chans = self._config.get("irc", "Chans")
+        botop = self._config.get("irc", "Botop")
         print("------------------------------\n Host: {0}\n Port: {1}\n Nickname: "
               "{2}\n Real name: {3}\n Identifier: {4}\n Channels:"
-              " {5}\n------------------------------".format(host, port, nick,
-                                                            realname, ident, chans))
+              " {5}\n Bot operator(s): {6}\n------------------------------".format(host, port, nick,
+                                                            realname, ident, chans, botop))
         
     def _reconfigure(self):
         '''Create a new configuration file and overwrite the old one.'''
@@ -173,7 +176,7 @@ class Configure(object):
                 
     def _verify(self):
         '''Verify that a configuration file is valid.'''
-        items = ("host", "port", "nick", "realname", "ident", "chans")
+        items = ("host", "port", "nick", "realname", "ident", "chans", "botop")
         for option in items:
             exists = self._config.has_option("irc", option)
             if not exists:
@@ -204,7 +207,9 @@ class Configure(object):
         realname = self._config.get("irc", "Realname")
         ident = self._config.get("irc", "Ident")
         chans = self._config.get("irc", "Chans")
+        botop = self._config.get("irc", "Botop")
         chanlist = chans.split()
+        oplist = botop.split()
         configuration = {"host":host, "port":port, "nick":nick,"realname":realname,
-                         "ident":ident, "chans":chanlist}
+                         "ident":ident, "chans":chanlist, "botop":oplist}
         return configuration

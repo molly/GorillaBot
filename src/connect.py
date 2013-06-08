@@ -28,7 +28,7 @@ __all__ = ["Connection"]
 class Connection(object):
     '''Performs the connection to the IRC server and communicates with it.'''
     
-    def __init__(self, bot, host, port, nick, ident, realname, chans):
+    def __init__(self, bot, host, port, nick, ident, realname, chans, botop):
         '''Constructs the connection object. Sets up logging.'''
         self._bot = bot
         self._host = host
@@ -37,9 +37,9 @@ class Connection(object):
         self._ident = ident
         self._realname = realname
         self._chans = chans
+        self.admins = botop
         self._password = None
         self._commands = None
-        self.admins = ["GorillaWarfare"] # To be changed later
         self.logger = logging.getLogger("GorillaBot")
         
         self._last_sent = 0
@@ -53,9 +53,9 @@ class Connection(object):
     def __repr__(self):
         '''Return the not-so-pretty representation of Connection.'''
         rep = "Connection: host={0!r}, port={1!r}, nick={2!r}, ident={3!r}, "
-        "realname={4!r}, channel={5!r}"
+        "realname={4!r}, channel={5!r}, botop={6!r}"
         return rep.format(self._host, self._port, self._nick, self._ident, self._realname,
-                          self._chans)
+                          self._chans, self.admins)
     
     def __str__(self):
         '''Return somewhat prettier representation of Connection.'''
