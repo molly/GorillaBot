@@ -43,7 +43,8 @@ class Bot(object):
         
         self.GorillaConnection = Connection(self, settings["host"], settings["port"],
                                             settings["nick"], settings["ident"],
-                                            settings["realname"], settings["chans"])
+                                            settings["realname"], settings["chans"],
+                                            settings["botop"])
         self.GorillaCommander = CommandManager(self, self.GorillaConnection)
         self.GorillaConnection._connect()
         
