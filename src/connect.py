@@ -85,8 +85,7 @@ class Connection(object):
         else:
             self._send("NICK {0}".format(self._nick))
             self._send("USER {0} {1} * :{2}".format(self._ident, self._host, self._realname))
-            for channel in self._chans:
-                self._send("JOIN {}".format(channel))
+            self.private_message("NickServ", "ACC")
             self.loop()
             
     def _receive(self, size=4096):
@@ -155,12 +154,17 @@ class Connection(object):
         self._last_received = time()
         self._bot.dispatch(line)      
         
-    def join(self, chan):   
+    def join(self, chan=None):   
         '''Join a channel.'''
-        self.logger.info("Joining {}.".format(chan))
-        self._send("JOIN {}".format(chan))
-        self._chans.append(chan)
-    
+        if chan:
+            self.logger.info("Joining {}.".format(chan))
+            self._send("JOIN {}".format(chan))
+            self._chans.append(chan)
+        else:
+            for chan in self._chans:
+                self.logger.info("Joining {}.".format(chan))
+                self._send("JOIN {}".format(chan))
+                
     def loop(self):
         '''Main connection loop.'''
         buffer = ''
@@ -197,12 +201,15 @@ class Connection(object):
             self.private_message("NickServ", "IDENTIFY {0} {1}".format(self._nick, self._password),
                                  True)
 
-    def part(self, chan):
+    def part(self, chan, remove_only=False):
         '''Part from an IRC channel.'''
-        if chan[0] == "#" and chan in self._chans:
-            self.logger.info("Parting from {}.".format(chan))
-            self._send("PART {}".format(chan))
+        if remove_only:
             self._chans.remove(chan)
+        else:
+            if chan[0] == "#" and chan in self._chans:
+                self.logger.info("Parting from {}.".format(chan))
+                self._send("PART {}".format(chan))
+                self._chans.remove(chan)
             
     def ping(self):
         '''Ping the host server.'''

@@ -45,7 +45,6 @@ class CommandManager(object):
         line_string = " ".join(line)
         line_string = line_string.replace("\"", "")
         line_string = line_string.replace("\'", "")
-        print(line_string)
         parser = re.compile("(?:\S+?:(\S+)!\S+\s)?([A-Z]+)\s(?:([^:]+)\s)?(?::(.+))?")
         r = re.search(parser, line_string)
         channel = r.group(3)
@@ -101,7 +100,6 @@ class CommandManager(object):
                 if command in self.command_list:
                     module_name = self.command_list[command]
                     exec_string = """{0}(self,"{1}","{2}","{3}")""".format(module_name, channel, command_type, line_string)
-                    print(exec_string)
                     exec(exec_string)
             else:
                 # There is no command in the line.
@@ -154,9 +152,13 @@ class CommandManager(object):
         elif "identified" in line:
             self.con._password = self.con._tentative_password
             self.logger.info("You have successfully identified as {}.".format(line[2]))
+            self.con.join()
         elif ":Invalid" in line:
             self.logger.info("You've entered an incorrect password. Please re-enter.")
             self.con.nickserv_identify()
+        elif "ACC" in line and "0" in line:
+            # Account is not registered; don't have to ident to join channels
+            self.con.join()
     
     def process_numcode(self, numcode, line):
         '''Parses a message with a reply code number and responds accordingly.'''
@@ -180,6 +182,9 @@ class CommandManager(object):
             self.logger.error("Unable to join channel {}.".format(line[3]))
             self.logger.info("You were forwarded to {}. Parting from this channel.".format(line[4]))
             self.con.part(line[4])
+        elif numcode == "473":
+            self.logger.error("Unable to join invite-only channel {}.".format(line[3]))
+            self.con.part(line[3], True)
             
     def throttle(self, command, delay=120):
         '''Keeps track of how often a command is executed, throttling it if it is executed too
