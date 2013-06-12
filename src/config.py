@@ -39,7 +39,6 @@ class Configure(object):
         self._quiet = quiet
         self._options = ("Host", "Port", "Nick", "Ident", "Realname", "Chans", "Botop")
         
-        print(self._config_path)
         self._setup_logging("all")        
         self._load()
         
