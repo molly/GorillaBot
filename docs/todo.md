@@ -1,7 +1,7 @@
 # To do
 
 ##Bugs
-* Flirt and regex commands break everything
+* ~~Flirt and regex commands break everything~~
 * If something goes wrong, the bot drops off the network
 
 ##General
