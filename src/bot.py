@@ -75,22 +75,3 @@ class Bot(object):
         # Identifies PRIVMSGs, sends to CommandManager
         elif line[1]=="PRIVMSG":
             self.GorillaCommander.check_command(line)
-
-    def process_number(self, message_number, line):
-        '''Parses a message with a reply code number and responds accordingly.'''
-        if message_number == "396":
-            # RPL_HOSTHIDDEN - Cloak set.
-            self.logger.info("Cloak set as {}.".format(line[3]))
-        elif message_number == "433":
-            # ERR_NICKNAMEINUSE - Nickname is already in use.
-            self.logger.error("Nickname is already in use. Closing connection.")
-            self.GorillaConnection.shut_down()
-        elif message_number == "442":
-            # ERR_NOTONCHANNEL - You're not in that channel
-            self.logger.info("You tried to part from {}, but you are not in that "
-                             "channel.".format(line[3]))
-        elif message_number == "470":
-            self.logger.error("Unable to join channel {}.".format(line[3]))
-            self.logger.info("Forwarded to {}. Parting from this channel.".format(line[4]))
-            self.GorillaConnection.part(line[4], "Forwarded to unwanted channel.")
-            

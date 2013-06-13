@@ -45,6 +45,7 @@ class Connection(object):
         self._last_sent = 0
         self._last_ping_sent = time()
         self._last_received = time()
+        self._notify_check = time()
         
         self._running = False
         self._reconnect_tries = 0 # Number of times the bot has auto-reconnected
@@ -77,6 +78,7 @@ class Connection(object):
     def _connect(self):
         '''Connect to the IRC server.'''
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.settimeout(5)
         try:
             self._socket.connect((self._host, self._port))
         except Exception:
@@ -91,11 +93,6 @@ class Connection(object):
     def _receive(self, size=4096):
         '''Receive messages from the IRC server.'''
         message = self._socket.recv(size)
-        if not message:
-            raise socket.error(0, "Socket connection broken.")
-            self.shut_down(True)
-            self._running = False
-            self.reconnect()
         return message
     
     def _reconnect(self):
@@ -172,20 +169,29 @@ class Connection(object):
         while True:
             try:
                 buffer += str(self._receive())
-            except socket.error:
+            except socket.timeout:
+                pass
+            except Exception:
                 self._running = False
                 self._reconnect()
                 break
-            list_of_lines = buffer.split("\\r\\n")
-            buffer = list_of_lines.pop()
-            for line in list_of_lines:
-                line = line.strip().split()
-                self.dispatch(line)
-            if not self._running:
-                self._reconnect()
-                break
-            
-            self.caffeinate()
+            else:
+                list_of_lines = buffer.split("\\r\\n")
+                buffer = list_of_lines.pop()
+                for line in list_of_lines:
+                    line = line.strip().split()
+                    print(line)
+                    self.dispatch(line)
+            finally:
+                if not self._running:
+                    self._reconnect()
+                    break
+                if time() - self._notify_check >= 10:
+                    # Perform a check on notified people every 5 minutes
+                    self._bot.GorillaCommander.stalker._update(self._bot)
+                    self._notify_check = time()
+                
+                self.caffeinate()
             
     def me(self, message, channel):
         '''Say an action to the channel.'''
@@ -242,3 +248,6 @@ class Connection(object):
         self.logger.info("Shutting down.")
         self.quit()
         self._close(retry)
+        
+    def whois(self, nick):
+        self._send("WHOIS {0}".format(nick))

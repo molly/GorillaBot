@@ -28,37 +28,65 @@ class Stalker(object):
         self.current_nick = '' # Who is the notify set on?
         self.current_sender = '' # Who set the notify?
         self.channel = '' # From where was the notify set?
-        self.c = None
+        self.status = '' # Away, online, offline
+        self.codes = []
+        self.con = None
         
-    def _recv_numcode(self, code):
+    def _recv_numcode(self):
         if not self.notify_status:
             return
-        if code == '401':
+        if '401' in self.codes:
             # User is offline
-            self.c.con.say('You will be notified when {} comes online.'.format(self.current_nick), self.channel)
-        elif code == '311':
-            # Whois response
-            self.c.con.say('{} is currently online.'.format(self.current_nick), self.channel)
+            self.con.say('You will be notified when {} comes online.'.format(self.current_nick), self.channel)
+            self.status = 'offline'
+        elif '301' in self.codes:
+            # User is away
+            self.con.say('You will be notified when {} returns from away.'.format(self.current_nick), self.channel)
+            self.status = 'away'
+        else:
+            self.con.say('{} is currently online.'.format(self.current_nick), self.channel)
             self.notify_dict[self.current_sender].remove(self.current_nick)
             if len(self.notify_dict[self.current_sender]) == 0:
                 del self.notify_dict[self.current_sender]
-        elif code == '318':
-            pp = pprint.PrettyPrinter(indent=4)
-            pp.pprint(self.notify_dict)
+        self._clear()           
+        
+    def _clear(self):
+        self.notify_status = False # Is the bot in the middle of figuring out a notify?
+        self.current_nick = '' # Who is the notify set on?
+        self.current_sender = '' # Who set the notify?
+        self.channel = '' # From where was the notify set?
+        self.status = '' # Away, online, offline
+        self.codes = []
+        self.con = None
+        
+    def _update(self, bot):
+        self.con = bot.GorillaConnection
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(self.notify_dict)
+        nicks = []
+        nick_vals = list(self.notify_dict.values())
+        for l in nick_vals:
+            for nick in l:
+                nicks.append(nick)
+        nicks = list(set(nicks))
+        for i in range(len(nicks)):
+            self.current_nick = nicks[i]
+            self.con.whois(nicks[i])
             
+        
     def notify(self, c, channel, command_type, line):
-        self.c = c
+        self.con = c.con
         self.channel=channel
         user = re.search(r'notify\s(?P<nick>[^\s]+)(?P<extra>.+)?', line)
         if user:
             if user.group('extra'):
-                c.con.say("You have used too many parameters. Please only set notification "
+                self.con.say("You have used too many parameters. Please only set notification "
                           "on one nick at a time.", channel)
                 return
             elif user.group('nick'):
                 self.current_nick = user.group('nick')
         else:
-            c.con.say("Please specify a nick.", channel)
+            self.con.say("Please specify a nick.", channel)
             return
         self.current_sender = c.get_sender(line)
         if self.current_sender not in self.notify_dict:
@@ -67,9 +95,9 @@ class Stalker(object):
             self.notify_status = True
         else:
             if self.current_nick in self.notify_dict[self.current_sender]:
-                c.con.say("{} is already in your notify list. Did you mean to denotify?".format(self.current_nick), channel)
+                self.con.say("{} is already in your notify list. Did you mean to denotify?".format(self.current_nick), channel)
                 return
             else:
                 self.notify_dict[self.current_sender].append(self.current_nick)
                 self.notify_status = True
-        c.con.whois(self.current_nick)
+        self.con.whois(self.current_nick)

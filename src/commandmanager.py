@@ -22,6 +22,7 @@ from inspect import getmembers, isfunction
 from time import time
 import logging, re, plugins, os
 from plugins import *
+from plugins.stalk import Stalker
 
 __all__ = ["CommandManager"]
 
@@ -37,6 +38,7 @@ class CommandManager(object):
         self.organize_commands()
         self._throttle_list = {}
         self.plugin_path = os.path.dirname(os.path.abspath(__file__)) + '/plugins'
+        self.stalker = Stalker()
         
     def check_command(self, line):
         '''Messages of type PRIVMSG will be passed through this function to check if they are
@@ -97,6 +99,9 @@ class CommandManager(object):
                         command = command_r.group(1)
                         
             if command != "":
+                if command in ["notify"]:
+                    exec_string = """self.stalker.{0}(self,"{1}","{2}","{3}")""".format(command, channel, command_type, line_string)
+                    exec(exec_string)
                 if command in self.command_list:
                     module_name = self.command_list[command]
                     exec_string = """{0}(self,"{1}","{2}","{3}")""".format(module_name, channel, command_type, line_string)
@@ -162,7 +167,12 @@ class CommandManager(object):
     
     def process_numcode(self, numcode, line):
         '''Parses a message with a reply code number and responds accordingly.'''
-        if numcode == "396":
+        if numcode in ["301", "311", "401"]:
+            self.stalker.codes.append(numcode)
+        elif numcode == "318":
+            # End of whois
+            self.stalker._recv_numcode(self.con)
+        elif numcode == "396":
             # RPL_HOSTHIDDEN - Cloak set.
             self.logger.info("Cloak set as {}.".format(line[3]))
         elif numcode == "403":
