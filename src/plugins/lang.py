@@ -18,8 +18,37 @@
 # OUT OF OR IN c.con WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import re
+import pickle, os, re
 
-languages = 
+path = os.path.dirname(os.path.abspath(__file__))
+print(path)
 
+with open(path + '/langcodes.pickle', 'rb') as f:
+    languages = pickle.load(f)
+  
 def lang(c, channel, command_type, line):
+    match = re.search(r'!?lang\s(?P<code>[^\s]+)', line)
+    if match:
+        code = match.group('code').lower()
+        if code in languages:
+            c.con.say(code + ' is ' + languages[code] + '.', channel)
+        else:
+            c.con.say("No language code '" + code + "'.", channel)
+    else:
+        c.con.say('Please format this command !lang [code].', channel)
+        
+def reverse(c, channel, command_type, line):
+    match = re.search(r'!?reverse\s(?P<code>.*)', line)
+    if match:
+        output = []
+        lang = match.group('code').lower()
+        for k,v in languages.items():
+            if lang in v.lower() and ',' not in v:
+                output.append(v + ' is ' + k)
+        if len(output) > 0:
+            output = ', '.join(output)
+            c.con.say(output, channel)
+        else:
+            c.con.say("No language code for '" + lang + "'.", channel)
+    else:
+        c.con.say("Please format this command !reverse [language].")
