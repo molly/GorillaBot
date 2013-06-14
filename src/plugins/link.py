@@ -43,7 +43,6 @@ def link(c, channel, command_type, line):
         
 def user(c, channel, command_type, line):
     '''Returns a link to the userpage; command formatted as !user Username'''
-    print(line)
     regex = re.compile("!?user\s(.*)",re.IGNORECASE)
     r = re.search(regex, line)
     if r:

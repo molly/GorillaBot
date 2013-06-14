@@ -18,7 +18,7 @@
 # OUT OF OR IN c.con WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import re, pprint
+import re
 
 class Stalker(object):
     def __init__(self):
@@ -52,21 +52,16 @@ class Stalker(object):
                     self._notify_watchers(self.current_nick)
         else:
             # Updating
-            print(self.codes)
             if '401' in self.codes:
                 if self.notify_dict[nick][0] == 'away':
                     for user in self.notify_dict[nick][1]:
-                        self.con.private_message(user, '{} has gone offline. You will be notified when {} returns'.format(nick))
+                        self.con.private_message(user, '{0} has gone offline. You will be notified when {0} returns'.format(nick))
                     self.notify_dict[nick][0] = 'offline'
-                else:
-                    print(nick, 'is still offline')
             elif '301' in self.codes:
                 if self.notify_dict[nick][0] != 'away':
                     for user in self.notify_dict[nick][1]:
                         self.con.private_message(user, '{} has returned, but is marked as away.'.format(nick))
                     self.notify_dict[nick][0] = 'away'
-                else:
-                    print(nick, 'is still offline')
             else:
                 if nick in self.notify_dict:
                     for user in self.notify_dict[nick][1]:
@@ -83,16 +78,24 @@ class Stalker(object):
         self.codes = []
         self.con = None
         
-    def _notify_watchers(self, nick):
-        print(nick)
-        
+    def _nick_change(self, line):
+        match = re.search(r':(?P<nick>.*?)!', line[0])
+        if not match:
+            return
+        old_nick = match.group('nick')
+        new_nick = line[2][1:]
+        if old_nick in self.notify_dict:
+            self.notify_dict[new_nick] = self.notify_dict[old_nick]
+            del self.notify_dict[old_nick]
+        for nick in self.notify_dict.keys():
+            for num in range(len(self.notify_dict[nick][1])):
+                if self.notify_dict[nick][1][num] == old_nick: 
+                    self.notify_dict[nick][1][num] = new_nick
+                    
     def _update(self, bot):
         self.con = bot.GorillaConnection
-        pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(self.notify_dict)
         for nick in self.notify_dict.keys():
             self.con.whois(nick)    
-            print(self.notify_status)
             
         
     def notify(self, c, channel, command_type, line):

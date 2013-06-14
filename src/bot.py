@@ -75,3 +75,7 @@ class Bot(object):
         # Identifies PRIVMSGs, sends to CommandManager
         elif line[1]=="PRIVMSG":
             self.GorillaCommander.check_command(line)
+           
+        # Nick changes 
+        elif line[1] == "NICK":
+            self.GorillaCommander.stalker._nick_change(line)
