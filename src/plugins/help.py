@@ -23,10 +23,16 @@ def commands(c, channel, command_type, line):
     if command_type == "private":
         # Any commands you want to hide from the list (e.g. regex-triggered commands)
         hide_commands = ["alfred"]
+        # Any commands that need to be added to the list
+        add_commands = ["notify"]
         commands = list(c.con._commands.keys())
         for remove_command in hide_commands:
             if remove_command in commands:
                 commands.remove(remove_command)
+        for add_command in add_commands:
+            if add_command not in commands:
+                commands.append(add_command)
+        commands.sort()
         commands = ", ".join(commands)
         c.con.say("I know the following commands: {}. For further documentation, see "
                  "http://git.io/pNQS6g.".format(commands), channel)
