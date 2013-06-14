@@ -28,27 +28,51 @@ class Stalker(object):
         self.current_nick = '' # Who is the notify set on?
         self.current_sender = '' # Who set the notify?
         self.channel = '' # From where was the notify set?
-        self.status = '' # Away, online, offline
         self.codes = []
         self.con = None
         
-    def _recv_numcode(self):
-        if not self.notify_status:
-            return
-        if '401' in self.codes:
-            # User is offline
-            self.con.say('You will be notified when {} comes online.'.format(self.current_nick), self.channel)
-            self.status = 'offline'
-        elif '301' in self.codes:
-            # User is away
-            self.con.say('You will be notified when {} returns from away.'.format(self.current_nick), self.channel)
-            self.status = 'away'
+    def _recv_numcode(self, con, nick):
+        self.con = con
+        if self.notify_status:
+            # Determining initial connection status
+            if '401' in self.codes:
+                # User is offline
+                self.con.say('You will be notified when {} comes online.'.format(self.current_nick), self.channel)
+                self.notify_dict[self.current_nick][0] = 'offline'
+            elif '301' in self.codes:
+                # User is away
+                self.con.say('You will be notified when {} returns from away.'.format(self.current_nick), self.channel)
+                self.notify_dict[self.current_nick][0] = 'away'
+            else:
+                self.con.say('{} is already online.'.format(self.current_nick), self.channel)
+                if len(self.notify_dict[self.current_nick][1]) == 1:
+                    del self.notify_dict[self.current_nick]
+                else:
+                    self.notify_dict[self.current_nick][1].remove(self.current_sender)
+                    self._notify_watchers(self.current_nick)
         else:
-            self.con.say('{} is currently online.'.format(self.current_nick), self.channel)
-            self.notify_dict[self.current_sender].remove(self.current_nick)
-            if len(self.notify_dict[self.current_sender]) == 0:
-                del self.notify_dict[self.current_sender]
-        self._clear()           
+            # Updating
+            print(self.codes)
+            if '401' in self.codes:
+                if self.notify_dict[nick][0] == 'away':
+                    for user in self.notify_dict[nick][1]:
+                        self.con.private_message(user, '{} has gone offline. You will be notified when {} returns'.format(nick))
+                    self.notify_dict[nick][0] = 'offline'
+                else:
+                    print(nick, 'is still offline')
+            elif '301' in self.codes:
+                if self.notify_dict[nick][0] != 'away':
+                    for user in self.notify_dict[nick][1]:
+                        self.con.private_message(user, '{} has returned, but is marked as away.'.format(nick))
+                    self.notify_dict[nick][0] = 'away'
+                else:
+                    print(nick, 'is still offline')
+            else:
+                if nick in self.notify_dict:
+                    for user in self.notify_dict[nick][1]:
+                        self.con.private_message(user, '{} has returned.'.format(nick))
+                    del self.notify_dict[nick]
+        self._clear()
         
     def _clear(self):
         self.notify_status = False # Is the bot in the middle of figuring out a notify?
@@ -59,19 +83,16 @@ class Stalker(object):
         self.codes = []
         self.con = None
         
+    def _notify_watchers(self, nick):
+        print(nick)
+        
     def _update(self, bot):
         self.con = bot.GorillaConnection
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(self.notify_dict)
-        nicks = []
-        nick_vals = list(self.notify_dict.values())
-        for l in nick_vals:
-            for nick in l:
-                nicks.append(nick)
-        nicks = list(set(nicks))
-        for i in range(len(nicks)):
-            self.current_nick = nicks[i]
-            self.con.whois(nicks[i])
+        for nick in self.notify_dict.keys():
+            self.con.whois(nick)    
+            print(self.notify_status)
             
         
     def notify(self, c, channel, command_type, line):
@@ -89,15 +110,14 @@ class Stalker(object):
             self.con.say("Please specify a nick.", channel)
             return
         self.current_sender = c.get_sender(line)
-        if self.current_sender not in self.notify_dict:
-            self.notify_dict[self.current_sender] = [self.current_nick]
-            self.ind = 0
+        if self.current_nick not in self.notify_dict:
+            self.notify_dict[self.current_nick] = ['', [self.current_sender]]
             self.notify_status = True
         else:
-            if self.current_nick in self.notify_dict[self.current_sender]:
+            if self.current_sender in self.notify_dict[self.current_nick][1]:
                 self.con.say("{} is already in your notify list. Did you mean to denotify?".format(self.current_nick), channel)
                 return
             else:
-                self.notify_dict[self.current_sender].append(self.current_nick)
+                self.notify_dict[self.current_nick][1].append(self.current_sender)
                 self.notify_status = True
         self.con.whois(self.current_nick)
