@@ -16,7 +16,10 @@ In the examples below, I use the `!command` syntax, but the other two would work
 * [flirt](#flirt)
 * [help](#help)
 * [hug](#hug)
+* [lang] (#lang)
 * [link](#link)
+* [notify] (#notify)
+* [reverse] (#reverse)
 * [user](#user)
 * [usertalk](#usertalk)
 
@@ -93,6 +96,16 @@ Hugs the specified user. If no user is specified, the bot hugs the whole channel
 *GorillaBot distributes hugs evenly among the channel
 ```
 
+### Lang ###
+	!lang [code]
+	
+Looks up the full name of the language from a language code. These are only for languages used one Wikipedia; it is not a comprehensive list of ISO codes.
+
+```irc
+<GorillaWarfare> !lang en
+<GorillaBot> en is English.
+```
+
 ### Link ###
     !link [[Article]]
     !link [[Article#Section]]
@@ -105,6 +118,28 @@ Provide a link to a Wikipedia article.
 <GorillaBot> http://en.wikipedia.org/wiki/Hello_World
 <GorillaWarfare> !link {{Welcome}}
 <GorillaBot> http://en.wikipedia.org/wiki/Template:Welcome
+```
+
+### Notify ###
+	!notify [nick]
+	
+Notifies you in private message when a user comes online or returns from away.
+
+```irc
+<GorillaWarfare> !notify test_test
+<GorillaBot> You will be notified when test_test comes online.
+-->| test_test (___@gateway/web/freenode/ip.___) has joined ##GorillaBot
+<GorillaBot> test_test has returned.
+```
+
+### Reverse ###
+	!reverse [language]
+	
+Looks up the language code from the name of a language. It will return any languages in which the specified language is included.
+
+```irc
+<GorillaWarfare> !reverse English
+<GorillaBot> English is en, Simple English is simple
 ```
 
 ### User ###
