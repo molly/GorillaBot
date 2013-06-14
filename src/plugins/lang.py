@@ -21,7 +21,6 @@
 import pickle, os, re
 
 path = os.path.dirname(os.path.abspath(__file__))
-print(path)
 
 with open(path + '/langcodes.pickle', 'rb') as f:
     languages = pickle.load(f)
