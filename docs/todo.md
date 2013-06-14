@@ -13,8 +13,8 @@
 * Gracefully exit on `KeyboardInterrupt`
 * `VERSION` reply
 * Check security
-* Join channels after identifying to NickServ (to avoid issues with invite-only channels that depend on the cloak)
-* Send initialize commands as a response to 004, not immediately
+* ~~Join channels after identifying to NickServ (to avoid issues with invite-only channels that depend on the cloak)~~
+* ~~Send initialize commands as a response to 004, not immediately~~
 * ~~Hook commands?~~
 * Add API section to config file
 * ~~Move string lists, etc. to a data file~~
@@ -26,13 +26,13 @@
 * ~~Allow bot admins to be added and removed while the bot is live~~
     * Store in config file?
 * ~~Add regex matching to trigger commands (be sure to throttle)~~
-* Don't hardcode bot admins
+* ~~Don't hardcode bot admins~~
 
 ##Plugins
 ###Wikipedia-related
 * Return first sentence of Wikipedia article
 * Wiktionary definitions
-* Language codes
+* ~~Language codes~~
 * User info
   * Edit count
   * User rights
@@ -47,7 +47,7 @@
   * Unit conversion
   * Time zone conversion
   * Wolfram?
-* Stalk users (find out when the bot last saw them online)
+* ~~Stalk users (find out when the bot last saw them online)~~
 * Translate
 * Weather
 * Trout, whale, other violent commands
