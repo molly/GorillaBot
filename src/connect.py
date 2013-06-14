@@ -180,7 +180,7 @@ class Connection(object):
                 buffer = list_of_lines.pop()
                 for line in list_of_lines:
                     line = line.strip().split()
-                    print(line)
+#                    print(line)
                     self.dispatch(line)
             finally:
                 if not self._running:

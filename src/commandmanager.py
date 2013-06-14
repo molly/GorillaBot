@@ -171,7 +171,7 @@ class CommandManager(object):
             self.stalker.codes.append(numcode)
         elif numcode == "318":
             # End of whois
-            self.stalker._recv_numcode(self.con)
+            self.stalker._recv_numcode(self.con, line[3])
         elif numcode == "396":
             # RPL_HOSTHIDDEN - Cloak set.
             self.logger.info("Cloak set as {}.".format(line[3]))
