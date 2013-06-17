@@ -37,7 +37,7 @@ class Configure(object):
         self.log_path = os.path.dirname(os.path.abspath(__file__)) + "/logs"
         self._default = default
         self._quiet = quiet
-        self._options = ("Host", "Port", "Nick", "Ident", "Realname", "Chans", "Botop")
+        self._options = ("Host", "Port", "Nick", "Ident", "Realname", "Chans", "Botop", "Fullop")
         
         self._setup_logging("all")        
         self._load()
@@ -102,6 +102,7 @@ class Configure(object):
         parser.set("irc", "Ident", ident)
         parser.set("irc", "Chans", chans)
         parser.set("irc", "Botop", botop)
+        parser.set("irc", "Fullop", '[]')
         parser.write(file)
         self.logger.info("Config file saved.")
         
@@ -175,7 +176,7 @@ class Configure(object):
                 
     def _verify(self):
         '''Verify that a configuration file is valid.'''
-        items = ("host", "port", "nick", "realname", "ident", "chans", "botop")
+        items = ("host", "port", "nick", "realname", "ident", "chans", "botop", "fullop")
         for option in items:
             exists = self._config.has_option("irc", option)
             if not exists:
@@ -207,8 +208,9 @@ class Configure(object):
         ident = self._config.get("irc", "Ident")
         chans = self._config.get("irc", "Chans")
         botop = self._config.get("irc", "Botop")
+        fullop = self._config.get("irc", "Fullop")
         chanlist = chans.split()
         oplist = botop.split()
         configuration = {"host":host, "port":port, "nick":nick,"realname":realname,
-                         "ident":ident, "chans":chanlist, "botop":oplist}
+                         "ident":ident, "chans":chanlist, "botop":oplist, "fullop":fullop}
         return configuration

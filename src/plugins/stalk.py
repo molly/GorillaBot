@@ -24,7 +24,6 @@ class Stalker(object):
     def __init__(self):
         self.stalk_dict = dict()
         self.notify_dict = dict()
-        self.notify_status = False # Is the bot in the middle of figuring out a notify?
         self.current_nick = '' # Who is the notify set on?
         self.current_sender = '' # Who set the notify?
         self.channel = '' # From where was the notify set?
@@ -68,9 +67,9 @@ class Stalker(object):
                         self.con.private_message(user, '{} has returned.'.format(nick))
                     del self.notify_dict[nick]
         self._clear()
+        c.con.whois_dest = None
         
     def _clear(self):
-        self.notify_status = False # Is the bot in the middle of figuring out a notify?
         self.current_nick = '' # Who is the notify set on?
         self.current_sender = '' # Who set the notify?
         self.channel = '' # From where was the notify set?
@@ -101,6 +100,7 @@ class Stalker(object):
     def notify(self, c, channel, command_type, line):
         self.con = c.con
         self.channel=channel
+        self._clear() # Once more for good measure
         user = re.search(r'notify\s(?P<nick>[^\s]+)(?P<extra>.+)?', line)
         if user:
             if user.group('extra'):
@@ -115,12 +115,12 @@ class Stalker(object):
         self.current_sender = c.get_sender(line)
         if self.current_nick not in self.notify_dict:
             self.notify_dict[self.current_nick] = ['', [self.current_sender]]
-            self.notify_status = True
+            c.con.whois_dest = ['notify', '']
         else:
             if self.current_sender in self.notify_dict[self.current_nick][1]:
                 self.con.say("{} is already in your notify list. Did you mean to denotify?".format(self.current_nick), channel)
                 return
             else:
                 self.notify_dict[self.current_nick][1].append(self.current_sender)
-                self.notify_status = True
+                c.con.whois_dest = ['notify', '']
         self.con.whois(self.current_nick)

@@ -28,7 +28,7 @@ __all__ = ["Connection"]
 class Connection(object):
     '''Performs the connection to the IRC server and communicates with it.'''
     
-    def __init__(self, bot, host, port, nick, ident, realname, chans, botop):
+    def __init__(self, bot, host, port, nick, ident, realname, chans, botop, fullop):
         '''Constructs the connection object. Sets up logging.'''
         self._bot = bot
         self._host = host
@@ -38,6 +38,7 @@ class Connection(object):
         self._realname = realname
         self._chans = chans
         self.admins = botop
+        self.full_admins = eval(fullop)
         self._password = None
         self._commands = None
         self.logger = logging.getLogger("GorillaBot")
@@ -50,6 +51,8 @@ class Connection(object):
         self._running = False
         self._reconnect_tries = 0 # Number of times the bot has auto-reconnected
         self._try_reconnect = True
+        self._getting_admins = [False, None] # True if the bot is currently trying to add an admin
+        self._whois_dest = None
         
     def __repr__(self):
         '''Return the not-so-pretty representation of Connection.'''
@@ -135,6 +138,42 @@ class Connection(object):
                     msg.append(words.pop(0))
                 yield " ".join(msg)          
     
+    def get_admin(self, nick=None, setter=None):
+        if not nick:
+            if len(self.full_admins) == 0:
+                for nick in self.admins:
+                    self._getting_admins = [True, setter]
+                    self.whois(nick)
+        else:
+            self._getting_admins = [True, setter]
+            self.whois(nick)
+                
+    def set_admin(self, line):
+        if line[1] == '311':
+            nick = line[3]
+            username = line[4]
+            host = line[5]
+            full = [nick, username + '@' + host]
+        elif line[1] == '401':
+            nick = line[3]
+            full = [nick, '']
+        
+        print('full', full)    
+        
+        config = self._bot._configuration._config
+        file = self._bot._configuration._config_path
+        full_op = eval(config.get("irc", "Fullop"))
+        if len(full_op) == 0:
+            new_full_op = [full]
+            config.set("irc", "Fullop", repr(new_full_op))
+        else:
+            full_op.append(full)
+            config.set("irc", "Fullop", repr(full_op))
+        with open(file, 'w') as configfile:
+            config.write(configfile)
+        self._whois_dest = None
+        self._getting_admins = [False, None]
+        
     def caffeinate(self):
         '''Keep the connection open.'''
         now = time()
@@ -250,4 +289,5 @@ class Connection(object):
         self._close(retry)
         
     def whois(self, nick):
+        print(self._whois_dest)
         self._send("WHOIS {0}".format(nick), hide=True)

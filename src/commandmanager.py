@@ -35,6 +35,7 @@ class CommandManager(object):
         self._bot_nick = connection._nick
         self.logger = logging.getLogger("GorillaBot")
         self.command_list = {}
+        self.admin_only = ['addadmin', 'join', 'part', 'quit', 'shutdown', 'removeadmin']
         self.organize_commands()
         self._throttle_list = {}
         self.plugin_path = os.path.dirname(os.path.abspath(__file__)) + '/plugins'
@@ -102,7 +103,11 @@ class CommandManager(object):
                 if command in ["notify"]:
                     exec_string = """self.stalker.{0}(self,"{1}","{2}","{3}")""".format(command, channel, command_type, line_string)
                     exec(exec_string)
-                if command in self.command_list:
+                elif command in self.admin_only:
+                    module_name = self.command_list[command]
+                    exec_string = """{0}(c, "{1}","{2}","{3}")""".format(command, channel, command_type, line_string)
+                    admin._is_admin(self, line_string, channel, exec_string)
+                elif command in self.command_list:
                     module_name = self.command_list[command]
                     exec_string = """{0}(self,"{1}","{2}","{3}")""".format(module_name, channel, command_type, line_string)
                     exec(exec_string)
@@ -164,14 +169,20 @@ class CommandManager(object):
         elif "ACC" in line and "0" in line:
             # Account is not registered; don't have to ident to join channels
             self.con.join()
+            self.con.get_admin()
     
     def process_numcode(self, numcode, line):
         '''Parses a message with a reply code number and responds accordingly.'''
-        if numcode in ["301", "311", "401"]:
-            self.stalker.codes.append(numcode)
-        elif numcode == "318":
-            # End of whois
-            self.stalker._recv_numcode(self.con, line[3])
+        if self.con._whois_dest:
+            if numcode in ["301", "311", "401"] and self.con._whois_dest[0] == 'notify':
+                self.stalker.codes.append(numcode)
+            elif (numcode == "311" or numcode == "401") and self.con._whois_dest[0] == 'adminlist':
+                self.con.set_admin(line)
+            elif numcode == "311" and self.con._whois_dest[0] == 'isadmin':
+                admin._is_admin_response(self, line, self.con._whois_dest[1])
+            elif numcode == "318" and self.con._whois_dest[0] == 'notify':
+                # End of whois
+                self.stalker._recv_numcode(self.con, line[3])
         elif numcode == "396":
             # RPL_HOSTHIDDEN - Cloak set.
             self.logger.info("Cloak set as {}.".format(line[3]))
