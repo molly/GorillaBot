@@ -27,6 +27,7 @@
     * Store in config file?
 * ~~Add regex matching to trigger commands (be sure to throttle)~~
 * ~~Don't hardcode bot admins~~
+* Determine bot op based on ident, not nick
 
 ##Plugins
 ###Wikipedia-related

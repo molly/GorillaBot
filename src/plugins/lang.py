@@ -39,15 +39,11 @@ def lang(c, channel, command_type, line):
 def reverse(c, channel, command_type, line):
     match = re.search(r'!?reverse\s(?P<code>.*)', line)
     if match:
-        output = []
         lang = match.group('code').lower()
         for k,v in languages.items():
-            if lang in v.lower() and ',' not in v:
-                output.append(v + ' is ' + k)
-        if len(output) > 0:
-            output = ', '.join(output)
-            c.con.say(output, channel)
-        else:
-            c.con.say("No language code for '" + lang + "'.", channel)
+            if lang == v.lower():
+                c.con.say(v + ' is ' + k, channel)
+                return
+        c.con.say("No language code for '" + lang + "'.", channel)
     else:
-        c.con.say("Please format this command !reverse [language].")
+        c.con.say("Please format this command !reverse [language].", channel)
