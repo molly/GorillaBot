@@ -176,9 +176,9 @@ class CommandManager(object):
         if self.con._whois_dest:
             if numcode in ["301", "311", "401"] and self.con._whois_dest[0] == 'notify':
                 self.stalker.codes.append(numcode)
-            elif (numcode == "311" or numcode == "401") and self.con._whois_dest[0] == 'adminlist':
+            elif numcode in ["311", "401"] and self.con._whois_dest[0] == 'adminlist':
                 self.con.set_admin(line)
-            elif numcode == "311" and self.con._whois_dest[0] == 'isadmin':
+            elif numcode in ["311", "353"] and self.con._whois_dest[0] == 'isadmin':
                 admin._is_admin_response(self, line, self.con._whois_dest[1])
             elif numcode == "318" and self.con._whois_dest[0] == 'notify':
                 # End of whois
