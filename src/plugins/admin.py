@@ -25,7 +25,6 @@ def _is_admin(c, line, channel, exec_string):
     c.con.full_admins = eval(c.con._bot._configuration._config.get("irc", "Fullop"))
     sender = c.get_sender(line)
     if sender in c.con.admins:
-        print(sender, 'is in list of current admins. checking ident.')
         c.con._whois_dest = ['isadmin', exec_string]
         c.con.whois(sender)
     else:
@@ -38,11 +37,8 @@ def _is_admin_response(c, line, exec_string):
     sender_id = line[4] + '@' + line[5]
     current_admins = c.con.full_admins
     for i in range(len(current_admins)):
-        print(nick, current_admins[i][0])
         if nick == current_admins[i][0]:
-            print('here')
             if sender_id == current_admins[i][1]:
-                print('all set. executing ', exec_string)
                 c.con._whois_dest = None
                 exec(exec_string)
                 return
@@ -52,7 +48,6 @@ def _is_admin_response(c, line, exec_string):
                 c.con.get_admin(nick, None)
                 return
     c.con.say("Your cloak does not match the cloak on file.", nick)
-    print(sender_id)
 
 def addadmin(c, channel, command_type, line):
     '''Adds an administrator to the list of bot admins.'''
@@ -73,7 +68,6 @@ def addadmin(c, channel, command_type, line):
             
 def adminlist(c, channel, command_type, line):
     '''Prints a list of bot administrators.'''
-    print(c.con.full_admins)
     if len(c.con.admins) == 1:
         c.con.say("My bot admin is {}.".format(c.con.admins[0]), channel)
     else:
