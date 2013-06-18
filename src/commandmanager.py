@@ -153,6 +153,10 @@ class CommandManager(object):
                 if module_command[0] != "_":
                     exec("self.command_list['{0}'] = '{1}.{0}'".format(module_command, module))
         self.con._commands = self.command_list
+        
+    def nick_change(self, line):
+        self.stalker._nick_change(line)
+        admin._nick_change(self, line)
             
     def nickserv_parse(self, line):
         '''Parses a message from NickServ and responds accordingly.'''

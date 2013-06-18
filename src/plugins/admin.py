@@ -58,6 +58,25 @@ def _is_admin_response(c, line, exec_string):
             return
         else:
             c.con.say("Please ask a bot administrator or channel operator to perform this command for you.", nick)
+            
+def _nick_change(c, line):
+    c.con.full_admins = eval(c.con._bot._configuration._config.get("irc", "Fullop"))
+    original = re.search(r'\:(?P<nick>.*?)\!', line[0])
+    if original:
+        original = original.group('nick')
+        nick = line[2][1:]
+        for i in range(len(c.con.admins)):
+            if original == c.con.admins[i]:
+                c.con.admins[i] = nick
+        for i in range(len(c.con.full_admins)):
+            if original == c.con.full_admins[i][0]:
+                c.con.full_admins[i][0] = nick
+        config = c._bot._configuration._config
+        file = c._bot._configuration._config_path
+        config.set("irc", "Botop", " ".join(c.con.admins))
+        config.set("irc", "Fullop", repr(c.con.full_admins))
+        with open(file, 'w') as configfile:
+            config.write(configfile)
 
 def addadmin(c, channel, command_type, line):
     '''Adds an administrator to the list of bot admins.'''
@@ -68,6 +87,11 @@ def addadmin(c, channel, command_type, line):
         nick = r.group('nick')
         if nick not in c.con.admins:
             c.con.admins.append(nick)
+            config = c._bot._configuration._config
+            file = c._bot._configuration._config_path
+            config.set("irc", "Botop", " ".join(c.con.admins))
+            with open(file, 'w') as configfile:
+                config.write(configfile)
             c.con._whois_dest = ['adminlist', '']
             c.con.get_admin(nick, sender)
             c.con.say("{} is now a bot admin.".format(nick), channel)
@@ -126,24 +150,29 @@ def shutdown(c, channel, command_type, line):
 
 def removeadmin(c, channel, command_type, line):
     '''Removes an admin from the list of bot admins.'''
-    regex = re.compile("!?removeadmin\s(.*)",re.IGNORECASE)
+    c.con.full_admins = eval(c.con._bot._configuration._config.get("irc", "Fullop"))
+    config = c._bot._configuration._config
+    file = c._bot._configuration._config_path
+    regex = re.compile("!?removeadmin\s(?P<nick>[^\s]+)",re.IGNORECASE)
     r = re.search(regex, line)
     if r:
-        users = r.group(1).split()
-        for user in users:
-            if user in c.con.admins:
-                if len(c.con.admins) == 1:
-                    c.con.say("You are the only bot administrator. Please add another"
-                              " admin or disconnect the bot before removing yourself.", channel)
-                    return 0
-                c.con.admins.remove(user)
-            else:
-                c.con.say("{} is not on the list of bot admins.".format(user), channel)
-                users.remove(user)
-        if len(users) == 1:
-            c.con.say("{} is no longer a bot admin.".format(users[0]), channel)
+        nick = r.group('nick')
+        if nick in c.con.admins:
+            if len(c.con.admins) == 1:
+                c.con.say("You are the only bot administrator. Please add another"
+                          " admin or disconnect the bot before removing yourself.", channel)
+                return
+            c.con.admins.remove(nick)
+            for i in range(len(c.con.full_admins)):
+                if c.con.full_admins[i][0] == nick:
+                    c.con.full_admins.pop(i)
+                    config.set("irc", "Botop", " ".join(c.con.admins))
+                    config.set("irc", "Fullop", repr(c.con.full_admins))
+                    with open(file, 'w') as configfile:
+                        config.write(configfile)
+                    break
+            c.con.say("{} is no longer a bot admin.".format(nick), channel)
         else:
-            users = ', '.join(users)
-            c.con.say("{} are no longer bot admins.".format(users), channel)
+            c.con.say("{} is not on the list of bot admins.".format(nick), channel)
     else:
-        c.con.say("Please specify which admin to remove.", channel)
+        c.con.say("Please format this command !removeadmin [nick].", channel)

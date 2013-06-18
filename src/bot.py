@@ -78,4 +78,4 @@ class Bot(object):
            
         # Nick changes 
         elif line[1] == "NICK":
-            self.GorillaCommander.stalker._nick_change(line)
+            self.GorillaCommander.nick_change(line)
