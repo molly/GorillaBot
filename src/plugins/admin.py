@@ -25,29 +25,39 @@ def _is_admin(c, line, channel, exec_string):
     c.con.full_admins = eval(c.con._bot._configuration._config.get("irc", "Fullop"))
     sender = c.get_sender(line)
     if sender in c.con.admins:
-        c.con._whois_dest = ['isadmin', exec_string]
+        c.con._whois_dest = ['isadmin', exec_string, sender]
         c.con.whois(sender)
     else:
-        c.con.say("Ask a bot admin to perform this for you.", channel)
-        return False
+        c.con._whois_dest = ['isadmin', exec_string, sender]
+        c.con.names(channel)
 
 def _is_admin_response(c, line, exec_string):
     '''Catch the whois response and execute the command if the user matches a bot admin.'''
-    nick = line[3]
-    sender_id = line[4] + '@' + line[5]
-    current_admins = c.con.full_admins
-    for i in range(len(current_admins)):
-        if nick == current_admins[i][0]:
-            if sender_id == current_admins[i][1]:
-                c.con._whois_dest = None
-                exec(exec_string)
-                return
-            elif current_admins[i][1] == '':
-                # Sender is in list of admins, but there's no cloak on file.
-                c.con.say("You are on the list of admins, but your cloak was not on file. Your cloak will be added; please resend the command.", nick)
-                c.con.get_admin(nick, None)
-                return
-    c.con.say("Your cloak does not match the cloak on file.", nick)
+    if line[1] == "311":
+        nick = line[3]
+        sender_id = line[4] + '@' + line[5]
+        current_admins = c.con.full_admins
+        for i in range(len(current_admins)):
+            if nick == current_admins[i][0]:
+                if sender_id == current_admins[i][1]:
+                    c.con._whois_dest = None
+                    exec(exec_string)
+                    return
+                elif current_admins[i][1] == '':
+                    # Sender is in list of admins, but there's no cloak on file.
+                    c.con.say("You are on the list of admins, but your cloak was not on file. Your cloak will be added; please resend the command.", nick)
+                    c.con.get_admin(nick, None)
+                    return
+        c.con.say("Your cloak does not match the cloak on file.", nick)
+    else:
+        nick = c.con._whois_dest[2]
+        if ('@' + nick) in line:
+            #User is a channel operator
+            c.con._whois_dest = None
+            exec(exec_string)
+            return
+        else:
+            c.con.say("Please ask a bot administrator or channel operator to perform this command for you.", nick)
 
 def addadmin(c, channel, command_type, line):
     '''Adds an administrator to the list of bot admins.'''

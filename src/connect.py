@@ -250,7 +250,10 @@ class Connection(object):
     def me(self, message, channel):
         '''Say an action to the channel.'''
         self.say("\x01ACTION {0}\x01".format(message), channel)
-            
+        
+    def names(self, channel):
+        self._send("NAMES {0}".format(channel))
+        
     def nickserv_identify(self):
         '''Prompt the user to enter their password, then identify to NickServ.'''
         if not self._password:
