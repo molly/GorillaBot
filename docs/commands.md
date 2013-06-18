@@ -9,7 +9,6 @@ The bot receives commands in one of three ways:
 In the examples below, I use the `!command` syntax, but the other two would work equally well.
 
 ##Commands
-###[All users](#all-user-commands)
 * [adminlist](#adminlist)
 * [commands](#commands-1)
 * [emergencyshutoff](#emergencyshutoff)
@@ -23,12 +22,7 @@ In the examples below, I use the `!command` syntax, but the other two would work
 * [user](#user)
 * [usertalk](#usertalk)
 
-###[Bot admins only](#bot-admin-commands)
-* [addadmin](#addadmin)
-* [join](#join)
-* [part](#part)
-* [quit](#quit)
-* [removeadmin](#removeadmin)
+
 
 ## All-user commands ##
 ### Adminlist ###
@@ -164,31 +158,3 @@ Provide a link to a Wikipedia user talk page.
 <GorillaWarfare> !usertalk GorillaWarfare
 <GorillaBot> http://en.wikipedia.org/wiki/User_talk:GorillaWarfare
 ```
-
-## Bot admin commands ##
-
-### Addadmin ###
-    !addadmin user
-
-Adds the user to the list of bot administrators.
-
-### Join ###
-    !join #channel
-    
-Joins the specified channel (or list of channels). Channels must be preceded with a pound sign, or the bot will ignore them.
-
-### Part ###
-	!part #channel
-
-Parts from the specified channel (or list of channels).
-
-### Quit ###
-	!quit
-	!shutdown
-	
-The bot gracefully exits and shuts down completely.
-
-### Removeadmin ###
-	!removeadmin user
-
-Removes the user from the list of bot administrators. If you are the only administrator and you attempt to remove yourself from the list, the bot will ask you to add someone else before doing so.

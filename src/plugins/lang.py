@@ -26,6 +26,7 @@ with open(path + '/langcodes.pickle', 'rb') as f:
     languages = pickle.load(f)
   
 def lang(c, channel, command_type, line):
+    '''Look up the full language from a language code.'''
     match = re.search(r'!?lang\s(?P<code>[^\s]+)', line)
     if match:
         code = match.group('code').lower()
@@ -37,6 +38,7 @@ def lang(c, channel, command_type, line):
         c.con.say('Please format this command !lang [code].', channel)
         
 def reverse(c, channel, command_type, line):
+    '''Look up the language code from a full language.'''
     match = re.search(r'!?reverse\s(?P<code>.*)', line)
     if match:
         lang = match.group('code').lower()
