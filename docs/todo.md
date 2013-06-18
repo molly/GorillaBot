@@ -28,6 +28,8 @@
 * ~~Add regex matching to trigger commands (be sure to throttle)~~
 * ~~Don't hardcode bot admins~~
 * Determine bot op based on ident, not nick
+* Allow channel ops to perform bot admin commands
+* Write tests
 
 ##Plugins
 ###Wikipedia-related

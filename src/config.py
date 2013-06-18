@@ -66,7 +66,7 @@ class Configure(object):
                 self.logger.info("Opening {}.".format(self._config_path))
                 self._verify()
             except IOError:
-                self.logger.exception("Unable to open {}.".format(self._config_path))
+                self.logger.error("Unable to open {}.".format(self._config_path))
         else:
             self.logger.info("No configuration file found. Creating file.")
             self._make_new(self._config)
@@ -125,7 +125,7 @@ class Configure(object):
         try:
             os.remove(self._config_path)
         except:
-            self.logger.exception("Unable to remove existing config file.")
+            self.logger.error("Unable to remove existing config file.")
         else:
             new_config = configparser.ConfigParser()
             self._make_new(new_config)            

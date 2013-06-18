@@ -29,8 +29,10 @@ class Stalker(object):
         self.channel = '' # From where was the notify set?
         self.codes = []
         self.con = None
+        self.notify_status = False # Are we setting up an initial notify?
         
     def _recv_numcode(self, con, nick):
+        '''Interpret numcodes from the whois response.'''
         self.con = con
         if self.notify_status:
             # Determining initial connection status
@@ -67,9 +69,11 @@ class Stalker(object):
                         self.con.private_message(user, '{} has returned.'.format(nick))
                     del self.notify_dict[nick]
         self._clear()
-        c.con.whois_dest = None
+        self.con._whois_dest = None
+        self.notify_status = False
         
     def _clear(self):
+        '''Clear state information'''
         self.current_nick = '' # Who is the notify set on?
         self.current_sender = '' # Who set the notify?
         self.channel = '' # From where was the notify set?
@@ -78,6 +82,7 @@ class Stalker(object):
         self.con = None
         
     def _nick_change(self, line):
+        '''Called when a user changes nick to update the notify dict.'''
         match = re.search(r':(?P<nick>.*?)!', line[0])
         if not match:
             return
@@ -92,12 +97,13 @@ class Stalker(object):
                     self.notify_dict[nick][1][num] = new_nick
                     
     def _update(self, bot):
+        '''Called repeatedly to check if anyone has come online/back.'''
         self.con = bot.GorillaConnection
         for nick in self.notify_dict.keys():
             self.con.whois(nick)    
-            
         
     def notify(self, c, channel, command_type, line):
+        '''Command to notify a user if another user comes online or back from away.'''
         self.con = c.con
         self.channel=channel
         self._clear() # Once more for good measure
@@ -115,12 +121,14 @@ class Stalker(object):
         self.current_sender = c.get_sender(line)
         if self.current_nick not in self.notify_dict:
             self.notify_dict[self.current_nick] = ['', [self.current_sender]]
-            c.con.whois_dest = ['notify', '']
+            self.con._whois_dest = ['notify', '']
+            self.notify_status = True
         else:
             if self.current_sender in self.notify_dict[self.current_nick][1]:
                 self.con.say("{} is already in your notify list. Did you mean to denotify?".format(self.current_nick), channel)
                 return
             else:
                 self.notify_dict[self.current_nick][1].append(self.current_sender)
-                c.con.whois_dest = ['notify', '']
+                self.con._whois_dest = ['notify', '']
+                self.notify_status = True
         self.con.whois(self.current_nick)

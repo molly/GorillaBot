@@ -85,7 +85,7 @@ class Connection(object):
         try:
             self._socket.connect((self._host, self._port))
         except Exception:
-            self.logger.exception("Unable to connect to IRC server. Check your Internet "
+            self.logger.error("Unable to connect to IRC server. Check your Internet "
                                   "connection.")
         else:
             self._send("NICK {0}".format(self._nick))
@@ -116,7 +116,7 @@ class Connection(object):
         except socket.error:
             self._running = False
             self._reconnect()
-            self.logger.exception("Message " + message + " failed to send.")
+            self.logger.error("Message " + message + " failed to send.")
         else:
             if not hide:
                 self.logger.info("Sent message: " + message)
@@ -139,40 +139,55 @@ class Connection(object):
                 yield " ".join(msg)          
     
     def get_admin(self, nick=None, setter=None):
+        '''Begin process to get the cloak for a bot admin.'''
         if not nick:
-            if len(self.full_admins) == 0:
+            self.full_admins = eval(self._bot._configuration._config.get("irc", "Fullop"))
+            if len(self.full_admins) != len(self.admins):
                 for nick in self.admins:
+                    if any(nick == x[0] for x in self.full_admins):
+                        continue
                     self._getting_admins = [True, setter]
+                    self._whois_dest = ['adminlist', '']
                     self.whois(nick)
+                    return
+            else:
+                self._whois_dest = None
         else:
             self._getting_admins = [True, setter]
+            self._whois_dest = ['adminlist', '']
             self.whois(nick)
                 
     def set_admin(self, line):
+        '''Add an admin and his or her cloak to the admin list.'''
         if line[1] == '311':
             nick = line[3]
             username = line[4]
             host = line[5]
-            full = [nick, username + '@' + host]
+            cloak = username + '@' + host
         elif line[1] == '401':
             nick = line[3]
-            full = [nick, '']
-        
-        print('full', full)    
+            cloak = ''
         
         config = self._bot._configuration._config
         file = self._bot._configuration._config_path
         full_op = eval(config.get("irc", "Fullop"))
         if len(full_op) == 0:
-            new_full_op = [full]
+            new_full_op = [[nick, cloak]]
             config.set("irc", "Fullop", repr(new_full_op))
+        elif any(nick == x[0] for x in full_op):
+            for i in range(len(full_op)):
+                if nick == full_op[i][0]:
+                    full_op[i][1] = cloak
+                    config.set("irc", "Fullop", repr(full_op))
+                    break
         else:
-            full_op.append(full)
+            full_op.append([nick, cloak])
             config.set("irc", "Fullop", repr(full_op))
         with open(file, 'w') as configfile:
             config.write(configfile)
         self._whois_dest = None
         self._getting_admins = [False, None]
+        self.get_admin()
         
     def caffeinate(self):
         '''Keep the connection open.'''
@@ -219,7 +234,7 @@ class Connection(object):
                 buffer = list_of_lines.pop()
                 for line in list_of_lines:
                     line = line.strip().split()
-                    print(line)
+                    #print(line)
                     self.dispatch(line)
             finally:
                 if not self._running:
@@ -289,5 +304,4 @@ class Connection(object):
         self._close(retry)
         
     def whois(self, nick):
-        print(self._whois_dest)
         self._send("WHOIS {0}".format(nick), hide=True)
