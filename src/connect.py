@@ -209,12 +209,12 @@ class Connection(object):
         '''Join a channel.'''
         if chan:
             self.logger.info("Joining {}.".format(chan))
-            self._send("JOIN {}".format(chan))
+            self._send("JOIN {}".format(chan), True)
             self._chans.append(chan)
         else:
             for chan in self._chans:
                 self.logger.info("Joining {}.".format(chan))
-                self._send("JOIN {}".format(chan))
+                self._send("JOIN {}".format(chan), True)
                 
     def loop(self):
         '''Main connection loop.'''

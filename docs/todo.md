@@ -24,11 +24,11 @@
 * Allow part and quit commands to display a message as well
 * Allow command aliases
 * ~~Allow bot admins to be added and removed while the bot is live~~
-    * Store in config file?
+    * ~~Store in config file?~~
 * ~~Add regex matching to trigger commands (be sure to throttle)~~
 * ~~Don't hardcode bot admins~~
-* Determine bot op based on ident, not nick
-* Allow channel ops to perform bot admin commands
+* ~~Determine bot op based on ident, not nick~~
+* ~~Allow channel ops to perform bot admin commands~~
 * Write tests
 
 ##Plugins
