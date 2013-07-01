@@ -93,7 +93,7 @@ Hugs the specified user. If no user is specified, the bot hugs the whole channel
 ### Lang ###
 	!lang [code]
 	
-Looks up the full name of the language from a language code. These are only for languages used one Wikipedia; it is not a comprehensive list of ISO codes.
+Looks up the full name of the language from a language code. These are only for languages used on Wikipedia; it is not a comprehensive list of ISO codes.
 
 ```irc
 <GorillaWarfare> !lang en
