@@ -62,3 +62,4 @@
 * Allow users to make the bot say things
 * !tea
 * Ops abilities
+* "ping me in <x> sec/min/hours/days" function
