@@ -1,3 +1,0 @@
-attaches to {target}'s leg.
-glomps {target}.
-flying tackle-hugs {target}.
