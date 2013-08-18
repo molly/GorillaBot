@@ -155,6 +155,7 @@ class Configure(object):
         except:
             self.logger.error('Unable to remove existing configuration file.')
         else:
+            self.config = configparser.ConfigParser()
             self.make_new()
     
     def setup_logging(self):
