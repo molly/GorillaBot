@@ -171,8 +171,8 @@ class Configure(object):
             
             # Create the file logger
             if self.log_type != 'console':
-                file_formatter = logging.Formatter("%(asctime)s - %(filename)s - %(levelname)s"
-                                                   ": %(message)s")
+                file_formatter = logging.Formatter("%(asctime)s - %(filename)s - %(threadName)s - "
+                                                   "%(levelname)s : %(message)s")
                 
                 if not os.path.isdir(self.log_path):
                     os.mkdir(self.log_path)
@@ -188,7 +188,7 @@ class Configure(object):
             
             # Create the console logger
             if self.log_type != "file":
-                console_formatter = logging.Formatter("%(asctime)s - %(levelname)s"
+                console_formatter = logging.Formatter("%(asctime)s - %(threadName)s - %(levelname)s"
                                                       ": %(message)s", datefmt="%I:%M:%S %p")
                 consolehandler = logging.StreamHandler()
                 consolehandler.setFormatter(console_formatter)
