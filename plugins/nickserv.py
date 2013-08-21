@@ -20,5 +20,6 @@
 
 import logging
 
-def ping(bot):
-    print('ping')
+def identify(bot):
+    logger = logging.getLogger("GorillaBot")
+    logger.info( 'identify' )

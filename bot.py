@@ -18,7 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import logging, plugins, queue, socket, sys, threading
+import logging, queue, socket, sys, threading
+from command import Command
 from configure import Configure
 from executor import Executor
 from time import time, sleep
@@ -188,39 +189,3 @@ class Bot(object):
         will create new threads as needed from this thread.'''
         threading.Thread(name='IO', target=self.connect).start()
         threading.Thread(name='Executor', target=self.executor.loop).start()
-        
-class Command(object):
-    '''Represents a command received from a user.'''
-    
-    def __init__(self, bot, line, type):
-        self.Bot = bot
-        self.line = line
-        self.command_type = type        # Type of command
-        self.trigger = None             # Function this command triggers
-        self.args = None                # Arguments for command
-        self.needs_own_thread = False   # Should this command be given its own thread?
-        self.channel = None             # Channel in which command was received
-        self.sender = None              # Nick who sent the command
-        
-        self.interpret()
-        
-    def __repr__(self):
-        return '<Command type: {0}>'.format(self.command_type)
-    
-    def __str__(self):
-        return ('Command\n\tType: {0}\n\tResponse: {1}({2})\n\tChannel: {3}\n\tSender: {4}\n\t{5}'
-                .format(self.command_type, self.trigger, self.args, self.channel, self.sender, self.line))
-    
-    def interpret(self):
-        if self.command_type == 'NickServ':
-            if 'ACC' in self.line and '0' in self.line:
-                # Nick isn't registered; no need to identify
-                self.trigger = self.Bot.join
-                self.args = self.Bot.settings['chans']
-            elif 'identify' in self.line:
-                # Nick is registered; prompt for identification
-                self.trigger = plugins.util.identify
-                self.args = self.Bot
-                #self.needs_own_thread = True
-        else:
-            pass
