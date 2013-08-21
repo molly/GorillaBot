@@ -41,4 +41,4 @@ class Executor(object):
                     command.trigger()
                 self.command_q.task_done()
             else:
-                print(command)
+                threading.Thread(name=command.trigger.__name__, target=command.trigger, args=command.args).start()
