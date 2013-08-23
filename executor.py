@@ -36,7 +36,8 @@ class Executor(object):
             if not command.needs_own_thread:
                 # Call the function the command triggers
                 if command.args != None:
-                    command.trigger(command.args)
+                    print(command.args)
+                    command.trigger(*command.args)
                 else:
                     command.trigger()
                 self.command_q.task_done()

@@ -19,7 +19,29 @@
 # SOFTWARE.
 
 import logging
+from queue import Empty
 
 def identify(bot):
     logger = logging.getLogger("GorillaBot")
-    logger.info( 'identify' )
+    bot.waiting_for_response = True
+    identified = False
+    while not identified:
+        password = input("Please enter your password to identify to NickServ: ")
+        bot.private_message('NickServ', 'identify ' + password, False)
+        while True:
+            try:
+                response = bot.response_q.get(True, 120)
+            except Empty:
+                logger.error("No response from NickServ when trying to identify."
+                             "Shutting down.")
+                bot.shut_down()
+            logger.info(response)
+            if 'NickServ' not in response[0]:
+                continue
+            if 'Invalid' in response[3]:
+                logger.info('Invalid password entered.')
+                break
+            if 'identified' in response[6]:
+                logger.info('You have successfully identified.')
+                identified = True
+                bot.waiting_for_response = False
