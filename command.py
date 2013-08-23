@@ -18,13 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import plugins
+import logging, plugins
 
 class Command(object):
     '''Represents a command received from a user.'''
     
     def __init__(self, bot, line, type):
         self.Bot = bot
+        self.logger = logging.getLogger("GorillaBot")
         self.line = line
         self.command_type = type        # Type of command
         self.trigger = None             # Function this command triggers
@@ -46,8 +47,10 @@ class Command(object):
         '''Call the correct function to determine the command.'''
         if self.command_type == 'NickServ':
             self.nickserv_command()
-        elif self.command_type == 'ping':
+        elif self.command_type == 'ping' or 'ping' in self.line:
+            self.logger.debug("Ping received. Ponging.")
             self.trigger = plugins.util.pong
+            self.args.append(self.line[1][1:])
         else:
             pass
     
@@ -56,7 +59,7 @@ class Command(object):
         if 'ACC' in self.line and '0' in self.line:
             # Nick isn't registered; no need to identify
             self.trigger = self.Bot.join
-            self.args = self.Bot.settings['chans']
+            self.args = [self.Bot.settings['chans']]
         elif 'identify' in self.line:
             # Nick is registered; prompt for identification
             self.trigger = plugins.nickserv.identify

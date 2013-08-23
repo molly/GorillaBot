@@ -37,6 +37,7 @@ class Bot(object):
         self.logger = logging.getLogger('GorillaBot')
         self.configuration = Configure( self.default, self.log_type, self.quiet )
         self.command_q = queue.Queue(100) # I'd be amazed if we hit 100 commands, but might as well set a limit
+        self.response_q = queue.Queue(100)
         self.executor = Executor(self.command_q)
         
         self.channels = []  #List of currently-joined channels
@@ -44,6 +45,7 @@ class Bot(object):
         self.last_received = time()
         self.last_ping_sent = time()
         self.running = False
+        self.waiting_for_response = False
         self.numcodes = ['301', '311', '318', '353', '396', '401', '403', '433', '442', '470', '473']
         
         self.settings = self.configuration.get_configuration()
@@ -88,9 +90,13 @@ class Bot(object):
         if 'PING' in line[0]:
             command = Command(self, line, 'ping')
         elif 'NickServ' in line[0]:
+            if self.waiting_for_response:
+                self.response_q.put(line)
             command = Command(self, line, 'NickServ')
         elif len(line) > 1:
             if len(line[1]) == 3 and line[1].isdigit() and line[1] in self.numcodes:
+                if self.waiting_for_response:
+                    self.response_q.put(line[1])
                 command = Command(self, line, 'numcode')
             elif line[1] == 'PRIVMSG':
                 command = Command(self, line, 'message')
@@ -162,6 +168,9 @@ class Bot(object):
             if not hide:
                 self.logger.info('Sent: ' + message)
             self.last_sent = time()
+    
+    def shut_down(self):
+        pass
             
     def split(self, message, maxlen=400, maxsplits=5):
         '''Split a message into smaller sections. Messages that are longer than

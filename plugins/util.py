@@ -18,7 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import logging
-
-def ping(bot):
-    print('ping')
+def pong(bot, server):
+    '''Respond to a ping from a server with a pong to that same server.'''
+    bot.send('PONG {}'.format(server))
