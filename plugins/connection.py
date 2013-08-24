@@ -18,4 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import plugins.connection, plugins.nickserv, plugins.util
+from plugins.util import admin, command
+
+def _pong(bot, server):
+    '''Respond to a ping from a server with a pong to that same server.'''
+    bot.send('PONG {}'.format(server))

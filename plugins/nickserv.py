@@ -20,8 +20,9 @@
 
 import logging
 from queue import Empty
+from plugins.util import admin
 
-def identify(bot):
+def _identify(bot):
     logger = logging.getLogger("GorillaBot")
     bot.waiting_for_response = True
     identified = False
