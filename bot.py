@@ -52,8 +52,6 @@ class Bot(object):
         self.base_path = os.path.dirname(os.path.abspath(__file__))
 
         self.admin_commands, self.commands = self.load_commands()
-        print(self.admin_commands)
-        print(self.commands)
         self.start()
         
     def caffeinate(self):
@@ -92,6 +90,7 @@ class Bot(object):
         to the queue.'''
         self.logger.debug(line)
         
+        command = None
         if 'PING' in line[0]:
             command = Command(self, line, 'ping')
         elif 'NickServ' in line[0]:
@@ -104,7 +103,17 @@ class Bot(object):
                     self.response_q.put(line[1])
                 command = Command(self, line, 'numcode')
             elif line[1] == 'PRIVMSG':
-                command = Command(self, line, 'message')
+                nick = self.settings['nick']
+                if line[2] == nick:
+                    command = Command(self, line, 'private_message')
+                elif nick in line[3]:
+                    command = Command(self, line, 'direct_message')
+                else:
+                    for ind, word in enumerate(line):
+                        if word[0] == '!' or (ind == 3 and word[1] == '!'):
+                            command = Command(self, line, 'exclamation_message')
+                if not command:
+                    return
             else:
                 return
         else:
@@ -168,6 +177,14 @@ class Bot(object):
     def receive(self, size=4096):
         '''Receive messages from the IRC server.'''
         return self.socket.recv(size)
+    
+    def ping(self):
+        self.logger.debug('Pinging server.')
+        self.send('PING {}'.format(self.settings['host']))
+    
+    def say(self, channel, message, hide=False):
+        '''Say a message into a channel.'''
+        self.private_message(channel, message, hide)
 
     def send(self, message, hide=False):
         '''Send messages to the IRC server.'''
