@@ -21,6 +21,8 @@
 import os, pickle
 
 def admin(*args):
+    '''Designates bot administrator-only commands. Args is a list of command
+    aliases.'''
     def decorator(func):
         path = os.path.dirname(os.path.abspath(__file__)) + '/commands.pkl'
         try:
@@ -39,6 +41,8 @@ def admin(*args):
     return decorator
     
 def command(*args):
+    '''Designates general bot commands. Args is a list of command
+    aliases.'''
     def decorator(func):
         path = os.path.dirname(os.path.abspath(__file__)) + '/admincommands.pkl'
         try:

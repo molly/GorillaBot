@@ -36,4 +36,5 @@ nosetests.xml
 
 *.cfg
 *.log
+*.pkl
 src/.DS_Store
