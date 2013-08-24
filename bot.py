@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import logging, queue, socket, sys, threading
+import logging, os, pickle, queue, socket, threading
 from command import Command
 from configure import Configure
 from executor import Executor
@@ -49,6 +49,11 @@ class Bot(object):
         self.numcodes = ['301', '311', '318', '353', '396', '401', '403', '433', '442', '470', '473']
         
         self.settings = self.configuration.get_configuration()
+        self.base_path = os.path.dirname(os.path.abspath(__file__))
+
+        self.admin_commands, self.commands = self.load_commands()
+        print(self.admin_commands)
+        print(self.commands)
         self.start()
         
     def caffeinate(self):
@@ -115,7 +120,20 @@ class Bot(object):
                 self.logger.info('Joining {}.'.format(channel))
                 self.send('JOIN ' + channel)
                 self.channels.append(channel)
-                        
+                
+    def load_commands(self):
+        try:
+            with open(self.base_path + '/plugins/commands.pkl', 'rb') as admin_file:
+                admin_commands = pickle.load(admin_file)
+        except:
+            admin_commands = None
+        try:
+            with open(self.base_path + '/plugins/admincommands.pkl', 'rb') as command_file:
+                commands = pickle.load(command_file)
+        except:
+            commands = None
+        return admin_commands, commands
+        
     def loop(self):
         '''Main connection loop.'''
         self.running = True
