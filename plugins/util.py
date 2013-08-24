@@ -18,6 +18,40 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-def pong(bot, server):
-    '''Respond to a ping from a server with a pong to that same server.'''
-    bot.send('PONG {}'.format(server))
+import os, pickle
+
+def admin(*args):
+    def decorator(func):
+        path = os.path.dirname(os.path.abspath(__file__)) + '/commands.pkl'
+        try:
+            with open(path, 'rb') as pickle_file:
+                commands = pickle.load(pickle_file)
+        except:
+            commands = dict()
+        command_name = func.__module__ + '.' + func.__name__
+        if args:
+            for name in args:
+                commands[name] = command_name
+        commands[func.__name__] = command_name
+        with open(path, 'wb') as pickle_file:
+            pickle.dump(commands, pickle_file)
+        return func
+    return decorator
+    
+def command(*args):
+    def decorator(func):
+        path = os.path.dirname(os.path.abspath(__file__)) + '/admincommands.pkl'
+        try:
+            with open(path, 'rb') as pickle_file:
+                commands = pickle.load(pickle_file)
+        except:
+            commands = dict()
+        command_name = func.__module__ + '.' + func.__name__
+        if args:
+            for name in args:
+                commands[name] = command_name
+        commands[func.__name__] = command_name
+        with open(path, 'wb') as pickle_file:
+            pickle.dump(commands, pickle_file)
+        return func
+    return decorator

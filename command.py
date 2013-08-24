@@ -49,7 +49,7 @@ class Command(object):
             self.nickserv_command()
         elif self.command_type == 'ping' or 'ping' in self.line:
             self.logger.debug("Ping received. Ponging.")
-            self.trigger = plugins.util.pong
+            self.trigger = plugins.util._pong
             self.args.append(self.line[1][1:])
         else:
             pass
@@ -62,5 +62,5 @@ class Command(object):
             self.args = [self.Bot.settings['chans']]
         elif 'identify' in self.line:
             # Nick is registered; prompt for identification
-            self.trigger = plugins.nickserv.identify
+            self.trigger = plugins.nickserv._identify
             self.needs_own_thread = True
