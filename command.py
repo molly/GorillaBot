@@ -98,7 +98,7 @@ class Command(object):
             self.dispatch()
         else:
             pass
-     
+    
     def nickserv_command(self):
         '''Respond to a command from NickServ'''
         if 'ACC' in self.line and '0' in self.line:
