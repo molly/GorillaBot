@@ -47,16 +47,21 @@ class Command(object):
         '''Respond to a command from a user.'''
         command = self.line[0]
         args = self.line[1:]
-        if command in self.Bot.admin_commands:
-            pass
-        if command in self.Bot.commands:
-            self.trigger = eval(self.Bot.commands[command])
-            self.args.append(self.sender)
-            self.args.append(self.channel)
-            self.args.append(args)
-    
-    def is_admin(self, user):
-        return True
+        if self.Bot.admin_commands:
+            if command in self.Bot.admin_commands:
+                if plugins.connection._is_admin(self.Bot, self.sender):
+                    self.trigger = eval(self.Bot.admin_commands[command])
+                    self.args.append(self.sender)
+                    self.args.append(self.channel)
+                    self.args.append(args)
+                else:
+                    self.Bot.say(self.channel, "Please ask a bot operator to perform this action for you.")
+        if self.Bot.commands:
+            if command in self.Bot.commands:
+                self.trigger = eval(self.Bot.commands[command])
+                self.args.append(self.sender)
+                self.args.append(self.channel)
+                self.args.append(args)
             
     def interpret(self):
         '''Call the correct function to determine the command.'''

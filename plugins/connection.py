@@ -23,6 +23,8 @@ from queue import Empty
 from plugins.util import admin, command
 
 def _get_admin(bot, *users):
+    '''Add a user's ident and host to the list of bot admins. Note that this
+    doesn't work if the user is offline.'''
     bot.response_lock.acquire()
     logger = logging.getLogger('GorillaBot')
     if not users:
@@ -53,7 +55,9 @@ def _get_admin(bot, *users):
     bot.response_lock.release()
 
 def _is_admin(bot, user):
-    logger = logging.getLogger('GorillaBot')
+    '''Returns true if the user is a bot admin, false otherwise. If the user's ident
+    and host are not in the list, but the user's nick is, we assume that user is
+    indeed an admin, and add theirident and host to the list.'''
     match = re.search('\:(?P<nick>.+?)!(?P<ident>.+?)@(?P<host>.+?)\Z', user)
     if match:
         sender_nick = match.group('nick')
@@ -70,6 +74,32 @@ def _is_admin(bot, user):
             return True
     return False
 
+@admin('leave')
+def part(bot, *args):
+    '''Part from a channel with an optional message.'''
+    if not args[2] or args[2][0][0] != '#':
+        bot.say(args[1], "Please specify which channel to leave by typing !part #channel")
+    else:
+        channel = args[2][0]
+        if channel not in bot.channels:
+            bot.say(args[1], "I'm not in {}".format(channel))
+        else:
+            bot.channels.remove(channel)
+            if len(args[2]) == 1:
+                bot.send('PART {} Leaving'.format(args[2][0]))
+            else:
+                bot.send('PART {0} {1}'.format(args[2][0], (' ').join(args[2][1:])))
+
 def _pong(bot, server):
     '''Respond to a ping from a server with a pong to that same server.'''
     bot.send('PONG {}'.format(server))
+    
+@admin('quit')
+def shut_down(bot, *args):
+    '''Quit from the server and shut down the bot.'''
+    if args[2]:
+        message = (' ').join(args[2])
+    else:
+        message = 'Shutting down'
+    bot.send('QUIT {}'.format(message))
+    bot.shutdown.set()
