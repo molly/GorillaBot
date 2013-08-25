@@ -45,7 +45,7 @@ class Bot(object):
         self.last_sent = 0
         self.last_received = time()
         self.last_ping_sent = time()
-        self.running = False
+        self.shutdown = threading.Event()
         self.response_lock = threading.Lock()
         self.waiting_for_response = False
         self.numcodes = ['001', '301', '311', '318', '330', '353', '396', '401', '403', '433', '442', '470', '473']
@@ -89,9 +89,7 @@ class Bot(object):
     
     def dispatch(self, line):
         '''Determines the type of message received, creates a command object, adds it
-        to the queue.'''
-        self.logger.debug(line)
-        
+        to the queue.'''        
         command = None
         if 'PING' in line[0]:
             command = Command(self, line, 'ping')
@@ -142,8 +140,7 @@ class Bot(object):
         
     def loop(self):
         '''Main connection loop.'''
-        self.running = True
-        while True:
+        while not self.shutdown.is_set():
             try:
                 buffer = ''
                 buffer += str(self.receive())
@@ -205,9 +202,6 @@ class Bot(object):
             if not hide:
                 self.logger.info('Sent: ' + message)
             self.last_sent = time()
-    
-    def shut_down(self):
-        pass
             
     def split(self, message, maxlen=400, maxsplits=5):
         '''Split a message into smaller sections. Messages that are longer than
@@ -234,7 +228,7 @@ class Bot(object):
         simple commands that do not require threads of their own. More complex commands
         will create new threads as needed from this thread.'''
         threading.Thread(name='IO', target=self.connect).start()
-        threading.Thread(name='Executor', target=self.executor.loop).start()
+        threading.Thread(name='Executor', target=self.executor.loop, args=(self,)).start()
     
     def whois(self, user):
         self.send("WHOIS {0}".format(user))

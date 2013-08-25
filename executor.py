@@ -27,9 +27,9 @@ class Executor(object):
         self.command_q = command_q
         self.logger = logging.getLogger('GorillaBot')
         
-    def loop(self):
+    def loop(self, bot):
         self.logger.debug('Thread created.')
-        while True:
+        while not bot.shutdown.is_set():
             # Block until a command exists in the queue
             command = self.command_q.get()
             if not command.needs_own_thread:
