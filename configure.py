@@ -56,14 +56,14 @@ class Configure(object):
         else:
             chanlist = chans.split(' ')
         for i in range(len(chanlist)):
-            chanlist[i].strip()
+            chanlist[i] = chanlist[i].strip()
         
         if ',' in botop:
             oplist = botop.split(',')
         else:
             oplist = botop.split(' ')
         for i in range(len(oplist)):
-            oplist[i].strip()
+            oplist[i] = oplist[i].strip()
             
         configuration = {"host":host, "port":port, "nick":nick,"realname":realname,
                          "ident":ident, "chans":chanlist, "botop":oplist, "fullop":fullop}

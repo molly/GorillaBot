@@ -47,11 +47,12 @@ class Command(object):
         '''Respond to a command from a user.'''
         command = self.line[0]
         args = self.line[1:]
-        self.logger.info(command)
         if command in self.Bot.admin_commands:
             pass
         if command in self.Bot.commands:
             self.trigger = eval(self.Bot.commands[command])
+            self.args.append(self.sender)
+            self.args.append(self.channel)
             self.args.append(args)
     
     def is_admin(self, user):
@@ -65,6 +66,10 @@ class Command(object):
             self.logger.debug("Ping received. Ponging.")
             self.trigger = plugins.connection._pong
             self.args.append(self.line[1][1:])
+        elif self.command_type == 'numcode':
+            if self.line[1] == '001':
+                self.trigger = plugins.connection._get_admin
+                self.needs_own_thread = True
         elif self.command_type == 'private_message':
             self.sender = self.line[0]
             self.channel = self.line[2]
@@ -92,7 +97,6 @@ class Command(object):
             self.channel = self.line[2]
             if len(self.line) == 4:
                 self.line = [self.line[3][2:]]
-                print(self.line)
             else:
                 self.line = [self.line[3][2:]] + self.line[4:]
             self.dispatch()

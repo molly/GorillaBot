@@ -32,8 +32,6 @@ class Executor(object):
         while True:
             # Block until a command exists in the queue
             command = self.command_q.get()
-            self.logger.info(command.trigger)
-            self.logger.info(command.args)
             if not command.needs_own_thread:
                 # Call the function the command triggers
                 if command.args != None:

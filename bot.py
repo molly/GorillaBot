@@ -40,13 +40,15 @@ class Bot(object):
         self.response_q = queue.Queue(100)
         self.executor = Executor(self.command_q)
         
+        self.admins = dict()
         self.channels = []  #List of currently-joined channels
         self.last_sent = 0
         self.last_received = time()
         self.last_ping_sent = time()
         self.running = False
+        self.response_lock = threading.Lock()
         self.waiting_for_response = False
-        self.numcodes = ['301', '311', '318', '353', '396', '401', '403', '433', '442', '470', '473']
+        self.numcodes = ['001', '301', '311', '318', '330', '353', '396', '401', '403', '433', '442', '470', '473']
         
         self.settings = self.configuration.get_configuration()
         self.base_path = os.path.dirname(os.path.abspath(__file__))
@@ -59,7 +61,7 @@ class Bot(object):
         now = time()
         if now - self.last_received > 150:
             if self.last_ping_sent < self.last_received:
-                self.logger.info('Pinging server.')
+                self.logger.debug('Pinging server.')
                 self.ping()
             elif now - self.last_ping_sent > 60:
                 self.logger.warning('No ping response in 60 seconds. '
@@ -100,7 +102,7 @@ class Bot(object):
         elif len(line) > 1:
             if len(line[1]) == 3 and line[1].isdigit() and line[1] in self.numcodes:
                 if self.waiting_for_response:
-                    self.response_q.put(line[1])
+                    self.response_q.put(line)
                 command = Command(self, line, 'numcode')
             elif line[1] == 'PRIVMSG':
                 nick = self.settings['nick']
@@ -112,16 +114,11 @@ class Bot(object):
                     for ind, word in enumerate(line):
                         if word[0] == '!' or (ind == 3 and word[1] == '!'):
                             command = Command(self, line, 'exclamation_message')
-                if not command:
-                    return
-            else:
-                return
-        else:
-            return
         
         # Add to the command queue to be executed
-        if command.trigger:
-            self.command_q.put(command)
+        if command:
+            if command.trigger:
+                self.command_q.put(command)
     
     def join(self, channel_list):
         for channel in channel_list:
@@ -167,8 +164,12 @@ class Bot(object):
                     line = line.strip().split()
                     self.dispatch(line)
             
-            self.caffeinate()            
-            
+            self.caffeinate()
+        
+    def me(self, channel, message):
+        '''Say an action into the channel.'''
+        self.say("\x01ACTION {0}\x01".format(message), channel)
+    
     def private_message(self, target, message, hide=False):
         '''Send a private message to a target on the server.'''
         for msg in self.split(message):
@@ -179,6 +180,7 @@ class Bot(object):
         return self.socket.recv(size)
     
     def ping(self):
+        '''Send a ping to the host server.'''
         self.logger.debug('Pinging server.')
         self.send('PING {}'.format(self.settings['host']))
     
@@ -233,3 +235,6 @@ class Bot(object):
         will create new threads as needed from this thread.'''
         threading.Thread(name='IO', target=self.connect).start()
         threading.Thread(name='Executor', target=self.executor.loop).start()
+    
+    def whois(self, user):
+        self.send("WHOIS {0}".format(user))

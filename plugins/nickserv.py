@@ -24,6 +24,7 @@ from plugins.util import admin
 
 def _identify(bot):
     logger = logging.getLogger("GorillaBot")
+    bot.response_lock.acquire()
     bot.waiting_for_response = True
     identified = False
     while not identified:
@@ -36,7 +37,6 @@ def _identify(bot):
                 logger.error("No response from NickServ when trying to identify."
                              "Shutting down.")
                 bot.shut_down()
-            logger.info(response)
             if 'NickServ' not in response[0]:
                 continue
             if 'Invalid' in response[3]:
@@ -46,3 +46,5 @@ def _identify(bot):
                 logger.info('You have successfully identified.')
                 identified = True
                 bot.waiting_for_response = False
+                break
+    bot.response_lock.release()
