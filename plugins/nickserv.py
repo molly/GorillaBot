@@ -19,6 +19,7 @@
 # SOFTWARE.
 
 import logging
+from getpass import getpass
 from queue import Empty
 from plugins.util import admin
 
@@ -28,7 +29,7 @@ def _identify(bot):
     bot.waiting_for_response = True
     identified = False
     while not identified:
-        password = input("Please enter your password to identify to NickServ: ")
+        password = getpass("Please enter your password to identify to NickServ: ")
         bot.private_message('NickServ', 'identify ' + password, False)
         while True:
             try:
@@ -39,12 +40,14 @@ def _identify(bot):
                 bot.shut_down()
             if 'NickServ' not in response[0]:
                 continue
-            if 'Invalid' in response[3]:
-                logger.info('Invalid password entered.')
-                break
-            if 'identified' in response[6]:
-                logger.info('You have successfully identified.')
-                identified = True
-                bot.waiting_for_response = False
-                break
+            if len(response) >= 4:
+                if 'Invalid' in response[3]:
+                    logger.info('Invalid password entered.')
+                    break
+            if len(response) >= 7:
+                if 'identified' in response[6]:
+                    logger.info('You have successfully identified.')
+                    identified = True
+                    bot.waiting_for_response = False
+                    break
     bot.response_lock.release()
