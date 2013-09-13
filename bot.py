@@ -27,7 +27,7 @@ from time import time, sleep
 class Bot(object):
     '''The Bot class is the core of the bot. It starts the IRC connection, and
     delegates tasks to other threads.'''
-    
+
     def __init__(self, default, log_type, quiet):
         # Store command line settings
         self.default = default
@@ -39,7 +39,7 @@ class Bot(object):
         self.command_q = queue.Queue(100) # I'd be amazed if we hit 100 commands, but might as well set a limit
         self.response_q = queue.Queue(100)
         self.executor = Executor(self.command_q)
-        
+
         self.admins = dict()
         self.channels = []  #List of currently-joined channels
         self.last_sent = 0
@@ -49,13 +49,13 @@ class Bot(object):
         self.response_lock = threading.Lock()
         self.waiting_for_response = False
         self.numcodes = ['001', '301', '311', '318', '330', '353', '396', '401', '403', '433', '442', '470', '473']
-        
+
         self.settings = self.configuration.get_configuration()
         self.base_path = os.path.dirname(os.path.abspath(__file__))
 
         self.admin_commands, self.commands = self.load_commands()
         self.start()
-        
+
     def caffeinate(self):
         '''Make sure the connection stays open.'''
         now = time()
@@ -67,7 +67,7 @@ class Bot(object):
                 self.logger.warning('No ping response in 60 seconds. '
                                     'Shutting down.')
                 self.shut_down()
-   
+
     def connect(self):
         '''Connect to the IRC server.'''
         self.logger.debug('Thread created.')
@@ -86,10 +86,10 @@ class Bot(object):
                                                    self.settings['realname']))
             self.private_message("NickServ", "ACC")
             self.loop()
-    
+
     def dispatch(self, line):
         '''Determines the type of message received, creates a command object, adds it
-        to the queue.'''        
+        to the queue.'''
         command = None
         if 'PING' in line[0]:
             command = Command(self, line, 'ping')
@@ -112,19 +112,21 @@ class Bot(object):
                     for ind, word in enumerate(line):
                         if word[0] == '!' or (ind == 3 and word[1] == '!'):
                             command = Command(self, line, 'exclamation_message')
-        
+
         # Add to the command queue to be executed
         if command:
             if command.trigger:
                 self.command_q.put(command)
-    
+
     def join(self, channel_list):
         for channel in channel_list:
             if channel not in self.channels:
                 self.logger.info('Joining {}.'.format(channel))
                 self.send('JOIN ' + channel)
                 self.channels.append(channel)
-                
+            else:
+                self.logger.info('Already in channel {}. Not joining.'.format(channel))
+
     def load_commands(self):
         try:
             with open(self.base_path + '/plugins/commands.pkl', 'rb') as admin_file:
@@ -137,7 +139,7 @@ class Bot(object):
         except:
             commands = None
         return admin_commands, commands
-        
+
     def loop(self):
         '''Main connection loop.'''
         while not self.shutdown.is_set():
@@ -160,27 +162,27 @@ class Bot(object):
                     print(line)
                     line = line.strip().split()
                     self.dispatch(line)
-            
+
             self.caffeinate()
-        
+
     def me(self, channel, message):
         '''Say an action into the channel.'''
         self.say("\x01ACTION {0}\x01".format(message), channel)
-    
+
     def private_message(self, target, message, hide=False):
         '''Send a private message to a target on the server.'''
         for msg in self.split(message):
             self.send('PRIVMSG {0} :{1}'.format(target, msg))
-            
+
     def receive(self, size=4096):
         '''Receive messages from the IRC server.'''
         return self.socket.recv(size)
-    
+
     def ping(self):
         '''Send a ping to the host server.'''
         self.logger.debug('Pinging server.')
         self.send('PING {}'.format(self.settings['host']))
-    
+
     def say(self, channel, message, hide=False):
         '''Say a message into a channel.'''
         self.private_message(channel, message, hide)
@@ -188,7 +190,7 @@ class Bot(object):
     def send(self, message, hide=False):
         '''Send messages to the IRC server.'''
         time_since_send = time() - self.last_sent
-        
+
         # Ensure messages aren't sent too quickly
         if time_since_send < 1:
             sleep(1-time_since_send)
@@ -202,7 +204,7 @@ class Bot(object):
             if not hide:
                 self.logger.info('Sent: ' + message)
             self.last_sent = time()
-            
+
     def split(self, message, maxlen=400, maxsplits=5):
         '''Split a message into smaller sections. Messages that are longer than
         maxlen*maxsplits will be truncated.'''
@@ -229,6 +231,6 @@ class Bot(object):
         will create new threads as needed from this thread.'''
         threading.Thread(name='IO', target=self.connect).start()
         threading.Thread(name='Executor', target=self.executor.loop, args=(self,)).start()
-    
+
     def whois(self, user):
         self.send("WHOIS {0}".format(user))

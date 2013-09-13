@@ -22,7 +22,7 @@ import logging, plugins
 
 class Command(object):
     '''Represents a command received from a user.'''
-    
+
     def __init__(self, bot, line, command_type):
         self.Bot = bot
         self.logger = logging.getLogger("GorillaBot")
@@ -33,16 +33,16 @@ class Command(object):
         self.needs_own_thread = False       # Should this command be given its own thread?
         self.channel = None                 # Channel in which command was received
         self.sender = None                  # Nick who sent the command
-        
+
         self.interpret()
-        
+
     def __repr__(self):
         return '<Command type: {0}>'.format(self.command_type)
-    
+
     def __str__(self):
         return ('Command\n\tType: {0}\n\tResponse: {1}({2})\n\tChannel: {3}\n\tSender: {4}\n\t{5}'
                 .format(self.command_type, self.trigger, self.args, self.channel, self.sender, self.line))
-    
+
     def dispatch(self):
         '''Respond to a command from a user.'''
         command = self.line[0]
@@ -50,6 +50,7 @@ class Command(object):
         if self.Bot.admin_commands:
             if command in self.Bot.admin_commands:
                 if plugins.connection._is_admin(self.Bot, self.sender):
+                    print(self.Bot.admin_commands)
                     self.trigger = eval(self.Bot.admin_commands[command])
                     self.args.append(self.sender)
                     self.args.append(self.channel)
@@ -62,7 +63,7 @@ class Command(object):
                 self.args.append(self.sender)
                 self.args.append(self.channel)
                 self.args.append(args)
-            
+
     def interpret(self):
         '''Call the correct function to determine the command.'''
         if self.command_type == 'NickServ':
@@ -107,7 +108,7 @@ class Command(object):
             self.dispatch()
         else:
             pass
-    
+
     def nickserv_command(self):
         '''Respond to a command from NickServ'''
         if 'ACC' in self.line and '0' in self.line:
