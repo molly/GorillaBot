@@ -74,6 +74,15 @@ def _is_admin(bot, user):
             return True
     return False
 
+@admin()
+def join(bot, *args):
+	'''Join a channel.'''
+	if not args[2] or args[2][0][0] != '#':
+		bot.say(args[1], "Please specify which channel to join by typing !join #channel")
+	else:
+		channel = [args[2][0]]
+		bot.join(channel)
+
 @admin('leave')
 def part(bot, *args):
     '''Part from a channel with an optional message.'''
@@ -93,7 +102,7 @@ def part(bot, *args):
 def _pong(bot, server):
     '''Respond to a ping from a server with a pong to that same server.'''
     bot.send('PONG {}'.format(server))
-    
+
 @admin('quit')
 def shut_down(bot, *args):
     '''Quit from the server and shut down the bot.'''
