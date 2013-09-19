@@ -28,10 +28,10 @@ def main():
           '\n(,(oYo),) \x1b[32m    / _` /  \ |__) | |    |    |__| |__) /  \  |  \x1b[0m'
           '\n|   "   | \x1b[32m    \__| \__/ |  \ | |___ |___ |  | |__) \__/  |  \x1b[0m'
           '\n \(\_/)/\n')
-    
+
     desc = "This is the command-line utility for setting up and running GorillaBot, "
     "a simple IRC bot."
-    
+
     # Parse arguments from the command line
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("-d", "--default", action="store_true", help="If a valid"
@@ -40,12 +40,15 @@ def main():
     parser.add_argument("-l", "--logtype", choices=[ 'all', 'none', 'file', 'console' ],
                          default='all', help="Log to a logfile, to the console, to both,"
                          "or to neither.")
-    parser.add_argument("-q", "--quiet", action="store_true", help="Only log "
-                        "messages with level 'WARNING' or higher.")
+    log_group = parser.add_mutually_exclusive_group()
+    log_group.add_argument("-q", "--quiet", action="store_true", help="Display log "
+                        "messages with level 'WARNING' or higher in the console.")
+    log_group.add_argument("-v", "--verbose", action="store_true", help="Display log "
+                        "messages with level 'DEBUG' or higher in the console.")
     args = parser.parse_args()
-    
+
     # Create instance of bot, create connection
-    Bot(args.default, args.logtype, args.quiet)
+    Bot(args.default, args.logtype, args.quiet, args.verbose)
 
 if __name__ == "__main__":
     main()

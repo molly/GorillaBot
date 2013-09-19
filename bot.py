@@ -28,14 +28,15 @@ class Bot(object):
     '''The Bot class is the core of the bot. It starts the IRC connection, and
     delegates tasks to other threads.'''
 
-    def __init__(self, default, log_type, quiet):
+    def __init__(self, default, log_type, quiet, verbose):
         # Store command line settings
         self.default = default
         self.log_type = log_type
         self.quiet = quiet
+        self.verbose = verbose
 
         self.logger = logging.getLogger('GorillaBot')
-        self.configuration = Configure( self.default, self.log_type, self.quiet )
+        self.configuration = Configure(self.default, self.log_type, self.quiet, self.verbose)
         self.command_q = queue.Queue(100) # I'd be amazed if we hit 100 commands, but might as well set a limit
         self.response_q = queue.Queue(100)
         self.executor = Executor(self.command_q)
@@ -159,7 +160,7 @@ class Bot(object):
                 self.last_received = time()
                 list_of_lines = buffer.split('\\r\\n')
                 for line in list_of_lines:
-                    print(line)
+                    self.logger.debug(line)
                     line = line.strip().split()
                     self.dispatch(line)
 
