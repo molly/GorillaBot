@@ -22,7 +22,7 @@ import logging, plugins
 
 
 class Command(object):
-	'''Represents a command received from a user.'''
+	"""Represents a command received from a user."""
 
 	def __init__(self, bot, line, command_type):
 		self.Bot = bot
@@ -31,7 +31,8 @@ class Command(object):
 		self.command_type = command_type    # Type of command
 		self.trigger = None                 # Function this command triggers
 		self.args = [self.Bot]              # Arguments for command
-		self.needs_own_thread = False       # Should this command be given its own thread?
+		self.needs_own_thread = False       # Should this command be given its
+											# own thread?
 		self.channel = None                 # Channel in which command was received
 		self.sender = None                  # Nick who sent the command
 
@@ -41,13 +42,13 @@ class Command(object):
 		return '<Command type: {0}>'.format(self.command_type)
 
 	def __str__(self):
-		return (
-		'Command\n\tType: {0}\n\tResponse: {1}({2})\n\tChannel: {3}\n\tSender: {4}\n\t{5}'
-		.format(self.command_type, self.trigger, self.args, self.channel,
-				self.sender, self.line))
+		return ('Command\n\tType: {0}\n\tResponse: {1}({2})\n\tChannel: {3}\n\t'
+				'Sender: {4}\n\t{5}'
+				.format(self.command_type, self.trigger, self.args,
+				self.channel, self.sender, self.line))
 
 	def dispatch(self, command=None):
-		'''Respond to a command from a user.'''
+		"""Respond to a command from a user."""
 		if not command:
 			command = self.line[0]
 			args = self.line[1:]
@@ -63,7 +64,8 @@ class Command(object):
 					self.args.append(args)
 				else:
 					self.Bot.say(self.channel,
-								 "Please ask a bot operator to perform this action for you.")
+								 "Please ask a bot operator to perform this "
+									"action for you.")
 		if self.Bot.commands:
 			if command in self.Bot.commands:
 				self.trigger = eval(self.Bot.commands[command])
@@ -72,7 +74,7 @@ class Command(object):
 				self.args.append(args)
 
 	def interpret(self):
-		'''Call the correct function to determine the command.'''
+		"""Call the correct function to determine the command."""
 		if self.command_type == 'internal':
 			self.dispatch(self.line)
 		elif self.command_type == 'NickServ':
@@ -119,7 +121,7 @@ class Command(object):
 			pass
 
 	def nickserv_command(self):
-		'''Respond to a command from NickServ'''
+		"""Respond to a command from NickServ"""
 		if 'ACC' in self.line and '0' in self.line:
 			# Nick isn't registered; no need to identify
 			self.trigger = self.Bot.join

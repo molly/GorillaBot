@@ -35,8 +35,9 @@ def main():
 										"GorillaBot, a simple IRC bot.")
 	parser.add_argument("-d", "--default", action="store_true",
 						help="If a valid"
-							 " configuration file is found, this will proceed with the"
-							 " connection without asking for verification of settings.")
+							" configuration file is found, this will proceed "
+							"with the connection without asking for "
+							"verification of settings.")
 	parser.add_argument("-l", "--logtype",
 							choices=['all', 'none', 'file', 'console'],
 							default='all',
