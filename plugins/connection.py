@@ -114,7 +114,7 @@ def _pong(bot, server):
 	bot.send('PONG {}'.format(server))
 
 @admin('quit')
-def shut_down(bot, *args):
+def shutdown(bot, *args):
 	"""Quit from the server and shut down the bot."""
 	if args[2]:
 		message = ' '.join(args[2])

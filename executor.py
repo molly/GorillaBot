@@ -35,7 +35,7 @@ class Executor(object):
 			command = self.command_q.get()
 			if not command.needs_own_thread:
 				# Call the function the command triggers
-				if command.args is None:
+				if command.args is not None:
 					command.trigger(*command.args)
 				else:
 					command.trigger()

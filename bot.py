@@ -74,7 +74,7 @@ class Bot(object):
 			elif now - self.last_ping_sent > 60:
 				self.logger.warning('No ping response in 60 seconds. '
 										'Shutting down.')
-				self.shut_down()
+				self.command_q.put(Command(self, 'shutdown', 'internal'))
 
 	def connect(self):
 		"""Connect to the IRC server."""

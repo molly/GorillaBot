@@ -46,14 +46,17 @@ class Command(object):
 		.format(self.command_type, self.trigger, self.args, self.channel,
 				self.sender, self.line))
 
-	def dispatch(self):
+	def dispatch(self, command=None):
 		'''Respond to a command from a user.'''
-		command = self.line[0]
-		args = self.line[1:]
+		if not command:
+			command = self.line[0]
+			args = self.line[1:]
+		else:
+			args = ''
 		if self.Bot.admin_commands:
 			if command in self.Bot.admin_commands:
-				if plugins.connection._is_admin(self.Bot, self.sender):
-					print(self.Bot.admin_commands)
+				if self.command_type == 'internal' or \
+						plugins.connection._is_admin(self.Bot, self.sender):
 					self.trigger = eval(self.Bot.admin_commands[command])
 					self.args.append(self.sender)
 					self.args.append(self.channel)
@@ -70,7 +73,9 @@ class Command(object):
 
 	def interpret(self):
 		'''Call the correct function to determine the command.'''
-		if self.command_type == 'NickServ':
+		if self.command_type == 'internal':
+			self.dispatch(self.line)
+		elif self.command_type == 'NickServ':
 			self.nickserv_command()
 		elif self.command_type == 'ping' or 'ping' in self.line:
 			self.logger.debug("Ping received. Ponging.")
