@@ -63,3 +63,5 @@
 * !tea
 * Ops abilities
 * "ping me in <x> sec/min/hours/days" function
+* Cards Against Humanity
+* Would you rather
