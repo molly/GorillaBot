@@ -21,34 +21,36 @@
 import logging
 from getpass import getpass
 from queue import Empty
-from plugins.util import admin
+
 
 def _identify(bot):
-    logger = logging.getLogger("GorillaBot")
-    bot.response_lock.acquire()
-    bot.waiting_for_response = True
-    identified = False
-    while not identified:
-        password = getpass("Please enter your password to identify to NickServ: ")
-        bot.private_message('NickServ', 'identify ' + password, False)
-        while True:
-            try:
-                response = bot.response_q.get(True, 120)
-            except Empty:
-                logger.error("No response from NickServ when trying to identify."
-                             "Shutting down.")
-                bot.shut_down()
-            if 'NickServ' not in response[0]:
-                continue
-            if len(response) >= 4:
-                if 'Invalid' in response[3]:
-                    logger.info('Invalid password entered.')
-                    break
-            if len(response) >= 7:
-                if 'identified' in response[6]:
-                    logger.info('You have successfully identified.')
-                    identified = True
-                    bot.waiting_for_response = False
-                    bot.join(bot.settings['chans'])
-                    break
-    bot.response_lock.release()
+	logger = logging.getLogger("GorillaBot")
+	bot.response_lock.acquire()
+	bot.waiting_for_response = True
+	identified = False
+	while not identified:
+		password = getpass(
+			"Please enter your password to identify to NickServ: ")
+		bot.private_message('NickServ', 'identify ' + password, False)
+		while True:
+			try:
+				response = bot.response_q.get(True, 120)
+			except Empty:
+				logger.error(
+					"No response from NickServ when trying to identify."
+					"Shutting down.")
+				bot.shut_down()
+			if 'NickServ' not in response[0]:
+				continue
+			if len(response) >= 4:
+				if 'Invalid' in response[3]:
+					logger.info('Invalid password entered.')
+					break
+			if len(response) >= 7:
+				if 'identified' in response[6]:
+					logger.info('You have successfully identified.')
+					identified = True
+					bot.waiting_for_response = False
+					bot.join(bot.settings['chans'])
+					break
+	bot.response_lock.release()
