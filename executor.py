@@ -20,24 +20,27 @@
 
 import logging, threading
 
+
 class Executor(object):
-    '''This class listens for commands to execute, then executes them.'''
-    
-    def __init__(self, command_q):
-        self.command_q = command_q
-        self.logger = logging.getLogger('GorillaBot')
-        
-    def loop(self, bot):
-        self.logger.debug('Thread created.')
-        while not bot.shutdown.is_set():
-            # Block until a command exists in the queue
-            command = self.command_q.get()
-            if not command.needs_own_thread:
-                # Call the function the command triggers
-                if command.args != None:
-                    command.trigger(*command.args)
-                else:
-                    command.trigger()
-                self.command_q.task_done()
-            else:
-                threading.Thread(name=command.trigger.__name__, target=command.trigger, args=command.args).start()
+	"""This class listens for commands to execute, then executes them."""
+
+	def __init__(self, command_q):
+		self.command_q = command_q
+		self.logger = logging.getLogger('GorillaBot')
+
+	def loop(self, bot):
+		self.logger.debug('Thread created.')
+		while not bot.shutdown.is_set():
+			# Block until a command exists in the queue
+			command = self.command_q.get()
+			if not command.needs_own_thread:
+				# Call the function the command triggers
+				if command.args is None:
+					command.trigger(*command.args)
+				else:
+					command.trigger()
+				self.command_q.task_done()
+			else:
+				threading.Thread(name=command.trigger.__name__,
+									target=command.trigger,
+									args=command.args).start()
