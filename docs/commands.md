@@ -11,21 +11,5 @@ The bot receives commands in one of three ways:
 In the examples below, I use the `!command` syntax, but the other two would work equally well.
 
 ##Commands
-* [adminlist](#adminlist)
-* [commands](#commands-1)
-* [emergencyshutoff](#emergencyshutoff)
-* [flirt](#flirt)
-* [help](#help)
-* [hug](#hug)
-* [lang] (#lang)
-* [link](#link)
-* [notify] (#notify)
-* [reverse] (#reverse)
-* [user](#user)
-* [usertalk](#usertalk)
-
-
 
 ## All-user commands ##
-### Adminlist ###
-	!adminlist
