@@ -18,4 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import plugins.connection, plugins.info, plugins.nickserv, plugins.util
+from plugins.util import *
+
+@command()
+def adminlist(bot, *args):
+	print(bot.admins)
+
