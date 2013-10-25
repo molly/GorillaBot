@@ -136,6 +136,25 @@ def _pong(bot, server):
 	"""Respond to a ping from a server with a pong to that same server."""
 	bot.send('PONG {}'.format(server))
 
+@admin()
+def removeadmin(bot, *args):
+	"""Remove a bot operator."""
+	if not args[2]:
+		bot.say(args[1], "Please specify a user to remove from bot operators.")
+	else:
+		try:
+			del bot.admins[args[2][0]]
+		except KeyError:
+			bot.say(args[1], "{} is not online, and has not been added as a bot"
+				" operator.".format(args[2][0]))
+		else:
+			bot.say(args[1], "{} has been removed as a bot operator."
+				.format(args[2][0]))
+		try:
+			bot.settings["botop"].remove(args[2][0])
+		except ValueError:
+			pass
+
 @admin('quit')
 def shutdown(bot, *args):
 	"""Quit from the server and shut down the bot."""
