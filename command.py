@@ -33,7 +33,8 @@ class Command(object):
 		self.args = [self.Bot]              # Arguments for command
 		self.needs_own_thread = False       # Should this command be given its
 											# own thread?
-		self.channel = None                 # Channel in which command was received
+		self.channel = None                 # Channel in which command was
+											# received
 		self.sender = None                  # Nick who sent the command
 
 		self.interpret()

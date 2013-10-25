@@ -86,7 +86,6 @@ def _is_admin(bot, user):
 			return True
 	return False
 
-
 @admin()
 def join(bot, *args):
 	"""Join a channel."""
