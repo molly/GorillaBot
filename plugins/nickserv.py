@@ -51,6 +51,7 @@ def _identify(bot):
 					logger.info('You have successfully identified.')
 					identified = True
 					bot.waiting_for_response = False
-					bot.join(bot.settings['chans'])
+					if bot.settings['chans']:
+						bot.join(bot.settings['chans'])
 					break
 	bot.response_lock.release()

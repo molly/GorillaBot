@@ -30,13 +30,22 @@ def _get_admin(bot, *users):
 	bot.response_lock.acquire()
 	logger = logging.getLogger('GorillaBot')
 	if not users:
-		users = bot.settings['botop']
+		initializing = True
+		if bot.settings['botop'] == ['']:
+			return
+		else:
+			users = bot.settings['botop']
+	if not users:
+		bot.response_lock.release()
+		return
 	for user in users:
+		print("Waiting")
 		bot.waiting_for_response = True
 		bot.whois(user)
 		while True:
 			try:
 				response = bot.response_q.get(True, 120)
+				print(response)
 			except Empty:
 				logger.error("No whois response.")
 			nick = None
@@ -46,6 +55,8 @@ def _get_admin(bot, *users):
 				host = response[5]
 				break
 			if response[1] == '401':
+				if initializing:
+					bot.settings['botop'].remove(user)
 				break
 		bot.waiting_for_response = False
 		if nick:
