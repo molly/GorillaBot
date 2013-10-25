@@ -38,3 +38,4 @@ nosetests.xml
 *.log
 *.pkl
 src/.DS_Store
+.idea/

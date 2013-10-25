@@ -40,7 +40,7 @@ class Configure(object):
 		self.quiet = quiet
 		self.verbose = verbose
 		self.options = ('host', 'port', 'nick', 'ident', 'realname', 'chans',
-							'botop', 'fullop')
+							'botop')
 
 		self.setup_logging()
 		self.load()
@@ -54,7 +54,6 @@ class Configure(object):
 		ident = self.config.get("irc", "Ident")
 		chans = self.config.get("irc", "Chans")
 		botop = self.config.get("irc", "Botop")
-		fullop = self.config.get("irc", "Fullop")
 
 		# Allow comma- or space-separated lists
 		if ',' in chans:
@@ -73,8 +72,7 @@ class Configure(object):
 
 		configuration = {"host": host, "port": port, "nick": nick,
 							"realname": realname,
-							"ident": ident, "chans": chanlist, "botop": oplist,
-							"fullop": fullop}
+							"ident": ident, "chans": chanlist, "botop": oplist}
 
 		return configuration
 
@@ -103,7 +101,7 @@ class Configure(object):
 			realname = self.prompt("Ident", "GorillaBot")
 			ident = self.prompt("Realname", "GorillaBot")
 			chans = self.prompt("Chans")
-			botop = self.prompt("Bot operator(s)")
+			botop = self.prompt("Bot operator(s)", '')
 			print(
 				"------------------------------\n Host: {0}\n Port: {1}\n "
 				"Nickname: {2}\n Real name: {3}\n Identifier: {4}\n Channels:"
@@ -124,7 +122,6 @@ class Configure(object):
 		self.config.set("irc", "ident", ident)
 		self.config.set("irc", "chans", chans)
 		self.config.set("irc", "botop", botop)
-		self.config.set("irc", "fullop", '[]')
 
 		with open(self.config_path, 'w') as config_file:
 			self.config.write(config_file)
@@ -155,10 +152,9 @@ class Configure(object):
 		field += ": "
 
 		answer = ''
-		while answer == '':
-			answer = input(field)
-			if default and answer == '':
-				answer = default
+		answer = input(field)
+		if default!=None and answer == '':
+			answer = default
 
 		return answer
 

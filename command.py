@@ -124,8 +124,9 @@ class Command(object):
 		"""Respond to a command from NickServ"""
 		if 'ACC' in self.line and '0' in self.line:
 			# Nick isn't registered; no need to identify
-			self.trigger = self.Bot.join
-			self.args = [self.Bot.settings['chans']]
+			if self.Bot.settings['chans']:
+				self.trigger = self.Bot.join
+				self.args = [self.Bot.settings['chans']]
 		elif 'identify' in self.line:
 			# Nick is registered; prompt for identification
 			self.trigger = plugins.nickserv._identify

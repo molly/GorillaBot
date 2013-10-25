@@ -22,5 +22,9 @@ from plugins.util import *
 
 @command()
 def adminlist(bot, *args):
-	print(bot.admins)
-
+	if (len(bot.settings['botop']) > 1):
+		bot.say(args[1], "My bot operators are {}.".format(', '.join(bot.settings['botop'])))
+	elif (len(bot.settings['botop']) == 1):
+		bot.say(args[1], "My bot operator is {}.".format(bot.settings['botop'][0]))
+	else:
+		bot.say(args[1], "{0} has no master. {0} is a free bot.".format(bot.settings['nick']))
