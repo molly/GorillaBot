@@ -32,12 +32,10 @@ def _get_admin(bot, *users):
 	if not users:
 		initializing = True
 		if bot.settings['botop'] == ['']:
+			bot.response_lock.release()
 			return
 		else:
 			users = bot.settings['botop']
-	if not users:
-		bot.response_lock.release()
-		return
 	for user in users:
 		print("Waiting")
 		bot.waiting_for_response = True
