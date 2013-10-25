@@ -29,6 +29,7 @@ def _get_admin(bot, *users):
 	doesn't work if the user is offline."""
 	bot.response_lock.acquire()
 	logger = logging.getLogger('GorillaBot')
+	initializing = False
 	if not users:
 		initializing = True
 		if bot.settings['botop'] == ['']:
@@ -37,13 +38,11 @@ def _get_admin(bot, *users):
 		else:
 			users = bot.settings['botop']
 	for user in users:
-		print("Waiting")
 		bot.waiting_for_response = True
 		bot.whois(user)
 		while True:
 			try:
 				response = bot.response_q.get(True, 120)
-				print(response)
 			except Empty:
 				logger.error("No whois response.")
 			nick = None
@@ -63,6 +62,8 @@ def _get_admin(bot, *users):
 				bot.admins[user] = userinfo
 				logger.info('User {0} added to admin list (*!{1}@{2}).'
 					.format(nick, ident, host))
+			if nick not in bot.settings['botop']:
+				bot.settings['botop'].append(nick)
 	bot.response_lock.release()
 
 
@@ -85,6 +86,20 @@ def _is_admin(bot, user):
 			_get_admin(bot, sender_nick)
 			return True
 	return False
+
+@admin()
+def addadmin(bot, *args):
+	"""Add a bot operator."""
+	if not args[2]:
+		bot.say(args[1], "Please specify a user to add as a bot operator.")
+	else:
+		_get_admin(bot, args[2][0])
+		if args[2][0] in bot.settings['botop']:
+			bot.say(args[1], "{} has been added as a bot operator."
+				.format(args[2][0]))
+		else:
+			bot.say(args[1], "{} is not online, and has not been added as a bot"
+				" operator.".format(args[2][0]))
 
 @admin()
 def join(bot, *args):
