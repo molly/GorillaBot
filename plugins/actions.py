@@ -18,5 +18,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import plugins.actions, plugins.connection, plugins.info, plugins.nickserv,\
-	plugins.util
+from plugins.util import *
+from random import choice
+import re
+
+
+@command('hugs', 'glomp', 'tackleglomp', 'tacklehug')
+def hug(bot, *args):
+	"""Hugs a specified user, or hugs the channel in general."""
+	regex = re.compile("(\w+)(?:(?:^and)?,\s(\w+))?(?:,?\s?and?\s?(\w+))?",
+					   re.IGNORECASE)
+	r = re.search(regex, " ".join(args[2]))
+	sender = get_sender(args[0])
+	if r and args[1] != bot.settings['nick']:
+		for user in r.groups():
+			if user:
+				if user == bot.settings['nick']:
+					bot.me("hugs {} back.".format(sender), args[1])
+				else:
+					with open(bot.base_path +
+									  '/plugins/responses/hugs.txt', 'r') as hugs:
+						lines = hugs.read().splitlines()
+						raw_line = choice(lines)
+						hug_line = raw_line.format(target=user)
+						bot.me(args[1], hug_line)
+	elif args[1] == bot.settings['nick']:
+		# This was sent as a private message
+		sender = get_sender(args[0])
+		bot.me(sender, "hugs {} back.".format(sender))
+	else:
+		bot.me(args[1], "distributes hugs evenly among the channel.")
