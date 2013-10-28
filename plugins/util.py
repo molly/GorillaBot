@@ -20,6 +20,7 @@
 
 import os
 import pickle
+import re
 
 
 def admin(*args):
@@ -66,3 +67,12 @@ def command(*args):
 		return func
 
 	return decorator
+
+
+def get_sender(sender):
+	"""Extract the user's nick from the full mask."""
+	r = re.search(r':(?P<nick>[^!]+)!', sender)
+	if r:
+		return r.group('nick')
+	else:
+		return False

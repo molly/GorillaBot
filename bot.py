@@ -179,7 +179,7 @@ class Bot(object):
 
 	def me(self, channel, message):
 		"""Say an action into the channel."""
-		self.say("\x01ACTION {0}\x01".format(message), channel)
+		self.say(channel, "\x01ACTION {0}\x01".format(message))
 
 	def private_message(self, target, message, hide=False):
 		"""Send a private message to a target on the server."""
