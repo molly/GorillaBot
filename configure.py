@@ -110,9 +110,14 @@ class Configure(object):
 					host, port, nick,
 					realname, ident, chans, botop))
 
-			while verify != 'y' and verify != 'n':
+			verify = verify.lower()
+			if verify != 'y' and verify != 'n':
+				verify = ''
 				verify = input('Is this configuration correct? [Y/N]: ')
-				verify = verify.lower()
+			if verify == 'y':
+				break
+			if verify == 'n':
+				verify = ''
 
 		self.config.add_section("irc")
 		self.config.set("irc", "host", host)
