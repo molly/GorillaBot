@@ -37,7 +37,8 @@ def hug(bot, *args):
 					bot.me("hugs {} back.".format(sender), args[1])
 				else:
 					with open(bot.base_path +
-									  '/plugins/responses/hugs.txt', 'r') as hugs:
+									  '/plugins/responses/hugs.txt',
+							  'r') as hugs:
 						lines = hugs.read().splitlines()
 						raw_line = choice(lines)
 						hug_line = raw_line.format(target=user)
@@ -48,3 +49,29 @@ def hug(bot, *args):
 		bot.me(sender, "hugs {} back.".format(sender))
 	else:
 		bot.me(args[1], "distributes hugs evenly among the channel.")
+
+
+@command('pickupline')
+def flirt(bot, *args):
+	"""Flirts at a user, or at no one in particular."""
+	regex = re.compile(
+		"(?:\swith\s)?(\w+)(?:(?:^and)?,\s(\w+))?(?:,?\s?and?\s?(\w+))?",
+		re.IGNORECASE)
+	r = re.search(regex, " ".join(args[2]))
+	with open(bot.base_path + '/plugins/responses/pickuplines.txt') as flirts:
+		lines = flirts.read().splitlines()
+	raw_line = choice(lines)
+	if r and args[1] != bot.settings['nick']:
+		for user in r.groups():
+			if user:
+				if user == bot.settings['nick']:
+					sender = get_sender(args[0])
+					flirt_line = raw_line.format(user=sender)
+					bot.say(args[1], flirt_line)
+				else:
+					flirt_line = raw_line.format(user=user)
+					bot.say(args[1], flirt_line)
+	else:
+		sender = get_sender(args[0])
+		flirt_line = raw_line.format(user=sender)
+		bot.say(args[1], flirt_line)
