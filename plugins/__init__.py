@@ -19,4 +19,4 @@
 # SOFTWARE.
 
 import plugins.actions, plugins.connection, plugins.info, plugins.nickserv,\
-	plugins.util
+    plugins.util

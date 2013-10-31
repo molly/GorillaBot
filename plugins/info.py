@@ -22,23 +22,23 @@ from plugins.util import *
 
 @command()
 def admincommands(bot, *args):
-	"""Say the list of admin commands to the channel."""
-	bot.say(args[1], "My commands are: {}".format(", ".join(bot.admin_commands)))
+    """Say the list of admin commands to the channel."""
+    bot.say(args[1], "My commands are: {}".format(", ".join(bot.admin_commands)))
 
 @command()
 def adminlist(bot, *args):
-	"""Say the list of current bot operators to the channel."""
-	if (len(bot.settings['botop']) > 1):
-		bot.say(args[1], "My bot operators are {}."
-			.format(', '.join(bot.settings['botop'])))
-	elif (len(bot.settings['botop']) == 1 and bot.settings['botop'][0] != ''):
-		bot.say(args[1], "My bot operator is {}."
-			.format(bot.settings['botop'][0]))
-	else:
-		bot.say(args[1], "{0} has no master. {0} is a free bot."
-			.format(bot.settings['nick']))
+    """Say the list of current bot operators to the channel."""
+    if (len(bot.settings['botop']) > 1):
+        bot.say(args[1], "My bot operators are {}."
+            .format(', '.join(bot.settings['botop'])))
+    elif (len(bot.settings['botop']) == 1 and bot.settings['botop'][0] != ''):
+        bot.say(args[1], "My bot operator is {}."
+            .format(bot.settings['botop'][0]))
+    else:
+        bot.say(args[1], "{0} has no master. {0} is a free bot."
+            .format(bot.settings['nick']))
 
 @command('commandlist')
 def commands(bot, *args):
-	"""Say the list of commands to the channel."""
-	bot.say(args[1], "My commands are: {}".format(", ".join(bot.commands)))
+    """Say the list of commands to the channel."""
+    bot.say(args[1], "My commands are: {}".format(", ".join(bot.commands)))

@@ -24,55 +24,55 @@ import re
 
 
 def admin(*args):
-	"""Designates bot administrator-only commands. Args is a list of command
-	aliases."""
+    """Designates bot administrator-only commands. Args is a list of command
+    aliases."""
 
-	def decorator(func):
-		path = os.path.dirname(os.path.abspath(__file__)) + '/commands.pkl'
-		try:
-			with open(path, 'rb') as pickle_file:
-				commands = pickle.load(pickle_file)
-		except:
-			commands = dict()
-		command_name = func.__module__ + '.' + func.__name__
-		if args:
-			for name in args:
-				commands[name] = command_name
-		commands[func.__name__] = command_name
-		with open(path, 'wb') as pickle_file:
-			pickle.dump(commands, pickle_file)
-		return func
+    def decorator(func):
+        path = os.path.dirname(os.path.abspath(__file__)) + '/commands.pkl'
+        try:
+            with open(path, 'rb') as pickle_file:
+                commands = pickle.load(pickle_file)
+        except:
+            commands = dict()
+        command_name = func.__module__ + '.' + func.__name__
+        if args:
+            for name in args:
+                commands[name] = command_name
+        commands[func.__name__] = command_name
+        with open(path, 'wb') as pickle_file:
+            pickle.dump(commands, pickle_file)
+        return func
 
-	return decorator
+    return decorator
 
 
 def command(*args):
-	"""Designates general bot commands. Args is a list of command
-	aliases."""
+    """Designates general bot commands. Args is a list of command
+    aliases."""
 
-	def decorator(func):
-		path = os.path.dirname(os.path.abspath(__file__)) + '/admincommands.pkl'
-		try:
-			with open(path, 'rb') as pickle_file:
-				commands = pickle.load(pickle_file)
-		except:
-			commands = dict()
-		command_name = func.__module__ + '.' + func.__name__
-		if args:
-			for name in args:
-				commands[name] = command_name
-		commands[func.__name__] = command_name
-		with open(path, 'wb') as pickle_file:
-			pickle.dump(commands, pickle_file)
-		return func
+    def decorator(func):
+        path = os.path.dirname(os.path.abspath(__file__)) + '/admincommands.pkl'
+        try:
+            with open(path, 'rb') as pickle_file:
+                commands = pickle.load(pickle_file)
+        except:
+            commands = dict()
+        command_name = func.__module__ + '.' + func.__name__
+        if args:
+            for name in args:
+                commands[name] = command_name
+        commands[func.__name__] = command_name
+        with open(path, 'wb') as pickle_file:
+            pickle.dump(commands, pickle_file)
+        return func
 
-	return decorator
+    return decorator
 
 
 def get_sender(sender):
-	"""Extract the user's nick from the full mask."""
-	r = re.search(r':(?P<nick>[^!]+)!', sender)
-	if r:
-		return r.group('nick')
-	else:
-		return False
+    """Extract the user's nick from the full mask."""
+    r = re.search(r':(?P<nick>[^!]+)!', sender)
+    if r:
+        return r.group('nick')
+    else:
+        return False
