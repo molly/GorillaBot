@@ -39,7 +39,7 @@ class Bot(object):
 		self.logger = logging.getLogger('GorillaBot')
 		self.configuration = Configure(self.default, self.log_type, self.quiet,
 											self.verbose)
-		self.command_q = queue.Queue(100) 	# I'd be amazed if we hit 100
+		self.command_q = queue.Queue(100)	# I'd be amazed if we hit 100
 											# commands, but might as well set
 											# a limit
 		self.response_q = queue.Queue(100)
@@ -56,7 +56,7 @@ class Bot(object):
 		self.response_lock = threading.Lock()
 		self.waiting_for_response = False
 		self.numcodes = ['001', '301', '311', '318', '330', '353', '396', '401',
-						 	'403', '433', '442', '470', '473']
+							'403', '433', '442', '470', '473']
 
 		self.settings = self.configuration.get_configuration()
 		self.base_path = os.path.dirname(os.path.abspath(__file__))
@@ -244,7 +244,7 @@ class Bot(object):
 		this thread."""
 		threading.Thread(name='IO', target=self.connect).start()
 		threading.Thread(name='Executor', target=self.executor.loop,
-						 	args=(self,)).start()
+							args=(self,)).start()
 
 	def whois(self, user):
 		self.send("WHOIS {0}".format(user))

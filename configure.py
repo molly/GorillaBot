@@ -32,7 +32,7 @@ class Configure(object):
 	def __init__(self, default, log_type, quiet, verbose):
 		self.config = configparser.ConfigParser()
 		self.config_path = os.path.dirname(os.path.abspath(__file__)) + \
-						   	'/config.cfg'
+							'/config.cfg'
 		self.log_path = os.path.dirname(os.path.abspath(__file__)) + '/logs'
 		self.logger = None
 		self.default = default
