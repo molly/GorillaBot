@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Molly White
+# Copyright (c) 2013-2014 Molly White
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@ class Stalker(object):
         self.codes = []
         self.con = None
         self.notify_status = False # Are we setting up an initial notify?
-        
+
     def _recv_numcode(self, con, nick):
         '''Interpret numcodes from the whois response.'''
         self.con = con
@@ -71,7 +71,7 @@ class Stalker(object):
         self._clear()
         self.con._whois_dest = None
         self.notify_status = False
-        
+
     def _clear(self):
         '''Clear state information'''
         self.current_nick = '' # Who is the notify set on?
@@ -80,7 +80,7 @@ class Stalker(object):
         self.status = '' # Away, online, offline
         self.codes = []
         self.con = None
-        
+
     def _nick_change(self, line):
         '''Called when a user changes nick to update the notify dict.'''
         match = re.search(r':(?P<nick>.*?)!', line[0])
@@ -93,15 +93,15 @@ class Stalker(object):
             del self.notify_dict[old_nick]
         for nick in self.notify_dict.keys():
             for num in range(len(self.notify_dict[nick][1])):
-                if self.notify_dict[nick][1][num] == old_nick: 
+                if self.notify_dict[nick][1][num] == old_nick:
                     self.notify_dict[nick][1][num] = new_nick
-                    
+
     def _update(self, bot):
         '''Called repeatedly to check if anyone has come online/back.'''
         self.con = bot.GorillaConnection
         for nick in self.notify_dict.keys():
-            self.con.whois(nick)    
-        
+            self.con.whois(nick)
+
     def notify(self, c, channel, command_type, line):
         '''Command to notify a user if another user comes online or back from away.'''
         self.con = c.con

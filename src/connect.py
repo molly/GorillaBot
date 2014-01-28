@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Molly White
+# Copyright (c) 2013-2014 Molly White
 # Portions copyright (c) 2009-2013 Ben Kurtovic <ben.kurtovic@verizon.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@ __all__ = ["Connection"]
 
 class Connection(object):
     '''Performs the connection to the IRC server and communicates with it.'''
-    
+
     def __init__(self, bot, host, port, nick, ident, realname, chans, botop, fullop):
         '''Constructs the connection object. Sets up logging.'''
         self._bot = bot
@@ -42,30 +42,30 @@ class Connection(object):
         self._password = None
         self._commands = None
         self.logger = logging.getLogger("GorillaBot")
-        
+
         self._last_sent = 0
         self._last_ping_sent = time()
         self._last_received = time()
         self._notify_check = time()
-        
+
         self._running = False
         self._reconnect_tries = 0 # Number of times the bot has auto-reconnected
         self._try_reconnect = True
         self._getting_admins = [False, None] # True if the bot is currently trying to add an admin
         self._whois_dest = None
-        
+
     def __repr__(self):
         '''Return the not-so-pretty representation of Connection.'''
         rep = "Connection: host={0!r}, port={1!r}, nick={2!r}, ident={3!r}, "
         "realname={4!r}, channel={5!r}, botop={6!r}"
         return rep.format(self._host, self._port, self._nick, self._ident, self._realname,
                           self._chans, self.admins)
-    
+
     def __str__(self):
         '''Return somewhat prettier representation of Connection.'''
         rep = "{0} is joining {1} on {2} on port {3}."
         return rep.format(self._nick, self._chans, self._host, self._port)
-    
+
     def _close(self, retry = False):
         '''End connection with IRC server, close socket.'''
         self._running = False
@@ -77,7 +77,7 @@ class Connection(object):
         except socket.error:
             pass #Socket is already closed
         self._socket.close()
-    
+
     def _connect(self):
         '''Connect to the IRC server.'''
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -92,12 +92,12 @@ class Connection(object):
             self._send("USER {0} {1} * :{2}".format(self._ident, self._host, self._realname))
             self.private_message("NickServ", "ACC")
             self.loop()
-            
+
     def _receive(self, size=4096):
         '''Receive messages from the IRC server.'''
         message = self._socket.recv(size)
         return message
-    
+
     def _reconnect(self):
         if self._reconnect_tries < 5 and self._try_reconnect == True:
             self.logger.debug("Attempting to reconnect ({} earlier tries)."
@@ -105,7 +105,7 @@ class Connection(object):
             sleep(5)
             self._connect()
             self._reconnect_tries += 1
-        
+
     def _send(self, message, hide=False):
         '''Send messages to the IRC server.'''
         time_since_send = time() - self._last_sent
@@ -121,7 +121,7 @@ class Connection(object):
             if not hide:
                 self.logger.info("Sent message: " + message)
             self._last_sent = time()
-            
+
     def _split(self, msgs, maxlen=400, maxsplits=5):
         """Split a large message into multiple messages smaller than maxlen."""
         words = msgs.split(" ")
@@ -136,8 +136,8 @@ class Connection(object):
                 msg = []
                 while words and len(" ".join(msg + [words[0]])) <= maxlen:
                     msg.append(words.pop(0))
-                yield " ".join(msg)          
-    
+                yield " ".join(msg)
+
     def get_admin(self, nick=None, setter=None):
         '''Begin process to get the cloak for a bot admin.'''
         if not nick:
@@ -156,7 +156,7 @@ class Connection(object):
             self._getting_admins = [True, setter]
             self._whois_dest = ['adminlist', '']
             self.whois(nick)
-                
+
     def set_admin(self, line):
         '''Add an admin and his or her cloak to the admin list.'''
         if line[1] == '311':
@@ -167,7 +167,7 @@ class Connection(object):
         elif line[1] == '401':
             nick = line[3]
             cloak = ''
-        
+
         config = self._bot._configuration._config
         file = self._bot._configuration._config_path
         full_op = eval(config.get("irc", "Fullop"))
@@ -188,7 +188,7 @@ class Connection(object):
         self._whois_dest = None
         self._getting_admins = [False, None]
         self.get_admin()
-        
+
     def caffeinate(self):
         '''Keep the connection open.'''
         now = time()
@@ -199,13 +199,13 @@ class Connection(object):
             elif now - self._last_ping_sent > 60:
                 self.logger.info("No ping response in 60 seconds.")
                 self.shut_down(True)
-            
+
     def dispatch(self, line):
         '''Process lines received.'''
         self._last_received = time()
-        self._bot.dispatch(line)      
-        
-    def join(self, chan=None):   
+        self._bot.dispatch(line)
+
+    def join(self, chan=None):
         '''Join a channel.'''
         if chan:
             self.logger.info("Joining {}.".format(chan))
@@ -215,7 +215,7 @@ class Connection(object):
             for chan in self._chans:
                 self.logger.info("Joining {}.".format(chan))
                 self._send("JOIN {}".format(chan), True)
-                
+
     def loop(self):
         '''Main connection loop.'''
         buffer = ''
@@ -244,16 +244,16 @@ class Connection(object):
                     # Perform a check on notified people every 5 minutes
                     self._bot.GorillaCommander.stalker._update(self._bot)
                     self._notify_check = time()
-                
+
                 self.caffeinate()
-            
+
     def me(self, message, channel):
         '''Say an action to the channel.'''
         self.say("\x01ACTION {0}\x01".format(message), channel)
-        
+
     def names(self, channel):
         self._send("NAMES {0}".format(channel))
-        
+
     def nickserv_identify(self):
         '''Prompt the user to enter their password, then identify to NickServ.'''
         if not self._password:
@@ -273,38 +273,38 @@ class Connection(object):
                 self.logger.info("Parting from {}.".format(chan))
                 self._send("PART {}".format(chan))
                 self._chans.remove(chan)
-            
+
     def ping(self):
         '''Ping the host server.'''
         self._last_ping_sent = time()
         self.logger.debug("Pinging host.")
         self._send("PING {}".format(self._host), True)
-        
+
     def pong(self, server):
         '''Sends a pong reply.'''
         self.logger.debug("Ponging {}".format(server))
         self._send("PONG {}".format(server), True)
-        
+
     def private_message(self, target, message, hide=False):
         '''Send a private message to a target on the server.'''
         for msg in self._split(message, 400):
             privmsg = "PRIVMSG {0} :{1}".format(target, msg)
             self._send(privmsg, hide)
-              
+
     def quit(self):
         '''Disconnect from the server.'''
         self._send("QUIT")
-            
+
     def say(self, message, channel):
         '''Say something to the channel or in a private message to the user
         that sent a command.'''
         self.private_message(channel, message)
-        
+
     def shut_down(self, retry=False):
         '''Gracefully shuts down.'''
         self.logger.info("Shutting down.")
         self.quit()
         self._close(retry)
-        
+
     def whois(self, nick):
         self._send("WHOIS {0}".format(nick), hide=True)

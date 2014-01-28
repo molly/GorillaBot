@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Molly White
+# Copyright (c) 2013-2014 Molly White
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ from plugins.stalk import Stalker
 __all__ = ["CommandManager"]
 
 class CommandManager(object):
-    
+
     def __init__(self, bot, connection):
         '''Determines if a message is in fact a command, stores a list of all valid commands.'''
         self._bot = bot
@@ -40,7 +40,7 @@ class CommandManager(object):
         self._throttle_list = {}
         self.plugin_path = os.path.dirname(os.path.abspath(__file__)) + '/plugins'
         self.stalker = Stalker()
-        
+
     def check_command(self, line):
         '''Messages of type PRIVMSG will be passed through this function to check if they are
         commands.'''
@@ -60,13 +60,13 @@ class CommandManager(object):
                 private = True
             else:
                 private = False
-                
+
             command = ""
             command_type = ""
             command_regex = re.compile("(?:!(\S+))",re.IGNORECASE)
             if private:
                 command_type = "private"
-                # Change channel to sender's nick so that the message is sent as a reply to the 
+                # Change channel to sender's nick so that the message is sent as a reply to the
                 # private message.
                 channel = r.group(1)
                 # First check if there's a exclamation-type command
@@ -98,7 +98,7 @@ class CommandManager(object):
                             # Command is elsewhere in message
                             command_type = "exclamation"
                         command = command_r.group(1)
-                        
+
             if command != "":
                 if command in ["notify"]:
                     exec_string = """self.stalker.{0}(self,"{1}","{2}","{3}")""".format(command, channel, command_type, line_string)
@@ -114,7 +114,7 @@ class CommandManager(object):
             else:
                 # There is no command in the line.
                 self.check_regex(irc_trailing, channel, line_string)
-                
+
     def check_regex(self, message, channel, line_string):
         '''Checks an IRC message to see if it matches a regex pattern.'''
         bat_regex = re.compile("batman",re.IGNORECASE)
@@ -122,7 +122,7 @@ class CommandManager(object):
         if bat_r:
             exec_string = """batman.alfred(self, "{0}", "regex", "{1}")""".format(channel, line_string)
             exec(exec_string)
-                    
+
     def get_message(self, line):
         '''Isolates the trailing message from a full message string.'''
         parser = re.compile("(?:\S+?:(\S+)!\S+\s)?([A-Z]+)\s(?:([^:]+)\s)?(?::(.+))?")
@@ -130,8 +130,8 @@ class CommandManager(object):
         if r:
             return r.group(4)
         else:
-            return None           
-        
+            return None
+
     def get_sender(self, line):
         '''Isolates the nick of the sender of the message from a full message string.'''
         parser = re.compile("(?:\S+?:(\S+)!\S+\s)?([A-Z]+)\s(?:([^:]+)\s)?(?::(.+))?")
@@ -140,7 +140,7 @@ class CommandManager(object):
             return r.group(1)
         else:
             return None
-    
+
     def organize_commands(self):
         '''Collects commands from the various plugins, organizes them into a dict.'''
         for module in plugins.__all__:
@@ -148,16 +148,16 @@ class CommandManager(object):
             exec("module_command_list += [name for name, data in getmembers({0})"
                  "if isfunction(data)]".format(module))
             for module_command in module_command_list:
-                
+
                 # Prevents private functions from being displayed or executed from IRC
                 if module_command[0] != "_":
                     exec("self.command_list['{0}'] = '{1}.{0}'".format(module_command, module))
         self.con._commands = self.command_list
-        
+
     def nick_change(self, line):
         self.stalker._nick_change(line)
         admin._nick_change(self, line)
-            
+
     def nickserv_parse(self, line):
         '''Parses a message from NickServ and responds accordingly.'''
         if "identify" in line:
@@ -174,7 +174,7 @@ class CommandManager(object):
             # Account is not registered; don't have to ident to join channels
             self.con.join()
             self.con.get_admin()
-    
+
     def process_numcode(self, numcode, line):
         '''Parses a message with a reply code number and responds accordingly.'''
         if self.con._whois_dest:
@@ -210,7 +210,7 @@ class CommandManager(object):
         elif numcode == "473":
             self.logger.error("Unable to join invite-only channel {}.".format(line[3]))
             self.con.part(line[3], True)
-            
+
     def throttle(self, command, delay=120):
         '''Keeps track of how often a command is executed, throttling it if it is executed too
         frequently. Default delay is two minutes, but this can be set for each function.'''

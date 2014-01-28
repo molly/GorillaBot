@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Molly White
+# Copyright (c) 2013-2014 Molly White
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@ __all__ = ["Configure"]
 
 class Configure(object):
     '''Creates, modifies, or opens a configuration file.'''
-    
+
     def __init__(self, root, default, quiet):
         '''Constructs the configure object. Gets the path for the configuration file, assigns the
         logging type. Tries to load the configuration file.'''
@@ -38,25 +38,25 @@ class Configure(object):
         self._default = default
         self._quiet = quiet
         self._options = ("Host", "Port", "Nick", "Ident", "Realname", "Chans", "Botop", "Fullop")
-        
-        self._setup_logging("all")        
+
+        self._setup_logging("all")
         self._load()
-        
+
     def _prompt(self, question, default=None):
         '''Prompt a user for input. If there is a default set, display it.'''
         text = question
         if default:
             text += " [DEFAULT: {}]".format(default)
         text += ": "
-        
+
         answer = ""
         while answer=="":
             answer = input(text)
             if default and answer=="":
                 answer = default
-        
+
         return answer
-        
+
     def _load(self):
         '''Try to load a configuration file.'''
         file = self._config_path
@@ -70,7 +70,7 @@ class Configure(object):
         else:
             self.logger.info("No configuration file found. Creating file.")
             self._make_new(self._config)
-    
+
     def _make_new(self, parser):
         '''Create a new configuration file.'''
         self._config = parser
@@ -92,7 +92,7 @@ class Configure(object):
             while verify != "y" and verify != "n":
                 verify = input ("Is this configuration correct? [Y/N]: ")
                 verify = verify.lower()
-                
+
         file = open(self._config_path, "w")
         parser.add_section("irc")
         parser.set("irc", "Host", host)
@@ -105,7 +105,7 @@ class Configure(object):
         parser.set("irc", "Fullop", '[]')
         parser.write(file)
         self.logger.info("Config file saved.")
-        
+
     def _print_settings(self):
         '''Display the settings in a configuration file.'''
         host = self._config.get("irc", "Host")
@@ -119,7 +119,7 @@ class Configure(object):
               "{2}\n Real name: {3}\n Identifier: {4}\n Channels:"
               " {5}\n Bot operator(s): {6}\n------------------------------".format(host, port, nick,
                                                             realname, ident, chans, botop))
-        
+
     def _reconfigure(self):
         '''Create a new configuration file and overwrite the old one.'''
         try:
@@ -128,52 +128,52 @@ class Configure(object):
             self.logger.error("Unable to remove existing config file.")
         else:
             new_config = configparser.ConfigParser()
-            self._make_new(new_config)            
-        
+            self._make_new(new_config)
+
     def _setup_logging(self, log_type="all"):
         '''Set up the logging for the bot.'''
         log_type = log_type.lower()
         inputs = ("all", "none", "console", "file")
-        
+
         if log_type not in inputs:
             raise ValueError
-        
-        if log_type != "none":                
+
+        if log_type != "none":
             self.logger = logging.getLogger("GorillaBot")
             if self._quiet:
                 self.logger.setLevel(logging.WARNING)
             else:
                 self.logger.setLevel(logging.INFO)
-            
+
             #Create the file logger
-            if log_type != "console":   
+            if log_type != "console":
                 file_formatter = logging.Formatter("%(asctime)s - %(filename)s - %(levelname)s"
                                                    ": %(message)s")
                 if not os.path.isdir(self.log_path):
                     os.mkdir(self.log_path)
-                    
+
                 logname = (self.log_path + "/{0}.log").format(strftime("%H%M_%m%d%y"))
-                
+
                 # Files are saved in the logs sub-directory as HHMM_mmddyy.log
                 # If the session exceeds 6 hours, each file will have .# appended to
                 # the end, up to five times. After these 30 hours, the logs will
                 #begin to overwrite.
-                filehandler = logging.handlers.TimedRotatingFileHandler(logname,'h',6,5,None,False,False)      
+                filehandler = logging.handlers.TimedRotatingFileHandler(logname,'h',6,5,None,False,False)
                 filehandler.setFormatter(file_formatter)
                 filehandler.setLevel(logging.DEBUG)
                 self.logger.addHandler(filehandler)
                 self.logger.info("File logger created; saving logs to {}.".format(logname))
-            
-            # Create the console logger    
+
+            # Create the console logger
             if log_type != "file":
                 console_formatter = logging.Formatter("%(asctime)s - %(levelname)s"
                                                       ": %(message)s", datefmt="%I:%M:%S %p")
-                consolehandler = logging.StreamHandler() 
+                consolehandler = logging.StreamHandler()
                 consolehandler.setFormatter(console_formatter)
                 self.logger.addHandler(consolehandler)
-                
+
                 self.logger.info("Console logger created.")
-                
+
     def _verify(self):
         '''Verify that a configuration file is valid.'''
         items = ("host", "port", "nick", "realname", "ident", "chans", "botop", "fullop")
@@ -185,7 +185,7 @@ class Configure(object):
                                  " Reconfiguring.")
                 self._reconfigure()
                 break
-            
+
         self.logger.info("Valid configuration file found.")
         reconfigure = ""
         if not self._default:
@@ -198,7 +198,7 @@ class Configure(object):
             if reconfigure == "y":
                 self.logger.debug("User has requested to reconfigure.")
                 self._reconfigure()
-                
+
     def get_configuration(self):
         '''Return configuration as a dictionary.'''
         host = self._config.get("irc", "Host")

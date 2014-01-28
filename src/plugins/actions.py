@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Molly White
+# Copyright (c) 2013-2014 Molly White
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ def hug(c, channel, command_type, line):
         c.con.me("hugs {} back.".format(sender), channel)
     else:
         c.con.me("distributes hugs evenly among the channel.", channel)
-    
+
 def flirt(c, channel, command_type, line):
     '''Flirts at a user, or at no one in particular.'''
     regex = re.compile("!?flirt(?:\swith)?\s(\w+)(?:(?:^and)?,\s(\w+))?(?:,?\s?and?\s?(\w+))?",re.IGNORECASE)

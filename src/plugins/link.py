@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Molly White
+# Copyright (c) 2013-2014 Molly White
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ def link(c, channel, command_type, line):
             c.con.say(url, channel)
     else:
         c.con.say("Please format the command as !link [[article]] or !link {{template}}.", channel)
-        
+
 def user(c, channel, command_type, line):
     '''Returns a link to the userpage; command formatted as !user Username'''
     regex = re.compile("!?user\s(.*)",re.IGNORECASE)
@@ -53,7 +53,7 @@ def user(c, channel, command_type, line):
         c.con.say(url, channel)
     else:
         c.con.say("Please format this command as !usertalk username.", channel)
-    
+
 def usertalk(c, channel, command_type, line):
     '''Returns a link to the user talk page; command formatted as !usertalk Username'''
     regex = re.compile("!?usertalk\s(.*)",re.IGNORECASE)

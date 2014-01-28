@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Molly White
+# Copyright (c) 2013-2014 Molly White
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,10 @@ def main():
           '\n(,(oYo),) \x1b[32m    / _` /  \ |__) | |    |    |__| |__) /  \  |  \x1b[0m'
           '\n|   "   | \x1b[32m    \__| \__/ |  \ | |___ |___ |  | |__) \__/  |  \x1b[0m'
           '\n \(\_/)/\n')
-    
+
     desc = "This is the command-line utility for setting up and running GorillaBot, "
     "a simple IRC bot."
-    
+
     # Parse arguments from the command line
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("path", nargs="?", default=path.curdir, help="Path to the"
@@ -43,7 +43,7 @@ def main():
     parser.add_argument("-q", "--quiet", action="store_true", help="Only log "
                         "messages with level 'WARNING' or higher.")
     args = parser.parse_args()
-    
+
     # Create instance of bot, create connection
     Bot(args.path, args.default, args.quiet)
 
