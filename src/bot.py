@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Molly White
+# Copyright (c) 2013-2014 Molly White
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,12 @@ from config import Configure
 from connect import Connection
 from commandmanager import CommandManager
 
-sys.path += ['plugins'] 
+sys.path += ['plugins']
 
 class Bot(object):
     '''The Bot class is the core of the bot. It creates the connection and the responder. All messages
     that are received come through here, and are dispatched accordingly.'''
-    
+
     def __init__(self, path, default, quiet):
         '''Constructs the bot object. Takes path, default, and quiet arguments from the command
         line input and sets the bot accordingly. Initializes logging, creates instances of
@@ -40,42 +40,42 @@ class Bot(object):
         self.logger = logging.getLogger("GorillaBot")
         self._configuration = Configure(self._config_path, self._default, self._quiet)
         settings = self._configuration.get_configuration()
-        
+
         self.GorillaConnection = Connection(self, settings["host"], settings["port"],
                                             settings["nick"], settings["ident"],
                                             settings["realname"], settings["chans"],
                                             settings["botop"], settings["fullop"])
         self.GorillaCommander = CommandManager(self, self.GorillaConnection)
         self.GorillaConnection._connect()
-        
+
     def dispatch(self, line):
         '''Determines the type of message received:
                 If the message is a ping, it pongs back.
                 If the message is from NickServ, it determines identification status.
                 If the message contains a reply code, it forwards it to parse_number.
                 If the message is a PRIVMSG, it forwards it to parse_message.'''
-        
+
         # Probably will want to remove this at some point in the future, but for now I'm going
         # to hold on to it for debugging.
         self.logger.debug(line)
-        
+
         # Responds to ping messages. Doesn't bother to send it to the CommandManager.
         if "PING" in line[0]:
             self.logger.debug("Ping received.")
             self.GorillaConnection.pong(line[1][1:])
-            
+
         # Identifies messages from NickServ, sends to CommandManager
         elif "NickServ" in line[0]:
             self.GorillaCommander.nickserv_parse(line)
-            
+
         # Identifies server message codes, sends to CommandManager
         elif len(line[1])==3:
             self.GorillaCommander.process_numcode(line[1], line)
-            
+
         # Identifies PRIVMSGs, sends to CommandManager
         elif line[1]=="PRIVMSG":
             self.GorillaCommander.check_command(line)
-           
-        # Nick changes 
+
+        # Nick changes
         elif line[1] == "NICK":
             self.GorillaCommander.nick_change(line)

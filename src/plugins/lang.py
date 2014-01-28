@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Molly White
+# Copyright (c) 2013-2014 Molly White
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@ path = os.path.dirname(os.path.abspath(__file__))
 
 with open(path + '/langcodes.pickle', 'rb') as f:
     languages = pickle.load(f)
-  
+
 def lang(c, channel, command_type, line):
     '''Look up the full language from a language code.'''
     match = re.search(r'!?lang\s(?P<code>[^\s]+)', line)
@@ -36,7 +36,7 @@ def lang(c, channel, command_type, line):
             c.con.say("No language code '" + code + "'.", channel)
     else:
         c.con.say('Please format this command !lang [code].', channel)
-        
+
 def reverse(c, channel, command_type, line):
     '''Look up the language code from a full language.'''
     match = re.search(r'!?reverse\s(?P<code>.*)', line)

@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Molly White
+# Copyright (c) 2013-2014 Molly White
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ def _is_admin_response(c, line, exec_string):
             return
         else:
             c.con.say("Please ask a bot administrator or channel operator to perform this command for you.", nick)
-            
+
 def _nick_change(c, line):
     c.con.full_admins = eval(c.con._bot._configuration._config.get("irc", "Fullop"))
     original = re.search(r'\:(?P<nick>.*?)\!', line[0])
@@ -96,10 +96,10 @@ def addadmin(c, channel, command_type, line):
             c.con.get_admin(nick, sender)
             c.con.say("{} is now a bot admin.".format(nick), channel)
         else:
-            c.con.say("{} is already a bot admin.".format(nick), channel)   
+            c.con.say("{} is already a bot admin.".format(nick), channel)
     else:
-        c.con.say("Please format the command !addadmin [nick]", channel)   
-            
+        c.con.say("Please format the command !addadmin [nick]", channel)
+
 def adminlist(c, channel, command_type, line):
     '''Prints a list of bot administrators.'''
     if len(c.con.admins) == 1:
@@ -118,7 +118,7 @@ def join(c, channel, command_type, line):
             c.con.join(chan)
     else:
         c.con.say("Please specify a channel to join (as !join #channel).", channel)
-      
+
 def emergencyshutoff(c, channel, command_type, line):
     '''Allows any user to kill the bot in case it malfunctions in some way.'''
     if command_type == "private":
@@ -139,7 +139,7 @@ def part(c, channel, command_type, line):
             c.con.part(chan)
     else:
         c.con.say("Please specify which channel to part (as !part #channel).", channel)
-        
+
 def quit(c, channel, command_type, line):
     '''Quits IRC, shuts down the bot.'''
     c.con.shut_down()
