@@ -1,6 +1,6 @@
 __[MIT license](http://opensource.org/licenses/mit-license.php)__
 
-GorillaBot copyright (c) 2014 Molly White
+GorillaBot copyright (c) 2013-2014 Molly White
 
 Portions copyright (c) 2009-2014 Ben Kurtovic <ben.kurtovic@verizon.net>
 
