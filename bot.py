@@ -119,6 +119,7 @@ class Bot(object):
                     command = Command(self, line, 'direct_message')
                 else:
                     for ind, word in enumerate(line):
+                        # TODO: ERROR ON THIS LINE: (string index out of range)
                         if word[0] == '!' or (ind == 3 and word[1] == '!'):
                             command = Command(self, line, 'exclamation_message')
 
