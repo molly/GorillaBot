@@ -20,7 +20,7 @@ from getpass import getpass
 from queue import Empty
 
 
-def _identify(bot):
+def identify(bot):
     logger = logging.getLogger("GorillaBot")
     bot.response_lock.acquire()
     bot.waiting_for_response = True

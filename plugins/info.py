@@ -27,9 +27,9 @@ def admincommands(bot, *args):
 @command()
 def adminlist(bot, *args):
     """Say the list of current bot operators to the channel."""
-    if (len(bot.settings['botop']) > 1):
+    if len(bot.settings['botop']) > 1:
         bot.say(args[1], "My bot operators are {}.".format(', '.join(bot.settings['botop'])))
-    elif (len(bot.settings['botop']) == 1 and bot.settings['botop'][0] != ''):
+    elif len(bot.settings['botop']) == 1 and bot.settings['botop'][0] != '':
         bot.say(args[1], "My bot operator is {}.".format(bot.settings['botop'][0]))
     else:
         bot.say(args[1], "{0} has no master. {0} is a free bot.".format(bot.settings['nick']))

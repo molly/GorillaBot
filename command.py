@@ -15,19 +15,20 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import logging, plugins
+import logging
+import plugins
 
 
 class Command(object):
     """Represents a command received from a user."""
 
     def __init__(self, bot, line, command_type):
-        self.Bot = bot
+        self.bot = bot
         self.logger = logging.getLogger("GorillaBot")
         self.line = line
         self.command_type = command_type  # Type of command
         self.trigger = None  # Function this command triggers
-        self.args = [self.Bot]  # Arguments for command
+        self.args = [self.bot]  # Arguments for command
         self.needs_own_thread = False  # Should this command be given its own thread?
         self.channel = None  # Channel in which command was received
         self.sender = None  # Nick who sent the command
@@ -49,20 +50,20 @@ class Command(object):
             args = self.line[1:]
         else:
             args = ''
-        if self.Bot.admin_commands:
-            if command in self.Bot.admin_commands:
-                if self.command_type == 'internal' or plugins.connection._is_admin(self.Bot,
-                                                                                   self.sender):
-                    self.trigger = eval(self.Bot.admin_commands[command])
+        if self.bot.admin_commands:
+            if command in self.bot.admin_commands:
+                if self.command_type == 'internal' or plugins.connection.is_admin(self.bot,
+                                                                                  self.sender):
+                    self.trigger = eval(self.bot.admin_commands[command])
                     self.args.append(self.sender)
                     self.args.append(self.channel)
                     self.args.append(args)
                 else:
-                    self.Bot.say(self.channel, "Please ask a bot operator to perform this action "
+                    self.bot.say(self.channel, "Please ask a bot operator to perform this action "
                                                "for you.")
-        if self.Bot.commands:
-            if command in self.Bot.commands:
-                self.trigger = eval(self.Bot.commands[command])
+        if self.bot.commands:
+            if command in self.bot.commands:
+                self.trigger = eval(self.bot.commands[command])
                 self.args.append(self.sender)
                 self.args.append(self.channel)
                 self.args.append(args)
@@ -75,11 +76,11 @@ class Command(object):
             self.nickserv_command()
         elif self.command_type == 'ping' or 'ping' in self.line:
             self.logger.debug("Ping received. Ponging.")
-            self.trigger = plugins.connection._pong
+            self.trigger = plugins.connection.pong
             self.args.append(self.line[1][1:])
         elif self.command_type == 'numcode':
             if self.line[1] == '001':
-                self.trigger = plugins.connection._get_admin
+                self.trigger = plugins.connection.get_admin
                 self.needs_own_thread = True
         elif self.command_type == 'private_message':
             self.sender = self.line[0]
@@ -88,7 +89,7 @@ class Command(object):
                 self.line = [self.line[3][1:]]
             else:
                 self.line = [self.line[3][1:]] + self.line[4:]
-            if self.Bot.settings['nick'] in self.line[0] and len(self.line) > 1:
+            if self.bot.settings['nick'] in self.line[0] and len(self.line) > 1:
                 self.line = self.line[1:]
             if self.line[0][0] == '!':
                 self.line[0] = self.line[0][1:]
@@ -118,10 +119,10 @@ class Command(object):
         """Respond to a command from NickServ"""
         if 'ACC' in self.line and '0' in self.line:
             # Nick isn't registered; no need to identify
-            if self.Bot.settings['chans'] != ['None']:
-                self.trigger = self.Bot.join
-                self.args = [self.Bot.settings['chans']]
+            if self.bot.settings['chans'] != ['None']:
+                self.trigger = self.bot.join
+                self.args = [self.bot.settings['chans']]
         elif 'identify' in self.line:
             # Nick is registered; prompt for identification
-            self.trigger = plugins.nickserv._identify
+            self.trigger = plugins.nickserv.identify
             self.needs_own_thread = True
