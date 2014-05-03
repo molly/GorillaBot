@@ -1,22 +1,19 @@
 # Copyright (c) 2013-2014 Molly White
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+# and associated documentation files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in all copies or
+# substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+# BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+# DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import logging
 import re
@@ -25,8 +22,8 @@ from plugins.util import admin
 
 
 def _get_admin(bot, *users):
-    """Add a user's ident and host to the list of bot admins. Note that this
-    doesn't work if the user is offline."""
+    """Add a user's ident and host to the list of bot admins. Note that this doesn't work if the
+    user is offline. """
     bot.response_lock.acquire()
     logger = logging.getLogger('GorillaBot')
     initializing = False
@@ -60,17 +57,16 @@ def _get_admin(bot, *users):
             userinfo = [ident, host]
             if userinfo not in bot.admins.values():
                 bot.admins[user] = userinfo
-                logger.info('User {0} added to admin list (*!{1}@{2}).'
-                    .format(nick, ident, host))
+                logger.info('User {0} added to admin list (*!{1}@{2}).'.format(nick, ident, host))
             if nick not in bot.settings['botop']:
                 bot.settings['botop'].append(nick)
     bot.response_lock.release()
 
 
 def _is_admin(bot, user):
-    """Returns true if the user is a bot admin, false otherwise. If the user's ident
-    and host are not in the list, but the user's nick is, we assume that user is
-    indeed an admin, and add theirident and host to the list."""
+    """Returns true if the user is a bot admin, false otherwise. If the user's ident and host are
+    not in the list, but the user's nick is, we assume that user is indeed an admin,
+    and add their ident and host to the list. """
     match = re.search(':(?P<nick>.+?)!(?P<ident>.+?)@(?P<host>.+?)\Z', user)
     if match:
         sender_nick = match.group('nick')
@@ -87,6 +83,7 @@ def _is_admin(bot, user):
             return True
     return False
 
+
 @admin()
 def addadmin(bot, *args):
     """Add a bot operator."""
@@ -95,18 +92,17 @@ def addadmin(bot, *args):
     else:
         _get_admin(bot, args[2][0])
         if args[2][0] in bot.settings['botop']:
-            bot.say(args[1], "{} has been added as a bot operator."
-                .format(args[2][0]))
+            bot.say(args[1], "{} has been added as a bot operator.".format(args[2][0]))
         else:
-            bot.say(args[1], "{} is not online, and has not been added as a bot"
-                " operator.".format(args[2][0]))
+            bot.say(args[1], "{} is not online, and has not been added as a bot operator.".format(
+                args[2][0]))
+
 
 @admin()
 def join(bot, *args):
     """Join a channel."""
     if not args[2] or args[2][0][0] != '#':
-        bot.say(args[1], "Please specify which channel to join by typing "
-            "!join #channel")
+        bot.say(args[1], "Please specify which channel to join by typing !join #channel")
     else:
         channel = [args[2][0]]
         bot.join(channel)
@@ -116,9 +112,7 @@ def join(bot, *args):
 def part(bot, *args):
     """Part from a channel with an optional message."""
     if not args[2] or args[2][0][0] != '#':
-        bot.say(args[1],
-                "Please specify which channel to leave by typing "
-                "!part #channel")
+        bot.say(args[1], "Please specify which channel to leave by typing !part #channel")
     else:
         channel = args[2][0]
         if channel not in bot.channels:
@@ -128,13 +122,13 @@ def part(bot, *args):
             if len(args[2]) == 1:
                 bot.send('PART {} Leaving'.format(args[2][0]))
             else:
-                bot.send('PART {0} {1}'
-                            .format(args[2][0], ' '.join(args[2][1:])))
+                bot.send('PART {0} {1}'.format(args[2][0], ' '.join(args[2][1:])))
 
 
 def _pong(bot, server):
     """Respond to a ping from a server with a pong to that same server."""
     bot.send('PONG {}'.format(server))
+
 
 @admin()
 def removeadmin(bot, *args):
@@ -145,15 +139,15 @@ def removeadmin(bot, *args):
         try:
             del bot.admins[args[2][0]]
         except KeyError:
-            bot.say(args[1], "{} is not online, and has not been added as a bot"
-                " operator.".format(args[2][0]))
+            bot.say(args[1], "{} is not online, and has not been added as a bot operator.".format(
+                args[2][0]))
         else:
-            bot.say(args[1], "{} has been removed as a bot operator."
-                .format(args[2][0]))
+            bot.say(args[1], "{} has been removed as a bot operator.".format(args[2][0]))
         try:
             bot.settings["botop"].remove(args[2][0])
         except ValueError:
             pass
+
 
 @admin('quit')
 def shutdown(bot, *args):

@@ -1,22 +1,19 @@
 # Copyright (c) 2013-2014 Molly White
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+# and associated documentation files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in all copies or
+# substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+# BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+# DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import logging, os, pickle, queue, socket, threading
 from command import Command
@@ -26,8 +23,8 @@ from time import time, sleep
 
 
 class Bot(object):
-    """The Bot class is the core of the bot. It starts the IRC connection, and
-    delegates tasks to other threads."""
+    """The Bot class is the core of the bot. It starts the IRC connection, and delegates tasks to
+    other threads. """
 
     def __init__(self, default, log_type, quiet, verbose):
         # Store command line settings
@@ -37,17 +34,16 @@ class Bot(object):
         self.verbose = verbose
 
         self.logger = logging.getLogger('GorillaBot')
-        self.configuration = Configure(self.default, self.log_type, self.quiet,
-                                            self.verbose)
-        self.command_q = queue.Queue(100)    # I'd be amazed if we hit 100
-                                            # commands, but might as well set
-                                            # a limit
+        self.configuration = Configure(self.default, self.log_type, self.quiet, self.verbose)
+        self.command_q = queue.Queue(100)  # I'd be amazed if we hit 100
+        # commands, but might as well set
+        # a limit
         self.response_q = queue.Queue(100)
         self.executor = Executor(self.command_q)
 
         self.socket = None
         self.admins = dict()
-        self.channels = []        # List of currently-joined channels
+        self.channels = []  # List of currently-joined channels
         self.last_sent = 0
         self.last_received = time()
         self.last_ping_sent = time()
@@ -55,8 +51,8 @@ class Bot(object):
         self.shutdown = threading.Event()
         self.response_lock = threading.Lock()
         self.waiting_for_response = False
-        self.numcodes = ['001', '301', '311', '318', '330', '353', '396', '401',
-                            '403', '433', '442', '470', '473']
+        self.numcodes = ['001', '301', '311', '318', '330', '353', '396', '401', '403', '433',
+                         '442', '470', '473']
 
         self.settings = self.configuration.get_configuration()
         self.base_path = os.path.dirname(os.path.abspath(__file__))
@@ -72,8 +68,7 @@ class Bot(object):
                 self.logger.debug('Pinging server.')
                 self.ping()
             elif now - self.last_ping_sent > 60:
-                self.logger.warning('No ping response in 60 seconds. '
-                                        'Shutting down.')
+                self.logger.warning('No ping response in 60 seconds. Shutting down.')
                 self.command_q.put(Command(self, 'shutdown', 'internal'))
 
     def connect(self):
@@ -85,21 +80,17 @@ class Bot(object):
             self.logger.info('Initiating connection.')
             self.socket.connect((self.settings['host'], self.settings['port']))
         except Exception:
-            self.logger.error( "Unable to connect to IRC server. Check your "
-                                "Internet connection.")
+            self.logger.error("Unable to connect to IRC server. Check your Internet connection.")
         else:
             self.send("NICK {0}".format(self.settings['nick']))
-            self.send("USER {0} {1} * :{2}".format(self.settings['ident'],
-                                                    self.settings['host'],
-                                                    self.settings['realname']))
+            self.send("USER {0} {1} * :{2}".format(self.settings['ident'], self.settings['host'],
+                                                   self.settings['realname']))
             self.private_message("NickServ", "ACC")
             self.loop()
 
     def dispatch(self, line):
-        """Determines the type of message received, creates a command object,
-        adds it to the queue."""
-        print("DISPATCH")
-        print(line)
+        """Determines the type of message received, creates a command object, adds it to the
+        queue. """
         command = None
         length = len(line)
         if 'PING' in line[0]:
@@ -109,8 +100,7 @@ class Bot(object):
                 self.response_q.put(line)
             command = Command(self, line, 'NickServ')
         elif length > 2:
-            if len(line[1]) == 3 and line[1].isdigit() and line[
-                1] in self.numcodes:
+            if len(line[1]) == 3 and line[1].isdigit() and line[1] in self.numcodes:
                 if self.waiting_for_response:
                     self.response_q.put(line)
                 command = Command(self, line, 'numcode')
@@ -122,7 +112,8 @@ class Bot(object):
                     command = Command(self, line, 'direct_message')
                 else:
                     for ind, word in enumerate(line):
-                        if (len(word) > 1 and word[0] == '!') or (ind == 3 and len(word) > 2 and word[1] == '!'):
+                        if (len(word) > 1 and word[0] == '!') or (
+                                    ind == 3 and len(word) > 2 and word[1] == '!'):
                             command = Command(self, line, 'exclamation_message')
 
         # Add to the command queue to be executed
@@ -137,19 +128,16 @@ class Bot(object):
                 self.send('JOIN ' + channel)
                 self.channels.append(channel)
             else:
-                self.logger.info(
-                    'Already in channel {}. Not joining.'.format(channel))
+                self.logger.info('Already in channel {}. Not joining.'.format(channel))
 
     def load_commands(self):
         try:
-            with open(self.base_path + '/plugins/commands.pkl',
-                        'rb') as admin_file:
+            with open(self.base_path + '/plugins/commands.pkl', 'rb') as admin_file:
                 admin_commands = pickle.load(admin_file)
         except:
             admin_commands = None
         try:
-            with open(self.base_path + '/plugins/admincommands.pkl',
-                        'rb') as command_file:
+            with open(self.base_path + '/plugins/admincommands.pkl', 'rb') as command_file:
                 commands = pickle.load(command_file)
         except:
             commands = None
@@ -174,7 +162,6 @@ class Bot(object):
                 self.last_received = time()
                 list_of_lines = buffer.split('\\r\\n')
                 for line in list_of_lines:
-                    print(line)
                     self.logger.debug(line)
                     line = line.strip().split()
                     self.dispatch(line)
@@ -222,8 +209,8 @@ class Bot(object):
             self.last_sent = time()
 
     def split(self, message, maxlen=400, maxsplits=5):
-        """Split a message into smaller sections. Messages that are longer than
-        maxlen*maxsplits will be truncated."""
+        """Split a message into smaller sections. Messages that are longer than maxlen*maxsplits
+        will be truncated. """
         splits = 0
         split_message = []
         while len(message) > 0 and splits < maxsplits:
@@ -236,19 +223,16 @@ class Bot(object):
                 splits += 1
                 break
         if splits >= maxsplits:
-            self.logger.warning('Attempted to send a message that was too '
-                                    'long; message truncated.')
+            self.logger.warning('Attempted to send a message that was too long; message truncated.')
         return split_message
 
     def start(self):
-        """Begin the threads. The "IO" thread is the loop that receives
-        commands from the IRC channels, and responds. The "Executor" thread is
-        the thread used for    simple commands that do not require threads of
-        their own. More complex commands will create new threads as needed from
-        this thread."""
+        """Begin the threads. The "IO" thread is the loop that receives commands from the IRC
+        channels, and responds. The "Executor" thread is the thread used for simple commands
+        that do not require threads of their own. More complex commands will create new threads
+        as needed from this thread. """
         threading.Thread(name='IO', target=self.connect).start()
-        threading.Thread(name='Executor', target=self.executor.loop,
-                            args=(self,)).start()
+        threading.Thread(name='Executor', target=self.executor.loop, args=(self,)).start()
 
     def whois(self, user):
         self.send("WHOIS {0}".format(user))
