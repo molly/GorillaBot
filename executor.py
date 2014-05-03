@@ -18,7 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import logging, threading
+import logging
+import threading
 
 
 class Executor(object):
@@ -41,6 +42,5 @@ class Executor(object):
                     command.trigger()
                 self.command_q.task_done()
             else:
-                threading.Thread(name=command.trigger.__name__,
-                                    target=command.trigger,
-                                    args=command.args).start()
+                threading.Thread(name=command.trigger.__name__, target=command.trigger,
+                                 args=command.args).start()

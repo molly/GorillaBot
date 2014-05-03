@@ -1,22 +1,19 @@
 # Copyright (c) 2013-2014 Molly White
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+# associated documentation files (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge, publish, distribute,
+# sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in all copies or
+# substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+# BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+# DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import logging, plugins
 
@@ -28,25 +25,22 @@ class Command(object):
         self.Bot = bot
         self.logger = logging.getLogger("GorillaBot")
         self.line = line
-        self.command_type = command_type    # Type of command
-        self.trigger = None                 # Function this command triggers
-        self.args = [self.Bot]              # Arguments for command
-        self.needs_own_thread = False       # Should this command be given its
-                                            # own thread?
-        self.channel = None                 # Channel in which command was
-                                            # received
-        self.sender = None                  # Nick who sent the command
-
+        self.command_type = command_type  # Type of command
+        self.trigger = None  # Function this command triggers
+        self.args = [self.Bot]  # Arguments for command
+        self.needs_own_thread = False  # Should this command be given its own thread?
+        self.channel = None  # Channel in which command was received
+        self.sender = None  # Nick who sent the command
         self.interpret()
 
     def __repr__(self):
         return '<Command type: {0}>'.format(self.command_type)
 
     def __str__(self):
-        return ('Command\n\tType: {0}\n\tResponse: {1}({2})\n\tChannel: {3}\n\t'
-                'Sender: {4}\n\t{5}'
-                .format(self.command_type, self.trigger, self.args,
-                self.channel, self.sender, self.line))
+        return (
+            'Command\n\tType: {0}\n\tResponse: {1}({2})\n\tChannel: {3}\n\tSender: {4}\n\t{5}'
+            .format(
+                self.command_type, self.trigger, self.args, self.channel, self.sender, self.line))
 
     def dispatch(self, command=None):
         """Respond to a command from a user."""
@@ -57,16 +51,15 @@ class Command(object):
             args = ''
         if self.Bot.admin_commands:
             if command in self.Bot.admin_commands:
-                if self.command_type == 'internal' or \
-                        plugins.connection._is_admin(self.Bot, self.sender):
+                if self.command_type == 'internal' or plugins.connection._is_admin(self.Bot,
+                                                                                   self.sender):
                     self.trigger = eval(self.Bot.admin_commands[command])
                     self.args.append(self.sender)
                     self.args.append(self.channel)
                     self.args.append(args)
                 else:
-                    self.Bot.say(self.channel,
-                                 "Please ask a bot operator to perform this "
-                                    "action for you.")
+                    self.Bot.say(self.channel, "Please ask a bot operator to perform this action "
+                                               "for you.")
         if self.Bot.commands:
             if command in self.Bot.commands:
                 self.trigger = eval(self.Bot.commands[command])
