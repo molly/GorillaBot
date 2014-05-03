@@ -15,7 +15,12 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import logging, os, pickle, queue, socket, threading
+import logging
+import os
+import pickle
+import queue
+import socket
+import threading
 from command import Command
 from configure import Configure
 from executor import Executor
@@ -35,9 +40,7 @@ class Bot(object):
 
         self.logger = logging.getLogger('GorillaBot')
         self.configuration = Configure(self.default, self.log_type, self.quiet, self.verbose)
-        self.command_q = queue.Queue(100)  # I'd be amazed if we hit 100
-        # commands, but might as well set
-        # a limit
+        self.command_q = queue.Queue(100)  # I'd be amazed if we hit 100 commands, but limit
         self.response_q = queue.Queue(100)
         self.executor = Executor(self.command_q)
 
@@ -79,7 +82,7 @@ class Bot(object):
         try:
             self.logger.info('Initiating connection.')
             self.socket.connect((self.settings['host'], self.settings['port']))
-        except Exception:
+        except OSError:
             self.logger.error("Unable to connect to IRC server. Check your Internet connection.")
         else:
             self.send("NICK {0}".format(self.settings['nick']))
@@ -100,6 +103,7 @@ class Bot(object):
                 self.response_q.put(line)
             command = Command(self, line, 'NickServ')
         elif length > 2:
+            # Not a Nickserv message or a ping, so create a Command object
             if len(line[1]) == 3 and line[1].isdigit() and line[1] in self.numcodes:
                 if self.waiting_for_response:
                     self.response_q.put(line)
@@ -112,8 +116,8 @@ class Bot(object):
                     command = Command(self, line, 'direct_message')
                 else:
                     for ind, word in enumerate(line):
-                        if (len(word) > 1 and word[0] == '!') or (
-                                    ind == 3 and len(word) > 2 and word[1] == '!'):
+                        if (len(word) > 1 and word[0] == '!') or \
+                                (ind == 3 and len(word) > 2 and word[1] == '!'):
                             command = Command(self, line, 'exclamation_message')
 
         # Add to the command queue to be executed
@@ -134,12 +138,12 @@ class Bot(object):
         try:
             with open(self.base_path + '/plugins/commands.pkl', 'rb') as admin_file:
                 admin_commands = pickle.load(admin_file)
-        except:
+        except OSError:
             admin_commands = None
         try:
             with open(self.base_path + '/plugins/admincommands.pkl', 'rb') as command_file:
                 commands = pickle.load(command_file)
-        except:
+        except OSError:
             commands = None
         return admin_commands, commands
 
@@ -152,7 +156,7 @@ class Bot(object):
             except socket.timeout:
                 # No messages to deal with, move along
                 pass
-            except:
+            except IOError:
                 # Something actually went wrong
                 # TODO: Reconnect
                 self.logger.exception("Unexpected socket error")
@@ -198,7 +202,7 @@ class Bot(object):
         if time_since_send < 1:
             sleep(1 - time_since_send)
         try:
-            self.socket.sendall(bytes((message + '\r\n'), 'UTF-8'))
+            self.socket.sendall((message + '\r\n').encode())
         except socket.error:
             # TODO: Reconnect
             self.running = False

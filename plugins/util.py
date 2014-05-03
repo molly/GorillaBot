@@ -28,7 +28,7 @@ def admin(*args):
         try:
             with open(path, 'rb') as pickle_file:
                 commands = pickle.load(pickle_file)
-        except:
+        except OSError:
             commands = dict()
         command_name = func.__module__ + '.' + func.__name__
         if args:
@@ -50,7 +50,7 @@ def command(*args):
         try:
             with open(path, 'rb') as pickle_file:
                 commands = pickle.load(pickle_file)
-        except:
+        except OSError:
             commands = dict()
         command_name = func.__module__ + '.' + func.__name__
         if args:

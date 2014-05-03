@@ -21,7 +21,7 @@ from queue import Empty
 from plugins.util import admin
 
 
-def _get_admin(bot, *users):
+def get_admin(bot, *users):
     """Add a user's ident and host to the list of bot admins. Note that this doesn't work if the
     user is offline. """
     bot.response_lock.acquire()
@@ -63,7 +63,7 @@ def _get_admin(bot, *users):
     bot.response_lock.release()
 
 
-def _is_admin(bot, user):
+def is_admin(bot, user):
     """Returns true if the user is a bot admin, false otherwise. If the user's ident and host are
     not in the list, but the user's nick is, we assume that user is indeed an admin,
     and add their ident and host to the list. """
@@ -79,7 +79,7 @@ def _is_admin(bot, user):
         return True
     else:
         if sender_nick in bot.settings['botop']:
-            _get_admin(bot, sender_nick)
+            get_admin(bot, sender_nick)
             return True
     return False
 
@@ -90,7 +90,7 @@ def addadmin(bot, *args):
     if not args[2]:
         bot.say(args[1], "Please specify a user to add as a bot operator.")
     else:
-        _get_admin(bot, args[2][0])
+        get_admin(bot, args[2][0])
         if args[2][0] in bot.settings['botop']:
             bot.say(args[1], "{} has been added as a bot operator.".format(args[2][0]))
         else:
@@ -125,7 +125,7 @@ def part(bot, *args):
                 bot.send('PART {0} {1}'.format(args[2][0], ' '.join(args[2][1:])))
 
 
-def _pong(bot, server):
+def pong(bot, server):
     """Respond to a ping from a server with a pong to that same server."""
     bot.send('PONG {}'.format(server))
 

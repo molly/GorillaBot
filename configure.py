@@ -144,7 +144,7 @@ class Configure(object):
         field += ": "
         answer = ''
         answer = input(field)
-        if default != None and answer == '':
+        if default is None and answer == '':
             answer = default
         return answer
 
@@ -152,7 +152,7 @@ class Configure(object):
         """Overwrite the existing configuration file with a new one."""
         try:
             os.remove(self.config_path)
-        except:
+        except OSError:
             self.logger.error('Unable to remove existing configuration file.')
         else:
             self.config = configparser.ConfigParser()
