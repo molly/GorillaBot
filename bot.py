@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Molly White
+# Copyright (c) 2013-2014 Molly White
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -172,6 +172,7 @@ class Bot(object):
                 self.last_received = time()
                 list_of_lines = buffer.split('\\r\\n')
                 for line in list_of_lines:
+                    print(line)
                     self.logger.debug(line)
                     line = line.strip().split()
                     self.dispatch(line)
