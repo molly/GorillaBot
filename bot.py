@@ -98,14 +98,17 @@ class Bot(object):
     def dispatch(self, line):
         """Determines the type of message received, creates a command object,
         adds it to the queue."""
+        print("DISPATCH")
+        print(line)
         command = None
+        length = len(line)
         if 'PING' in line[0]:
             command = Command(self, line, 'ping')
         elif 'NickServ' in line[0]:
             if self.waiting_for_response:
                 self.response_q.put(line)
             command = Command(self, line, 'NickServ')
-        elif len(line) > 1:
+        elif length > 2:
             if len(line[1]) == 3 and line[1].isdigit() and line[
                 1] in self.numcodes:
                 if self.waiting_for_response:
@@ -113,14 +116,13 @@ class Bot(object):
                 command = Command(self, line, 'numcode')
             elif line[1] == 'PRIVMSG':
                 nick = self.settings['nick']
-                if line[2] == nick:
+                if length > 3 and line[2] == nick:
                     command = Command(self, line, 'private_message')
-                elif nick in line[3]:
+                elif length > 4 and nick in line[3]:
                     command = Command(self, line, 'direct_message')
                 else:
                     for ind, word in enumerate(line):
-                        # TODO: ERROR ON THIS LINE: (string index out of range)
-                        if word[0] == '!' or (ind == 3 and word[1] == '!'):
+                        if (len(word) > 1 and word[0] == '!') or (ind == 3 and len(word) > 2 and word[1] == '!'):
                             command = Command(self, line, 'exclamation_message')
 
         # Add to the command queue to be executed
