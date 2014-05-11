@@ -20,7 +20,9 @@ from configure import Configurator
 import logging
 from logging import handlers
 import os
-from time import strftime
+import socket
+import threading
+from time import strftime, time
 
 
 class Bot(object):
@@ -28,9 +30,40 @@ class Bot(object):
 
     def __init__(self):
         self.log_path = os.path.dirname(os.path.abspath(__file__)) + '/logs'
+
+        self.last_ping_sent = time()
+        self.last_received = None
         self.logger = None
         self.settings = {}
+        self.shutdown = threading.Event()
+        self.socket = None
+
+        # Initialize bot
         self.initialize()
+
+    def caffeinate(self):
+        """Make sure the connection stays open."""
+        now = time()
+        if now - self.last_received > 150:
+            if self.last_ping_sent < self.last_received:
+                self.logger.debug('Pinging server.')
+                self.shutdown.set() #TEMP
+            elif now - self.last_ping_sent > 60:
+                self.logger.warning('No ping response in 60 seconds. Shutting down.')
+                self.shutdown.set()
+
+    def connect(self):
+        """Connect to the IRC server."""
+        self.logger.debug('Thread created.')
+        self.socket = socket.socket()
+        self.socket.settimeout(5)
+        try:
+            self.logger.info('Initiating connection.')
+            self.socket.connect((self.settings['host'], self.settings['port']))
+        except OSError:
+            self.logger.error("Unable to connect to IRC server. Check your Internet connection.")
+        else:
+            self.loop()
 
     def initialize(self):
         """Initialize the bot. Parse command-line options, configure, and set up logging."""
@@ -54,6 +87,30 @@ class Bot(object):
         configurator = Configurator(args.default)
         self.settings = configurator.get_configuration()
         self.setup_logging(args.quiet)
+
+    def loop(self):
+        """Main connection loop."""
+        while not self.shutdown.is_set():
+            try:
+                buffer = ''
+                buffer += str(self.socket.recv(4096))
+            except socket.timeout:
+                # No messages to deal with, move along
+                pass
+            except IOError:
+                # Something actually went wrong
+                # TODO: Reconnect
+                self.logger.exception("Unexpected socket error")
+                break
+            else:
+                self.last_received = time()
+                list_of_lines = buffer.split('\\r\\n')
+                print(list_of_lines)
+                for line in list_of_lines:
+                    self.logger.debug(line)
+                    line = line.strip().split()
+
+            self.caffeinate()
 
     def setup_logging(self, quiet):
         """Set up logging to a logfile and the console."""
@@ -89,5 +146,22 @@ class Bot(object):
         self.logger.addHandler(consolehandler)
         self.logger.info("Console logger created.")
 
+    def start(self):
+        """Begin the threads. The "IO" thread is the loop that receives commands from the IRC
+        channels, and responds. The "Executor" thread is the thread used for simple commands
+        that do not require threads of their own. More complex commands will create new threads
+        as needed from this thread. """
+        try:
+            io_thread = threading.Thread(name='IO', target=self.connect)
+            io_thread.start()
+            #threading.Thread(name='Executor', target=self.executor.loop, args=(self,)).start()
+            while io_thread.isAlive():
+                io_thread.join(1)
+        except KeyboardInterrupt:
+            self.logger.info("Caught KeyboardInterrupt. Shutting down.")
+            self.socket.close()
+            self.shutdown.set()
+
 if __name__ == "__main__":
-    Bot()
+    bot = Bot()
+    bot.start()
