@@ -1,0 +1,5 @@
+*.pyc
+logs/
+*.cfg
+.idea/
+__pycache__
