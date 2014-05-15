@@ -143,9 +143,10 @@ class Configure(object):
             field += " [DEFAULT: {}]".format(default)
         field += ": "
         answer = ''
-        answer = input(field)
-        if default is None and answer == '':
-            answer = default
+        while answer == '':
+            answer = input(field)
+            if default and answer == '':
+                answer = default
         return answer
 
     def reconfigure(self):
