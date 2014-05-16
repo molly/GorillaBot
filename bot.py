@@ -17,9 +17,12 @@
 
 import argparse
 from configure import Configurator
+from executor import Executor
 import logging
 from logging import handlers
+from message import *
 import os
+import queue
 import socket
 import threading
 from time import sleep, strftime, time
@@ -38,6 +41,8 @@ class Bot(object):
         self.settings = {}
         self.shutdown = threading.Event()
         self.socket = None
+        self.message_q = queue.Queue(100)   # Limit to 100 messages just in case
+        self.executor = Executor(self.message_q, self.shutdown)
 
         # Initialize bot
         self.initialize()
@@ -67,6 +72,19 @@ class Bot(object):
             self.send("USER {0} {1} * :{2}".format(self.settings['ident'], self.settings['host'],
                                                    self.settings['realname']))
             self.loop()
+
+    def dispatch(self, line):
+        """Inspect this line and determine if further processing is necessary."""
+        length = len(line)
+        if length > 2:
+            if line[1].isdigit():
+                message = Numeric(*line)
+                print(message)
+            elif line[1] == "NOTICE":
+                message = Notice(*line)
+                print(message)
+        else:
+            print(line)
 
     def initialize(self):
         """Initialize the bot. Parse command-line options, configure, and set up logging."""
@@ -108,11 +126,10 @@ class Bot(object):
             else:
                 self.last_received = time()
                 list_of_lines = buffer.split('\\r\\n')
-                print(list_of_lines)
                 for line in list_of_lines:
                     self.logger.debug(line)
                     line = line.strip().split()
-
+                    self.dispatch(line)
             self.caffeinate()
         self.socket.close()
 
@@ -129,7 +146,6 @@ class Bot(object):
             if not hide:
                 self.logger.debug("Sent message: " + message)
             self.last_message_sent = time()
-
 
     def setup_logging(self, quiet):
         """Set up logging to a logfile and the console."""
@@ -173,7 +189,7 @@ class Bot(object):
         try:
             io_thread = threading.Thread(name='IO', target=self.connect)
             io_thread.start()
-            #threading.Thread(name='Executor', target=self.executor.loop, args=(self,)).start()
+            threading.Thread(name='Executor', target=self.executor.loop).start()
             while io_thread.isAlive():
                 io_thread.join(1)
         except KeyboardInterrupt:
