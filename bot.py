@@ -22,7 +22,7 @@ from logging import handlers
 import os
 import socket
 import threading
-from time import strftime, time
+from time import sleep, strftime, time
 
 
 class Bot(object):
@@ -31,6 +31,7 @@ class Bot(object):
     def __init__(self):
         self.log_path = os.path.dirname(os.path.abspath(__file__)) + '/logs'
 
+        self.last_message_sent = time()
         self.last_ping_sent = time()
         self.last_received = None
         self.logger = None
@@ -47,7 +48,6 @@ class Bot(object):
         if now - self.last_received > 150:
             if self.last_ping_sent < self.last_received:
                 self.logger.debug('Pinging server.')
-                self.shutdown.set() #TEMP
             elif now - self.last_ping_sent > 60:
                 self.logger.warning('No ping response in 60 seconds. Shutting down.')
                 self.shutdown.set()
@@ -63,6 +63,9 @@ class Bot(object):
         except OSError:
             self.logger.error("Unable to connect to IRC server. Check your Internet connection.")
         else:
+            self.send("NICK {0}".format(self.settings['nick']))
+            self.send("USER {0} {1} * :{2}".format(self.settings['ident'], self.settings['host'],
+                                                   self.settings['realname']))
             self.loop()
 
     def initialize(self):
@@ -111,6 +114,22 @@ class Bot(object):
                     line = line.strip().split()
 
             self.caffeinate()
+        self.socket.close()
+
+    def send(self, message, hide=False):
+        """Send message to the server."""
+        if (time() - self.last_message_sent) < 1:
+            sleep(1)
+        try:
+            self.socket.sendall(bytes((message + "\r\n"), "utf-8"))
+        except socket.error:
+            self.shutdown.set()
+            self.logger.error("Message '" + message + "' failed to send. Shutting down.")
+        else:
+            if not hide:
+                self.logger.debug("Sent message: " + message)
+            self.last_message_sent = time()
+
 
     def setup_logging(self, quiet):
         """Set up logging to a logfile and the console."""
@@ -159,7 +178,6 @@ class Bot(object):
                 io_thread.join(1)
         except KeyboardInterrupt:
             self.logger.info("Caught KeyboardInterrupt. Shutting down.")
-            self.socket.close()
             self.shutdown.set()
 
 if __name__ == "__main__":
