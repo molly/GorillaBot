@@ -23,7 +23,8 @@ import threading
 class Executor(object):
     """Waits for messages to appear in the queue, then executes commands as needed."""
 
-    def __init__(self, message_q, shutdown):
+    def __init__(self, bot, message_q, shutdown):
+        self.bot = bot
         self.message_q = message_q
         self.logger = logging.getLogger("GorillaBot")
         self.shutdown = shutdown
@@ -37,3 +38,25 @@ class Executor(object):
             except queue.Empty:
                 # No messages in the queue, continue loop
                 pass
+            else:
+                print(message)
+                # If this message has a trigger, execute the function
+                if message.trigger:
+                    if message.needs_own_thread:
+                        # Begin a new thread if necessary
+                        threading.Thread(name=message.trigger.__name__, target=message.trigger,
+                                         args=message.args).start()
+                        if message.args:
+                            self.logger.info("{0}({1})".format(message.trigger.__name__,
+                                                               ", ".join(message.args)))
+                        else:
+                            self.logger.info("{0}()".format(message.trigger.__name__))
+                    else:
+                        if message.args:
+                            self.logger.info("{0}({1})".format(message.trigger.__name__,
+                                                               ", ".join(message.args)))
+                            message.trigger(*message.args)
+                        else:
+                            self.logger.info("{0}()".format(message.trigger.__name__))
+                            message.trigger()
+                    self.message_q.task_done()

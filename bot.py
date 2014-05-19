@@ -41,8 +41,8 @@ class Bot(object):
         self.settings = {}
         self.shutdown = threading.Event()
         self.socket = None
-        self.message_q = queue.Queue(100)   # Limit to 100 messages just in case
-        self.executor = Executor(self.message_q, self.shutdown)
+        self.message_q = queue.Queue()
+        self.executor = Executor(self, self.message_q, self.shutdown)
 
         # Initialize bot
         self.initialize()
@@ -52,7 +52,7 @@ class Bot(object):
         now = time()
         if now - self.last_received > 150:
             if self.last_ping_sent < self.last_received:
-                self.logger.debug('Pinging server.')
+                self.ping()
             elif now - self.last_ping_sent > 60:
                 self.logger.warning('No ping response in 60 seconds. Shutting down.')
                 self.shutdown.set()
@@ -76,15 +76,19 @@ class Bot(object):
     def dispatch(self, line):
         """Inspect this line and determine if further processing is necessary."""
         length = len(line)
+        message = None
+        if length <= 2:
+            if line[0] == "b'PING":
+                message = Ping(self, *line)
         if length > 2:
             if line[1].isdigit():
-                message = Numeric(*line)
-                print(message)
+                message = Numeric(self, *line)
             elif line[1] == "NOTICE":
-                message = Notice(*line)
-                print(message)
+                message = Notice(self, *line)
         else:
             print(line)
+        if message:
+            self.message_q.put(message)
 
     def initialize(self):
         """Initialize the bot. Parse command-line options, configure, and set up logging."""
@@ -127,11 +131,20 @@ class Bot(object):
                 self.last_received = time()
                 list_of_lines = buffer.split('\\r\\n')
                 for line in list_of_lines:
-                    self.logger.debug(line)
                     line = line.strip().split()
                     self.dispatch(line)
             self.caffeinate()
         self.socket.close()
+
+    def ping(self):
+        """Send a ping to the server."""
+        self.logger.debug("Pinging {}.".format(self.settings['host']))
+        self.send('PING {}'.format(self.settings['host']))
+
+    def pong(self, server):
+        """Respond to a ping from the server."""
+        self.logger.debug("Ponging {}.".format(server))
+        self.send('PONG {}'.format(server))
 
     def send(self, message, hide=False):
         """Send message to the server."""
@@ -175,8 +188,6 @@ class Bot(object):
         consolehandler.setFormatter(console_formatter)
         if quiet:
             consolehandler.setLevel(logging.WARNING)
-        else:
-            consolehandler.setLevel(logging.INFO)
 
         self.logger.addHandler(consolehandler)
         self.logger.info("Console logger created.")
