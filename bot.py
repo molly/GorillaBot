@@ -45,6 +45,7 @@ class Bot(object):
         self.socket = None
         self.message_q = queue.Queue()
         self.executor = Executor(self, self.message_q, self.shutdown)
+        self.channels = []
 
         # Initialize bot
         self.initialize()
@@ -73,6 +74,7 @@ class Bot(object):
             self.send("NICK {0}".format(self.settings['nick']))
             self.send("USER {0} {1} * :{2}".format(self.settings['ident'], self.settings['host'],
                                                    self.settings['realname']))
+            self.private_message("NickServ", "ACC")
             self.loop()
 
     def dispatch(self, line):
@@ -114,6 +116,22 @@ class Bot(object):
         configurator = Configurator(args.default)
         self.settings = configurator.get_configuration()
         self.setup_logging(args.quiet)
+
+    def join(self, chans=None):
+        """Join the given channel, list of channels, or if no channel is specified, join any
+        channels that exist in the config but are not already joined."""
+        if chans is None:
+            chans = self.settings["chans"]
+        if type(chans) is str:
+            chans = [chans]
+        if type(chans) is list:
+            for chan in chans:
+                if chan in self.channels:
+                    self.logger.info("Already in channel {0}. Not joining.".format(chan))
+                else:
+                    self.logger.info("Joining {0}.".format(chan))
+                    self.send('JOIN ' + chan)
+                    self.channels.append(chan)
 
     def loop(self):
         """Main connection loop."""

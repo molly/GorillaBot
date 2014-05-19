@@ -49,4 +49,6 @@ def identify(bot):
                 ignored_messages.append(msg)
     for m in ignored_messages:
         bot.message_q.put(m)
+    if bot.settings['chans'] != ['']:
+        bot.join(bot.settings['chans'])
     bot.response_lock.release()

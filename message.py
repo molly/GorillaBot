@@ -68,10 +68,14 @@ class Notice(Message):
 
     def set_trigger(self):
         """Set the trigger function if this message warrants a response."""
-        if self.sender == "NickServ!NickServ@services." and "identify" in self.body:
-            self.trigger = plugins.freenode.identify
-            self.args.append(self.bot)
-            self.needs_own_thread = True
+        if self.sender == "NickServ!NickServ@services.":
+            if "identify" in self.body:
+                self.trigger = plugins.freenode.identify
+                self.args.append(self.bot)
+                self.needs_own_thread = True
+            elif "ACC 0" in self.body:
+                self.trigger = self.bot.join
+
 
 class Ping(Message):
     """Represent a ping from the server."""
