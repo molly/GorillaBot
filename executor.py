@@ -46,17 +46,9 @@ class Executor(object):
                         # Begin a new thread if necessary
                         threading.Thread(name=message.trigger.__name__, target=message.trigger,
                                          args=message.args).start()
-                        if message.args:
-                            self.logger.info("{0}({1})".format(message.trigger.__name__,
-                                                               ", ".join(message.args)))
-                        else:
-                            self.logger.info("{0}()".format(message.trigger.__name__))
                     else:
                         if message.args:
-                            self.logger.info("{0}({1})".format(message.trigger.__name__,
-                                                               ", ".join(message.args)))
                             message.trigger(*message.args)
                         else:
-                            self.logger.info("{0}()".format(message.trigger.__name__))
                             message.trigger()
                     self.message_q.task_done()

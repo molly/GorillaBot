@@ -16,6 +16,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import logging
+import plugins
 
 
 class Message(object):
@@ -26,9 +27,9 @@ class Message(object):
         self.location = location
         self.sender = sender
         self.body = body
-        self.trigger = None
-        self.args = []
-        self.needs_own_thread = False
+        self.trigger = None             # Command that this message triggers
+        self.args = []                  # Args to pass to trigger command
+        self.needs_own_thread = False   # Does this trigger need its own thread?
         self.set_trigger()
 
     def set_trigger(self):
@@ -67,9 +68,10 @@ class Notice(Message):
 
     def set_trigger(self):
         """Set the trigger function if this message warrants a response."""
-        # TODO: RESPOND
-        pass
-
+        if self.sender == "NickServ!NickServ@services." and "identify" in self.body:
+            self.trigger = plugins.freenode.identify
+            self.args.append(self.bot)
+            self.needs_own_thread = True
 
 class Ping(Message):
     """Represent a ping from the server."""

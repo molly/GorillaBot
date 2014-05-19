@@ -23,6 +23,7 @@ from logging import handlers
 from message import *
 import os
 import queue
+import re
 import socket
 import threading
 from time import sleep, strftime, time
@@ -40,6 +41,7 @@ class Bot(object):
         self.logger = None
         self.settings = {}
         self.shutdown = threading.Event()
+        self.response_lock = threading.Lock()
         self.socket = None
         self.message_q = queue.Queue()
         self.executor = Executor(self, self.message_q, self.shutdown)
@@ -78,17 +80,17 @@ class Bot(object):
         length = len(line)
         message = None
         if length <= 2:
-            if line[0] == "b'PING":
+            if line[0] == "PING":
                 message = Ping(self, *line)
         if length > 2:
             if line[1].isdigit():
                 message = Numeric(self, *line)
             elif line[1] == "NOTICE":
                 message = Notice(self, *line)
-        else:
-            print(line)
         if message:
             self.message_q.put(message)
+        else:
+            print(line)
 
     def initialize(self):
         """Initialize the bot. Parse command-line options, configure, and set up logging."""
@@ -129,12 +131,26 @@ class Bot(object):
                 break
             else:
                 self.last_received = time()
+                if buffer.startswith("b'"):
+                    buffer = buffer[2:]
+                if buffer.endswith("'"):
+                    buffer = buffer[:-1]
                 list_of_lines = buffer.split('\\r\\n')
+                list_of_lines = filter(None, list_of_lines)
                 for line in list_of_lines:
                     line = line.strip().split()
-                    self.dispatch(line)
+                    if line != "":
+                        self.dispatch(line)
             self.caffeinate()
         self.socket.close()
+
+    def parse_hostmask(self, nick):
+        """Parse out the parts of the hostmask."""
+        m = re.match(':?(?P<nick>.*?)!~?(?P<user>.*?)@(?P<host>.*)', nick)
+        if m:
+            return {"nick": m.group("nick"), "user": m.group("user"), "host": m.group("host")}
+        else:
+            return None
 
     def ping(self):
         """Send a ping to the server."""
@@ -145,6 +161,10 @@ class Bot(object):
         """Respond to a ping from the server."""
         self.logger.debug("Ponging {}.".format(server))
         self.send('PONG {}'.format(server))
+
+    def private_message(self, target, message, hide=False):
+        """Send a private message to a target on the server."""
+        self.send('PRIVMSG {0} :{1}'.format(target, message), hide)
 
     def send(self, message, hide=False):
         """Send message to the server."""
