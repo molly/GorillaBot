@@ -18,6 +18,7 @@
 import logging
 import queue
 import threading
+from time import sleep
 
 
 class Executor(object):
@@ -34,10 +35,16 @@ class Executor(object):
         while not self.shutdown.is_set():
             # Block until a message exists in the queue
             try:
-                message = self.message_q.get(timeout=5)
+                if self.bot.response_lock.locked():
+                    raise threading.ThreadError
+                else:
+                    message = self.message_q.get(timeout=5)
             except queue.Empty:
                 # No messages in the queue, continue loop
                 pass
+            except threading.ThreadError:
+                # Wait for other process to release the lock
+                sleep(5)
             else:
                 print(message)
                 # If this message has a trigger, execute the function

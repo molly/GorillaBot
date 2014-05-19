@@ -41,7 +41,7 @@ def identify(bot):
                 continue
             if 'Invalid' in msg.body:
                 logger.info('Invalid password entered.')
-            elif 'identified' in msg.body:
+            elif 'You are now identified' in msg.body:
                 logger.info('You have successfully identified.')
                 identified = True
                 break
@@ -49,6 +49,6 @@ def identify(bot):
                 ignored_messages.append(msg)
     for m in ignored_messages:
         bot.message_q.put(m)
-    if bot.settings['chans'] != ['']:
-        bot.join(bot.settings['chans'])
     bot.response_lock.release()
+    if bot.settings['chans']:
+        bot.join()

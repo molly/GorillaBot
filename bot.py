@@ -22,6 +22,7 @@ import logging
 from logging import handlers
 from message import *
 import os
+import pickle
 import queue
 import re
 import socket
@@ -46,8 +47,10 @@ class Bot(object):
         self.message_q = queue.Queue()
         self.executor = Executor(self, self.message_q, self.shutdown)
         self.channels = []
+        self.base_path = os.path.dirname(os.path.abspath(__file__))
 
         # Initialize bot
+        self.admin_commands, self.commands = self.load_commands()
         self.initialize()
 
     def caffeinate(self):
@@ -132,6 +135,19 @@ class Bot(object):
                     self.logger.info("Joining {0}.".format(chan))
                     self.send('JOIN ' + chan)
                     self.channels.append(chan)
+
+    def load_commands(self):
+            try:
+                with open(self.base_path + '/plugins/commands.pkl', 'rb') as admin_file:
+                    admin_commands = pickle.load(admin_file)
+            except OSError:
+                admin_commands = None
+            try:
+                with open(self.base_path + '/plugins/admincommands.pkl', 'rb') as command_file:
+                    commands = pickle.load(command_file)
+            except OSError:
+                commands = None
+            return admin_commands, commands
 
     def loop(self):
         """Main connection loop."""
