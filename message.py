@@ -23,6 +23,7 @@ class Message(object):
     """Base class to represent a message received from the IRC server."""
 
     def __init__(self, bot, location, sender, body):
+        self.logger = logging.getLogger("GorillaBot")
         self.bot = bot
         self.location = location
         self.sender = sender
@@ -37,6 +38,20 @@ class Message(object):
         return
 
 
+class Command(Message):
+    """Represents a command from a user."""
+
+    def __init__(self, *args):
+        super(Command, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
+
+    def __str__(self):
+        return "Command message from {0} in {1}: {2}".format(self.sender, self.location, self.body)
+
+    def set_trigger(self):
+        """Set the trigger function if this message warrants a response."""
+        print(self.body)
+
+
 class Numeric(Message):
     """Represent a numeric reply from the server."""
 
@@ -44,8 +59,10 @@ class Numeric(Message):
         self.number = args[2]
         if len(args) >= 5:
             super(Numeric, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
-        else:
+        elif len(args) == 4:
             super(Numeric, self).__init__(args[0], args[3], args[1][1:], None)
+        else:
+            super(Numeric, self).__init__(args[0], None, args[1][1:], None)
 
     def __str__(self):
         return "Numeric message {0}: {1}, from {2} in {3}".format(self.number, self.body,
@@ -53,8 +70,8 @@ class Numeric(Message):
 
     def set_trigger(self):
         """Set the trigger function if this message warrants a response."""
-        # TODO: RESPOND
-        pass
+        if self.number == "396":                # RPL_HOSTHIDDEN
+            self.logger.info(self.body)
 
 
 class Notice(Message):

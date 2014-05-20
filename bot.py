@@ -84,14 +84,18 @@ class Bot(object):
         """Inspect this line and determine if further processing is necessary."""
         length = len(line)
         message = None
-        if length <= 2:
+        if length < 2:
             if line[0] == "PING":
                 message = Ping(self, *line)
-        if length > 2:
+        if length >= 2:
             if line[1].isdigit():
                 message = Numeric(self, *line)
             elif line[1] == "NOTICE":
                 message = Notice(self, *line)
+            elif line[1] == "PRIVMSG" and (line[2] == self.settings["nick"] or
+                                           line[3][1] == "!" or
+                                           line[3].startswith(":" + self.settings["nick"])):
+                message = Command(self, *line)
         if message:
             self.message_q.put(message)
         else:
