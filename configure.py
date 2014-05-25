@@ -16,6 +16,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import configparser
+from getpass import getpass
 import logging
 import os
 
@@ -29,7 +30,7 @@ class Configurator(object):
         self.config_path = os.path.dirname(os.path.abspath(__file__)) + '/config.cfg'
         self.logger = logging.getLogger("GorillaBot")
         self.default = default
-        self.options = ('host', 'port', 'nick', 'ident', 'realname', 'chans', 'botop')
+        self.options = ('host', 'port', 'nick', 'ident', 'realname', 'chans', 'botop', 'password')
 
     def get_configuration(self):
         """Return configuration as a dictionary."""
@@ -44,6 +45,7 @@ class Configurator(object):
         ident = self.config.get("irc", "Ident")
         chans = self.config.get("irc", "Chans")
         botop = self.config.get("irc", "Botop")
+        password = self.config.get("irc", "Password")
 
         # Allow comma- or space-separated lists
         if ',' in chans:
@@ -63,7 +65,7 @@ class Configurator(object):
         for i in range(len(oplist)):
             oplist[i] = oplist[i].strip()
         return {"host": host, "port": port, "nick": nick, "realname": realname,
-                         "ident": ident, "chans": chanlist, "botop": oplist}
+                         "ident": ident, "chans": chanlist, "botop": oplist, "password": password}
 
     def load(self):
         """Try to load an existing configuration file. If it exists, validate it. If it does not,
@@ -91,16 +93,16 @@ class Configurator(object):
             ident = self.prompt("Realname", "GorillaBot")
             chans = self.prompt("Chans")
             botop = self.prompt("Bot operator(s)", '')
+            password = self.prompt("Server password", hidden=True)
             print(
                 "------------------------------\n Host: {0}\n Port: {1}\n Nickname: {2}\n Real "
                 "name: {3}\n Identifier: {4}\n Channels: {5}\n Bot operator(s): {"
-                "6}\n------------------------------".format(
-                    host, port, nick, realname, ident, chans, botop))
-
+                "6}\n Server password: {7}\n------------------------------".format(
+                    host, port, nick, realname, ident, chans, botop,
+                    "[hidden]" if password else "[none]"))
             verify = input('Is this configuration correct? [Y/N]: ').lower()
             if verify == 'y':
                 break
-
         self.config.add_section("irc")
         self.config.set("irc", "host", host)
         self.config.set("irc", "port", str(port))
@@ -109,10 +111,9 @@ class Configurator(object):
         self.config.set("irc", "ident", ident)
         self.config.set("irc", "chans", chans)
         self.config.set("irc", "botop", botop)
-
+        self.config.set("irc", "password", password)
         with open(self.config_path, 'w') as config_file:
             self.config.write(config_file)
-
         self.logger.info("Configuration file saved.")
 
     def print_settings(self):
@@ -124,17 +125,22 @@ class Configurator(object):
         ident = self.config.get("irc", "ident")
         chans = self.config.get("irc", "chans")
         botop = self.config.get("irc", "botop")
+        password = self.config.get("irc", "password")
         print("------------------------------\n Host: {0}\n Port: {1}\n Nickname: {2}\n Real "
               "name: {3}\n Identifier: {4}\n Channels: {5}\n Bot operator(s): {"
-              "6}\n------------------------------".format(
-            host, port, nick, realname, ident, chans, botop))
+              "6}\nServer password: {7}------------------------------".
+              format(host, port, nick, realname, ident, chans, botop,
+                     "[hidden]" if password else "[none]"))
 
-    def prompt(self, field, default=None):
+    def prompt(self, field, default=None, hidden=False):
         """Prompt a user for input, displaying a default value if one exists."""
         if default:
             field += " [DEFAULT: {}]".format(default)
         field += ": "
-        answer = input(field)
+        if not hidden:
+            answer = input(field)
+        else:
+            answer = getpass(field)
         if default is not None and answer == '':
             return default
         return answer
