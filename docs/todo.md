@@ -1,1 +1,1 @@
-* Allow several configurations to be saved
+- [ ] Allow several configurations to be saved
