@@ -17,11 +17,10 @@
 
 import os
 import pickle
-import re
 
 
 def admin(*args):
-    """Designates bot administrator-only commands. Args is a list of command aliases. """
+    """Designates bot administrator-only commands. Args is a list of command aliases."""
 
     def decorator(func):
         path = os.path.dirname(os.path.abspath(__file__)) + '/commands.pkl'
@@ -43,7 +42,7 @@ def admin(*args):
 
 
 def command(*args):
-    """Designates general bot commands. Args is a list of command aliases. """
+    """Designates general bot commands. Args is a list of command aliases."""
 
     def decorator(func):
         path = os.path.dirname(os.path.abspath(__file__)) + '/admincommands.pkl'
@@ -62,12 +61,3 @@ def command(*args):
         return func
 
     return decorator
-
-
-def get_sender(sender):
-    """Extract the user's nick from the full mask."""
-    r = re.search(r':(?P<nick>[^!]+)!', sender)
-    if r:
-        return r.group('nick')
-    else:
-        return False
