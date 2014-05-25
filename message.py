@@ -95,12 +95,45 @@ class Notice(Message):
                 self.needs_own_thread = True
 
 
+class Operation(Message):
+    """Represent a channel operation (JOIN, KICK, etc.)"""
+
+    def __init__(self, *args):
+        self.type = args[2]
+        if len(args) < 5:
+            super(Operation, self).__init__(args[0], args[3], args[1], None)
+        else:
+            super(Operation, self).__init__(args[0], args[3], args[1], " ".join(args[4:]))
+
+    def __str__(self):
+        return "{0} from {1} in {2}: {3}".format(self.type, self.sender, self.location, self.body)
+
+    def set_trigger(self):
+        if self.type == "JOIN":
+            self.logger.info("Joined {0}.".format(self.location))
+        elif self.type == "MODE":
+            lowerbody = self.body.lower()
+            lowernick = self.bot.settings["nick"].lower()
+            if "+o {0}".format(lowernick) == lowerbody:
+                self.logger.info("Opped in {0}.".format(self.location))
+                if self.location not in self.bot.opped_channels:
+                    self.bot.opped_channels.append(self.location)
+            elif "-o {0}".format(lowernick) == lowerbody:
+                self.logger.info("De-opped in {0}.".format(self.location))
+                if self.location in self.bot.opped_channels:
+                    self.bot.opped_channels.remove(self.location)
+
+
 class Ping(Message):
     """Represent a ping from the server."""
 
     def __init__(self, *args):
-        self.type = args[2]
-        super(Ping, self).__init__(args[0], None, args[2][1:], None)
+        if args[1] == "PING" or args[1] == "PONG":
+            self.type = args[1]
+            super(Ping, self).__init__(args[0], None, args[2][1:], None)
+        else:
+            self.type = args[2]
+            super(Ping, self).__init__(args[0], None, args[1][1:], None)
 
     def __str__(self):
         return "{0} from {1}.".format(self.type, self.sender)
@@ -111,4 +144,5 @@ class Ping(Message):
             self.trigger = self.bot.pong
             self.args.append(self.sender)
         else:
+            # Record when the pong was received
             self.bot.last_received = time()

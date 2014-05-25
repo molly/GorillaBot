@@ -46,7 +46,8 @@ class Bot(object):
         self.socket = None
         self.message_q = queue.Queue()
         self.executor = Executor(self, self.message_q, self.shutdown)
-        self.channels = []
+        self.channels = []                  # Channels to which I'm joined
+        self.opped_channels = []            # Channels in which I'm opped
         self.base_path = os.path.dirname(os.path.abspath(__file__))
 
         # Initialize bot
@@ -87,14 +88,24 @@ class Bot(object):
         message = None
         if length <= 2:
             if line[0] == "PING":
+                print(line)
                 message = Ping(self, *line)
             elif line[0] == "PONG":
+                print(line)
                 message = Ping(self, *line)
         if length >= 2:
+            if line[1] == "PING":
+                print(line)
+                message = Ping(self, *line)
+            elif line[1] == "PONG":
+                print(line)
+                message = Ping(self, *line)
             if line[1].isdigit():
                 message = Numeric(self, *line)
             elif line[1] == "NOTICE":
                 message = Notice(self, *line)
+            elif line[1] in ["JOIN", "MODE"]:
+                message = Operation(self, *line)
             elif line[1] == "PRIVMSG" and (line[2] == self.settings["nick"] or
                                            line[3][1] == "!" or
                                            line[3].startswith(":" + self.settings["nick"])):
