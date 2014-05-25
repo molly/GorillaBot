@@ -9,7 +9,7 @@ __Status:__ Development<br />
 __Version:__ 1.0
 
 ## Installation
-_Download code from the master branch. Code in the development branch is often incomplete._
+_Download code from the `master` branch. Code in the `rewrite` branch is often incomplete and non-functional._
 
 1. Run `python3 commander.py` from the source directory. This will step you through creating a configuration file if you don't have one already. If you already have a configuration file, you can use that same configuration file or create a new one.
 2. Enter any information in the command line prompts.
