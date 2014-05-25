@@ -17,6 +17,7 @@
 
 import logging
 import plugins
+from time import time
 
 
 class Message(object):
@@ -98,12 +99,16 @@ class Ping(Message):
     """Represent a ping from the server."""
 
     def __init__(self, *args):
+        self.type = args[2]
         super(Ping, self).__init__(args[0], None, args[2][1:], None)
 
     def __str__(self):
-        return "Ping from {0}.".format(self.sender)
+        return "{0} from {1}.".format(self.type, self.sender)
 
     def set_trigger(self):
         """Set the trigger function if this message warrants a response."""
-        self.trigger = self.bot.pong
-        self.args.append(self.sender)
+        if self.type == "PING":
+            self.trigger = self.bot.pong
+            self.args.append(self.sender)
+        else:
+            self.bot.last_received = time()
