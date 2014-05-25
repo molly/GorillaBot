@@ -88,17 +88,13 @@ class Bot(object):
         message = None
         if length <= 2:
             if line[0] == "PING":
-                print(line)
                 message = Ping(self, *line)
             elif line[0] == "PONG":
-                print(line)
                 message = Ping(self, *line)
         if length >= 2:
             if line[1] == "PING":
-                print(line)
                 message = Ping(self, *line)
             elif line[1] == "PONG":
-                print(line)
                 message = Ping(self, *line)
             if line[1].isdigit():
                 message = Numeric(self, *line)
