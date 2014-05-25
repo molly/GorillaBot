@@ -30,7 +30,8 @@ class Configurator(object):
         self.config_path = os.path.dirname(os.path.abspath(__file__)) + '/config.cfg'
         self.logger = logging.getLogger("GorillaBot")
         self.default = default
-        self.options = ('host', 'port', 'nick', 'ident', 'realname', 'chans', 'botop', 'password')
+        self.options = ('host', 'port', 'nick', 'ident', 'realname', 'chans', 'botop', 'password',
+                        'wait')
 
     def get_configuration(self):
         """Return configuration as a dictionary."""
@@ -46,6 +47,7 @@ class Configurator(object):
         chans = self.config.get("irc", "Chans")
         botop = self.config.get("irc", "Botop")
         password = self.config.get("irc", "Password")
+        wait = self.config.get("irc", "Wait")
 
         # Allow comma- or space-separated lists
         if ',' in chans:
@@ -64,8 +66,8 @@ class Configurator(object):
             oplist = botop.split(' ')
         for i in range(len(oplist)):
             oplist[i] = oplist[i].strip()
-        return {"host": host, "port": port, "nick": nick, "realname": realname,
-                         "ident": ident, "chans": chanlist, "botop": oplist, "password": password}
+        return {"host": host, "port": port, "nick": nick, "realname": realname, "ident": ident,
+                "chans": chanlist, "botop": oplist, "password": password, "wait": wait}
 
     def load(self):
         """Try to load an existing configuration file. If it exists, validate it. If it does not,
@@ -94,12 +96,13 @@ class Configurator(object):
             chans = self.prompt("Chans")
             botop = self.prompt("Bot operator(s)", '')
             password = self.prompt("Server password", hidden=True)
+            wait = self.prompt("Wait to join before entering channels? (y/n)", 'n')
             print(
                 "------------------------------\n Host: {0}\n Port: {1}\n Nickname: {2}\n Real "
                 "name: {3}\n Identifier: {4}\n Channels: {5}\n Bot operator(s): {"
-                "6}\n Server password: {7}\n------------------------------".format(
-                    host, port, nick, realname, ident, chans, botop,
-                    "[hidden]" if password else "[none]"))
+                "6}\n Server password: {7}\n Wait to join?: {8}\n------------------------------"
+                .format( host, port, nick, realname, ident, chans, botop,
+                         "[hidden]" if password else "[none]", wait))
             verify = input('Is this configuration correct? [Y/N]: ').lower()
             if verify == 'y':
                 break
@@ -112,6 +115,7 @@ class Configurator(object):
         self.config.set("irc", "chans", chans)
         self.config.set("irc", "botop", botop)
         self.config.set("irc", "password", password)
+        self.config.set("irc", "wait", wait)
         with open(self.config_path, 'w') as config_file:
             self.config.write(config_file)
         self.logger.info("Configuration file saved.")
@@ -126,11 +130,12 @@ class Configurator(object):
         chans = self.config.get("irc", "chans")
         botop = self.config.get("irc", "botop")
         password = self.config.get("irc", "password")
+        wait = self.config.get("irc", "wait")
         print("------------------------------\n Host: {0}\n Port: {1}\n Nickname: {2}\n Real "
               "name: {3}\n Identifier: {4}\n Channels: {5}\n Bot operator(s): {"
-              "6}\nServer password: {7}------------------------------".
+              "6}\nServer password: {7}\nWait to join?: {8}\n------------------------------".
               format(host, port, nick, realname, ident, chans, botop,
-                     "[hidden]" if password else "[none]"))
+                     "[hidden]" if password else "[none]", wait))
 
     def prompt(self, field, default=None, hidden=False):
         """Prompt a user for input, displaying a default value if one exists."""

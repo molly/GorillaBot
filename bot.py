@@ -59,7 +59,7 @@ class Bot(object):
         if now - self.last_received > 150:
             if self.last_ping_sent < self.last_received:
                 self.ping()
-            elif now - self.last_ping_sent > 60:
+            elif now - self.last_received > 60:
                 self.logger.warning('No ping response in 60 seconds. Shutting down.')
                 self.shutdown.set()
 
@@ -79,7 +79,6 @@ class Bot(object):
             self.send("NICK {0}".format(self.settings['nick']))
             self.send("USER {0} {1} * :{2}".format(self.settings['ident'], self.settings['host'],
                                                    self.settings['realname']))
-            self.private_message("NickServ", "ACC")
             self.loop()
 
     def dispatch(self, line):
