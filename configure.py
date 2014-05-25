@@ -18,30 +18,25 @@
 import configparser
 import logging
 import os
-from logging import handlers
-from time import strftime
 
 
-class Configure(object):
+class Configurator(object):
     """Deals with the configuration file. It will create a new one if one doesn't exist,
     or find or modify an existing one. """
 
-    def __init__(self, default, log_type, quiet, verbose):
+    def __init__(self, default):
         self.config = configparser.ConfigParser()
         self.config_path = os.path.dirname(os.path.abspath(__file__)) + '/config.cfg'
-        self.log_path = os.path.dirname(os.path.abspath(__file__)) + '/logs'
-        self.logger = None
+        self.logger = logging.getLogger("GorillaBot")
         self.default = default
-        self.log_type = log_type
-        self.quiet = quiet
-        self.verbose = verbose
         self.options = ('host', 'port', 'nick', 'ident', 'realname', 'chans', 'botop')
-
-        self.setup_logging()
-        self.load()
 
     def get_configuration(self):
         """Return configuration as a dictionary."""
+        # Load existing configuration, or create a new config file.
+        self.load()
+
+        # Read config values
         host = self.config.get("irc", "Host")
         port = int(self.config.get("irc", "Port"))
         nick = self.config.get("irc", "Nick")
@@ -57,6 +52,9 @@ class Configure(object):
             chanlist = chans.split(' ')
         for i in range(len(chanlist)):
             chanlist[i] = chanlist[i].strip()
+            # Ensure each channel name begins with at least one hash
+            if chanlist[i][0] != '#':
+                chanlist[i] = '#' + chanlist[i]
 
         if ',' in botop:
             oplist = botop.split(',')
@@ -64,9 +62,8 @@ class Configure(object):
             oplist = botop.split(' ')
         for i in range(len(oplist)):
             oplist[i] = oplist[i].strip()
-        configuration = {"host": host, "port": port, "nick": nick, "realname": realname,
+        return {"host": host, "port": port, "nick": nick, "realname": realname,
                          "ident": ident, "chans": chanlist, "botop": oplist}
-        return configuration
 
     def load(self):
         """Try to load an existing configuration file. If it exists, validate it. If it does not,
@@ -100,14 +97,9 @@ class Configure(object):
                 "6}\n------------------------------".format(
                     host, port, nick, realname, ident, chans, botop))
 
-            verify = verify.lower()
-            if verify != 'y' and verify != 'n':
-                verify = ''
-                verify = input('Is this configuration correct? [Y/N]: ')
+            verify = input('Is this configuration correct? [Y/N]: ').lower()
             if verify == 'y':
                 break
-            if verify == 'n':
-                verify = ''
 
         self.config.add_section("irc")
         self.config.set("irc", "host", host)
@@ -142,11 +134,9 @@ class Configure(object):
         if default:
             field += " [DEFAULT: {}]".format(default)
         field += ": "
-        answer = ''
-        while answer == '':
-            answer = input(field)
-            if default and answer == '':
-                answer = default
+        answer = input(field)
+        if default is not None and answer == '':
+            return default
         return answer
 
     def reconfigure(self):
@@ -159,49 +149,6 @@ class Configure(object):
             self.config = configparser.ConfigParser()
             self.make_new()
 
-    def setup_logging(self):
-        """Set up logging for the bot."""
-        if self.log_type != 'none':
-            self.logger = logging.getLogger('GorillaBot')
-
-            # Set logging level
-            self.logger.setLevel(logging.DEBUG)
-
-            # Create the file logger
-            if self.log_type != 'console':
-                file_formatter = logging.Formatter(
-                    "%(asctime)s - %(filename)s - %(threadName)s - %(levelname)s : %(message)s")
-
-                if not os.path.isdir(self.log_path):
-                    os.mkdir(self.log_path)
-
-                logname = (self.log_path + "/{0}.log").format(strftime("%H%M_%m%d%y"))
-
-                # Files are saved in the logs sub-directory as HHMM_mmddyy.log
-                # This log file rolls over every seven days.
-                filehandler = logging.handlers.TimedRotatingFileHandler(logname, 'd', 7)
-                filehandler.setFormatter(file_formatter)
-                filehandler.setLevel(logging.INFO)
-                self.logger.addHandler(filehandler)
-                self.logger.info("File logger created; saving logs to {}.".format(logname))
-
-            # Create the console logger
-            if self.log_type != "file":
-                console_formatter = logging.Formatter(
-                    "%(asctime)s - %(threadName)s - %(levelname)s: %(message)s",
-                    datefmt="%I:%M:%S %p")
-                consolehandler = logging.StreamHandler()
-                consolehandler.setFormatter(console_formatter)
-                if self.quiet:
-                    consolehandler.setLevel(logging.WARNING)
-                elif self.verbose:
-                    consolehandler.setLevel(logging.DEBUG)
-                else:
-                    consolehandler.setLevel(logging.INFO)
-
-                self.logger.addHandler(consolehandler)
-                self.logger.info("Console logger created.")
-
     def verify(self):
         """Verify that a configuration file is valid."""
         for option in self.options:
@@ -209,17 +156,15 @@ class Configure(object):
                 print('Configuration file is invalid. Reconfiguring.')
                 self.logger.info('Configuration file is invalid. Reconfiguring.')
                 self.reconfigure()
-
         self.logger.info('Valid configuration file found.')
 
+        # Allow reconfiguration even if the file is valid
         if not self.default:
-            # Allow reconfiguration even if the file is valid
             self.print_settings()
             reconfigure = ''
             while reconfigure != 'y' and reconfigure != 'n':
-                reconfigure = input(
-                    "Valid reconfiguration file found. Would you like to reconfigure? [Y/N] ")
-                reconfigure.lower()
+                reconfigure = input("Valid reconfiguration file found. Would you like to "
+                                    "reconfigure? [Y/N] ").lower()
             if reconfigure == 'y':
                 self.logger.debug('User has requested to reconfigure.')
                 self.reconfigure()

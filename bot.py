@@ -15,64 +15,53 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import argparse
+from configure import Configurator
+from executor import Executor
 import logging
+from logging import handlers
+from message import *
 import os
 import pickle
 import queue
+import re
 import socket
 import threading
-from command import Command
-from configure import Configure
-from executor import Executor
-from time import time, sleep
+from time import sleep, strftime, time
 
 
 class Bot(object):
-    """The Bot class is the core of the bot. It starts the IRC connection, and delegates tasks to
-    other threads. """
+    """The core of the IRC bot. It maintains the IRC connection, and delegates other tasks."""
 
-    def __init__(self, default, log_type, quiet, verbose):
-        # Store command line settings
-        self.default = default
-        self.log_type = log_type
-        self.quiet = quiet
-        self.verbose = verbose
+    def __init__(self):
+        self.log_path = os.path.dirname(os.path.abspath(__file__)) + '/logs'
 
-        self.logger = logging.getLogger('GorillaBot')
-        self.configuration = Configure(self.default, self.log_type, self.quiet, self.verbose)
-        self.command_q = queue.Queue(100)  # I'd be amazed if we hit 100 commands, but limit
-        self.response_q = queue.Queue(100)
-        self.executor = Executor(self.command_q)
-
-        self.socket = None
-        self.admins = dict()
-        self.channels = []  # List of currently-joined channels
-        self.last_sent = 0
-        self.last_received = time()
+        self.last_message_sent = time()
         self.last_ping_sent = time()
-        self.running = False
+        self.last_received = None
+        self.logger = None
+        self.settings = {}
         self.shutdown = threading.Event()
         self.response_lock = threading.Lock()
-        self.waiting_for_response = False
-        self.numcodes = ['001', '301', '311', '318', '330', '353', '396', '401', '403', '433',
-                         '442', '470', '473']
-
-        self.settings = self.configuration.get_configuration()
+        self.socket = None
+        self.message_q = queue.Queue()
+        self.executor = Executor(self, self.message_q, self.shutdown)
+        self.channels = []
         self.base_path = os.path.dirname(os.path.abspath(__file__))
 
+        # Initialize bot
         self.admin_commands, self.commands = self.load_commands()
-        self.start()
+        self.initialize()
 
     def caffeinate(self):
         """Make sure the connection stays open."""
         now = time()
         if now - self.last_received > 150:
             if self.last_ping_sent < self.last_received:
-                self.logger.debug('Pinging server.')
                 self.ping()
             elif now - self.last_ping_sent > 60:
                 self.logger.warning('No ping response in 60 seconds. Shutting down.')
-                self.command_q.put(Command(self, 'shutdown', 'internal'))
+                self.shutdown.set()
 
     def connect(self):
         """Connect to the IRC server."""
@@ -92,67 +81,84 @@ class Bot(object):
             self.loop()
 
     def dispatch(self, line):
-        """Determines the type of message received, creates a command object, adds it to the
-        queue. """
-        command = None
+        """Inspect this line and determine if further processing is necessary."""
         length = len(line)
-        if 'PING' in line[0]:
-            command = Command(self, line, 'ping')
-        elif 'NickServ' in line[0]:
-            if self.waiting_for_response:
-                self.response_q.put(line)
-            command = Command(self, line, 'NickServ')
-        elif length > 2:
-            # Not a Nickserv message or a ping, so create a Command object
-            if len(line[1]) == 3 and line[1].isdigit() and line[1] in self.numcodes:
-                if self.waiting_for_response:
-                    self.response_q.put(line)
-                command = Command(self, line, 'numcode')
-            elif line[1] == 'PRIVMSG':
-                nick = self.settings['nick']
-                if length > 3 and line[2] == nick:
-                    command = Command(self, line, 'private_message')
-                elif length > 4 and nick in line[3]:
-                    command = Command(self, line, 'direct_message')
+        message = None
+        if length < 2:
+            if line[0] == "PING":
+                message = Ping(self, *line)
+        if length >= 2:
+            if line[1].isdigit():
+                message = Numeric(self, *line)
+            elif line[1] == "NOTICE":
+                message = Notice(self, *line)
+            elif line[1] == "PRIVMSG" and (line[2] == self.settings["nick"] or
+                                           line[3][1] == "!" or
+                                           line[3].startswith(":" + self.settings["nick"])):
+                message = Command(self, *line)
+        if message:
+            self.message_q.put(message)
+        else:
+            print(line)
+
+    def initialize(self):
+        """Initialize the bot. Parse command-line options, configure, and set up logging."""
+        print('\n  ."`".'
+              '\n / _=_ \\ \x1b[32m      __   __   __  . .   .     __   __   __  '
+              '___\x1b[0m\n(,(oYo),) \x1b[32m    / _` /  \ |__) | |   |    |__| '
+              '|__) /  \  |  \x1b[0m\n|   "   | \x1b[32m    \__| \__/ |  \ | |___'
+              '|___ |  | |__) \__/  |  \x1b[0m \n \(\_/)/\n')
+
+        # Parse arguments from the command line
+        parser = argparse.ArgumentParser(description="This is the command-line utility for "
+                                                     "setting up and running GorillaBot, "
+                                                     "a simple IRC bot.")
+        parser.add_argument("-d", "--default", action="store_true",
+                            help="If a valid configuration file is found, this will proceed with "
+                                 "the connection without asking for verification of settings.")
+        parser.add_argument("-q", "--quiet", action="store_true",
+                            help="Display log messages with level 'WARNING' or higher in the "
+                                 "console.")
+        args = parser.parse_args()
+        configurator = Configurator(args.default)
+        self.settings = configurator.get_configuration()
+        self.setup_logging(args.quiet)
+
+    def join(self, chans=None):
+        """Join the given channel, list of channels, or if no channel is specified, join any
+        channels that exist in the config but are not already joined."""
+        if chans is None:
+            chans = self.settings["chans"]
+        if type(chans) is str:
+            chans = [chans]
+        if type(chans) is list:
+            for chan in chans:
+                if chan in self.channels:
+                    self.logger.info("Already in channel {0}. Not joining.".format(chan))
                 else:
-                    for ind, word in enumerate(line):
-                        if (len(word) > 1 and word[0] == '!') or \
-                                (ind == 3 and len(word) > 2 and word[1] == '!'):
-                            command = Command(self, line, 'exclamation_message')
-
-        # Add to the command queue to be executed
-        if command:
-            if command.trigger:
-                self.command_q.put(command)
-
-    def join(self, channel_list):
-        for channel in channel_list:
-            if channel not in self.channels:
-                self.logger.info('Joining {}.'.format(channel))
-                self.send('JOIN ' + channel)
-                self.channels.append(channel)
-            else:
-                self.logger.info('Already in channel {}. Not joining.'.format(channel))
+                    self.logger.info("Joining {0}.".format(chan))
+                    self.send('JOIN ' + chan)
+                    self.channels.append(chan)
 
     def load_commands(self):
-        try:
-            with open(self.base_path + '/plugins/commands.pkl', 'rb') as admin_file:
-                admin_commands = pickle.load(admin_file)
-        except OSError:
-            admin_commands = None
-        try:
-            with open(self.base_path + '/plugins/admincommands.pkl', 'rb') as command_file:
-                commands = pickle.load(command_file)
-        except OSError:
-            commands = None
-        return admin_commands, commands
+            try:
+                with open(self.base_path + '/plugins/commands.pkl', 'rb') as admin_file:
+                    admin_commands = pickle.load(admin_file)
+            except OSError:
+                admin_commands = None
+            try:
+                with open(self.base_path + '/plugins/admincommands.pkl', 'rb') as command_file:
+                    commands = pickle.load(command_file)
+            except OSError:
+                commands = None
+            return admin_commands, commands
 
     def loop(self):
         """Main connection loop."""
         while not self.shutdown.is_set():
             try:
                 buffer = ''
-                buffer += str(self.receive())
+                buffer += str(self.socket.recv(4096))
             except socket.timeout:
                 # No messages to deal with, move along
                 pass
@@ -160,83 +166,105 @@ class Bot(object):
                 # Something actually went wrong
                 # TODO: Reconnect
                 self.logger.exception("Unexpected socket error")
-                self.running = False
                 break
             else:
                 self.last_received = time()
+                if buffer.startswith("b'"):
+                    buffer = buffer[2:]
+                if buffer.endswith("'"):
+                    buffer = buffer[:-1]
                 list_of_lines = buffer.split('\\r\\n')
+                list_of_lines = filter(None, list_of_lines)
                 for line in list_of_lines:
-                    self.logger.debug(line)
                     line = line.strip().split()
-                    self.dispatch(line)
-
+                    if line != "":
+                        self.dispatch(line)
             self.caffeinate()
+        self.socket.close()
 
-    def me(self, channel, message):
-        """Say an action into the channel."""
-        self.say(channel, "\x01ACTION {0}\x01".format(message))
+    def parse_hostmask(self, nick):
+        """Parse out the parts of the hostmask."""
+        m = re.match(':?(?P<nick>.*?)!~?(?P<user>.*?)@(?P<host>.*)', nick)
+        if m:
+            return {"nick": m.group("nick"), "user": m.group("user"), "host": m.group("host")}
+        else:
+            return None
+
+    def ping(self):
+        """Send a ping to the server."""
+        self.logger.debug("Pinging {}.".format(self.settings['host']))
+        self.send('PING {}'.format(self.settings['host']))
+
+    def pong(self, server):
+        """Respond to a ping from the server."""
+        self.logger.debug("Ponging {}.".format(server))
+        self.send('PONG {}'.format(server))
 
     def private_message(self, target, message, hide=False):
         """Send a private message to a target on the server."""
-        for msg in self.split(message):
-            self.send('PRIVMSG {0} :{1}'.format(target, msg, hide))
-
-    def receive(self, size=4096):
-        """Receive messages from the IRC server."""
-        return self.socket.recv(size)
-
-    def ping(self):
-        """Send a ping to the host server."""
-        self.logger.debug('Pinging server.')
-        self.send('PING {}'.format(self.settings['host']))
-
-    def say(self, channel, message, hide=False):
-        """Say a message into a channel."""
-        self.private_message(channel, message, hide)
+        self.send('PRIVMSG {0} :{1}'.format(target, message), hide)
 
     def send(self, message, hide=False):
-        """Send messages to the IRC server."""
-        time_since_send = time() - self.last_sent
-
-        # Ensure messages aren't sent too quickly
-        if time_since_send < 1:
-            sleep(1 - time_since_send)
+        """Send message to the server."""
+        if (time() - self.last_message_sent) < 1:
+            sleep(1)
         try:
-            self.socket.sendall((message + '\r\n').encode())
+            self.socket.sendall(bytes((message + "\r\n"), "utf-8"))
         except socket.error:
-            # TODO: Reconnect
-            self.running = False
-            self.logger.error('Message ' + message + ' failed to send.')
+            self.shutdown.set()
+            self.logger.error("Message '" + message + "' failed to send. Shutting down.")
         else:
             if not hide:
-                self.logger.info('Sent: ' + message)
-            self.last_sent = time()
+                self.logger.debug("Sent message: " + message)
+            self.last_message_sent = time()
 
-    def split(self, message, maxlen=400, maxsplits=5):
-        """Split a message into smaller sections. Messages that are longer than maxlen*maxsplits
-        will be truncated. """
-        splits = 0
-        split_message = []
-        while len(message) > 0 and splits < maxsplits:
-            if len(message) > maxlen:
-                split_message.append(message[:maxlen])
-                message = message[maxlen:]
-                splits += 1
-            else:
-                split_message.append(message)
-                splits += 1
-                break
-        if splits >= maxsplits:
-            self.logger.warning('Attempted to send a message that was too long; message truncated.')
-        return split_message
+    def setup_logging(self, quiet):
+        """Set up logging to a logfile and the console."""
+        self.logger = logging.getLogger('GorillaBot')
+
+        # Set logging level
+        self.logger.setLevel(logging.DEBUG)
+
+        # Create the file logger
+        file_formatter = logging.Formatter(
+            "%(asctime)s - %(filename)s - %(threadName)s - %(levelname)s : %(message)s")
+        if not os.path.isdir(self.log_path):
+            os.mkdir(self.log_path)
+        logname = (self.log_path + "/{0}.log").format(strftime("%H%M_%m%d%y"))
+        # Files are saved in the logs sub-directory as HHMM_mmddyy.log
+        # This log file rolls over every seven days.
+        filehandler = logging.handlers.TimedRotatingFileHandler(logname, 'd', 7)
+        filehandler.setFormatter(file_formatter)
+        filehandler.setLevel(logging.INFO)
+        self.logger.addHandler(filehandler)
+        self.logger.info("File logger created; saving logs to {}.".format(logname))
+
+        # Create the console logger
+        console_formatter = logging.Formatter(
+            "%(asctime)s - %(threadName)s - %(levelname)s: %(message)s", datefmt="%I:%M:%S %p")
+        consolehandler = logging.StreamHandler()
+        consolehandler.setFormatter(console_formatter)
+        if quiet:
+            consolehandler.setLevel(logging.WARNING)
+
+        self.logger.addHandler(consolehandler)
+        self.logger.info("Console logger created.")
 
     def start(self):
         """Begin the threads. The "IO" thread is the loop that receives commands from the IRC
         channels, and responds. The "Executor" thread is the thread used for simple commands
         that do not require threads of their own. More complex commands will create new threads
         as needed from this thread. """
-        threading.Thread(name='IO', target=self.connect).start()
-        threading.Thread(name='Executor', target=self.executor.loop, args=(self,)).start()
+        try:
+            io_thread = threading.Thread(name='IO', target=self.connect)
+            io_thread.start()
+            threading.Thread(name='Executor', target=self.executor.loop).start()
+            while io_thread.isAlive():
+                io_thread.join(1)
+        except KeyboardInterrupt:
+            self.logger.info("Caught KeyboardInterrupt. Shutting down.")
+            self.shutdown.set()
 
-    def whois(self, user):
-        self.send("WHOIS {0}".format(user))
+if __name__ == "__main__":
+    bot = Bot()
+    bot.start()
