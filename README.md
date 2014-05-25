@@ -1,11 +1,12 @@
 # GorillaBot
 GorillaBot is an IRC bot framework written in Python. The bot is initiated from the command line. Once it is connected, it receives [its commands](https://github.com/mollywhite/GorillaBot/blob/master/docs/commands.md) through IRC. Because I'm writing the framework mainly for use in a channel frequented by Wikipedia editors, there are a number of Wikipedia-specific commands.
 
-Although I wrote the framework to run _AlfredBot_, a bot specific to an IRC channel I use frequently, it is easily configurable to create any bot you like. It will include some optional modules, and any extra functionality can be added by forking the code. You can see my ideas for the bot [here](https://github.com/mollywhite/GorillaBot/blob/master/docs/todo.md). Feel free to make your own suggestions!
+Although I wrote the framework to run a bot specific to an IRC channel on the Freenode network, it is easily configurable and extensible so you can create any bot you like. It will include some optional modules, and any extra functionality can be added by forking the code. Feel free to suggest additional functionality!
 
 __Author:__ Molly White<br />
 __License:__ [MIT](http://opensource.org/licenses/MIT)<br/>
 __Status:__ Development
+__Version:__ 1.0
 
 ## Installation
 _Download code from the master branch. Code in the development branch is often incomplete._
