@@ -70,6 +70,8 @@ class Numeric(Message):
 
     def set_trigger(self):
         """Set the trigger function if this message warrants a response."""
+        if self.number == "376" and self.bot.settings['wait'].lower() != "y":
+            self.trigger = self.bot.join
         if self.number == "396":                # RPL_HOSTHIDDEN
             self.logger.info(self.body)
 
@@ -90,8 +92,6 @@ class Notice(Message):
                 self.trigger = plugins.freenode.identify
                 self.args.append(self.bot)
                 self.needs_own_thread = True
-            elif "ACC 0" in self.body:
-                self.trigger = self.bot.join
 
 
 class Ping(Message):
