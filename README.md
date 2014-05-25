@@ -5,7 +5,7 @@ Although I wrote the framework to run a bot specific to an IRC channel on the Fr
 
 __Author:__ Molly White<br />
 __License:__ [MIT](http://opensource.org/licenses/MIT)<br/>
-__Status:__ Development
+__Status:__ Development<br />
 __Version:__ 1.0
 
 ## Installation
