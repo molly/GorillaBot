@@ -74,6 +74,8 @@ class Bot(object):
         except OSError:
             self.logger.error("Unable to connect to IRC server. Check your Internet connection.")
         else:
+            if self.settings['password']:
+                self.send("PASS {0}".format(self.settings['password']), hide=True)
             self.send("NICK {0}".format(self.settings['nick']))
             self.send("USER {0} {1} * :{2}".format(self.settings['ident'], self.settings['host'],
                                                    self.settings['realname']))
