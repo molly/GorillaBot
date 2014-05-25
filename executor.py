@@ -47,7 +47,6 @@ class Executor(object):
                 sleep(5)
             else:
                 print(message)
-                print(message.trigger)
                 # If this message has a trigger, execute the function
                 if message.trigger:
                     if message.needs_own_thread:

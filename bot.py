@@ -85,8 +85,10 @@ class Bot(object):
         """Inspect this line and determine if further processing is necessary."""
         length = len(line)
         message = None
-        if length < 2:
+        if length <= 2:
             if line[0] == "PING":
+                message = Ping(self, *line)
+            elif line[0] == "PONG":
                 message = Ping(self, *line)
         if length >= 2:
             if line[1].isdigit():
