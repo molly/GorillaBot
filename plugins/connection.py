@@ -46,7 +46,7 @@ def part(m):
     else:
         channel = m.line[1]
     if channel in m.bot.channels:
-        m.bot.send("PART " + channel + " " + part_msg)
+        m.bot.send("PART " + channel + " :" + part_msg)
         m.bot.logger.info("Parting from " + channel + ".")
     else:
         m.bot.private_message(m.location, "Not joined to " + channel + ".")

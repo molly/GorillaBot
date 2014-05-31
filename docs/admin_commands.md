@@ -18,5 +18,5 @@ In the examples below, I use the `!command` syntax, but the other two would work
 Joins the specified channel. Only joins one channel at a time.
 
 ### part
-    !part [#channel]
-Parts from the specified channel, or the current channel if unspecified. Only parts from one channel at a time.
+    !part [#channel] [message]
+Parts from the specified channel, or the current channel if unspecified. Only parts from one channel at a time. If a message is included, this will be used as the part message.
