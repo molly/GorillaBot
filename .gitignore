@@ -3,3 +3,4 @@ logs/
 *.cfg
 .idea/
 __pycache__
+*.pkl
