@@ -15,5 +15,20 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import plugins.connection
-import plugins.freenode
+import logging
+import message
+from plugins.util import admin
+
+@admin()
+def join(m):
+    """Join a channel."""
+    logger = logging.getLogger("GorillaBot")
+    if len(m.line) == 1:
+        m.bot.private_message(m.location, "Please specify a channel to join.")
+    else:
+        if m.line[1][0] != "#":
+            m.bot.join(["#" + m.line[1]])
+            logger.info("Joining #" + m.line[1])
+        else:
+            m.bot.join(m.line[1])
+            logger.info("Joining " + m.line[1])

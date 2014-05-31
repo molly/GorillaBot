@@ -21,20 +21,20 @@ import message
 from queue import Empty
 
 
-def identify(bot):
+def identify(m):
     logger = logging.getLogger("GorillaBot")
-    bot.response_lock.acquire()
+    m.bot.response_lock.acquire()
     identified = False
     ignored_messages = []
     while not identified:
         password = getpass("Please enter your password to identify to NickServ: ")
-        bot.private_message('NickServ', 'identify ' + password, True)
+        m.bot.private_message('NickServ', 'identify ' + password, True)
         while True:
             try:
-                msg= bot.message_q.get(True, 120)
+                msg= m.bot.message_q.get(True, 120)
             except Empty:
                 logger.error("No response from NickServ when trying to identify. Shutting down.")
-                bot.shutdown.set()
+                m.bot.shutdown.set()
             if not isinstance(msg, message.Notice) or msg.sender != \
                     "NickServ!NickServ@services.":
                 ignored_messages.append(msg)
@@ -47,8 +47,8 @@ def identify(bot):
                 break
             else:
                 ignored_messages.append(msg)
-    for m in ignored_messages:
-        bot.message_q.put(m)
-    bot.response_lock.release()
-    if bot.settings['chans']:
-        bot.join()
+    for msg in ignored_messages:
+        m.bot.message_q.put(msg)
+    m.bot.response_lock.release()
+    if m.bot.settings['chans']:
+        m.bot.join()
