@@ -96,7 +96,7 @@ class Configurator(object):
             chans = self.prompt("Chans")
             botop = self.prompt("Bot operator(s)", '')
             password = self.prompt("Server password", hidden=True)
-            wait = self.prompt("Wait to join before entering channels? (y/n)", 'n')
+            wait = self.prompt("Wait to join before entering channels? [Y/N]", 'n')
             print(
                 "------------------------------\n Host: {0}\n Port: {1}\n Nickname: {2}\n Real "
                 "name: {3}\n Identifier: {4}\n Channels: {5}\n Bot operator(s): {"

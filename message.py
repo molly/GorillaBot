@@ -45,6 +45,7 @@ class Command(Message):
     def __init__(self, *args):
         self.line = args[4:]
         self.command = self.line[0].strip("!:")
+        self.admin = False
         super(Command, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
 
     def __str__(self):
@@ -54,8 +55,7 @@ class Command(Message):
         """Set the trigger function if this message warrants a response."""
         if self.bot.admin_commands:
             if self.command in self.bot.admin_commands:
-                print("Checking if you're an operator")
-                # TODO: ^^^
+                self.admin = True
                 self.trigger = eval(self.bot.admin_commands[self.command])
                 self.args.append(self)
             elif self.command in self.bot.commands:
@@ -81,9 +81,12 @@ class Numeric(Message):
 
     def set_trigger(self):
         """Set the trigger function if this message warrants a response."""
-        if self.number == "376" and self.bot.settings['wait'].lower() != "y":
+        if self.number == "375" and self.bot.settings['wait'].lower() != "y":
             self.trigger = self.bot.join
-        if self.number == "396":                # RPL_HOSTHIDDEN
+        elif self.number == "376":
+            self.trigger = plugins.util.get_admin
+            self.args.append(self)
+        elif self.number == "396":                # RPL_HOSTHIDDEN
             self.logger.info(self.body)
 
 

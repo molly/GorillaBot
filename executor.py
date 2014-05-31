@@ -16,6 +16,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import logging
+import message
 import queue
 import threading
 from time import sleep
@@ -38,7 +39,7 @@ class Executor(object):
                 if self.bot.response_lock.locked():
                     raise threading.ThreadError
                 else:
-                    message = self.message_q.get(timeout=5)
+                    msg = self.message_q.get(timeout=5)
             except queue.Empty:
                 # No messages in the queue, continue loop
                 pass
@@ -46,16 +47,21 @@ class Executor(object):
                 # Wait for other process to release the lock
                 sleep(5)
             else:
-                print(message)
+                print(msg)
                 # If this message has a trigger, execute the function
-                if message.trigger:
-                    if message.needs_own_thread:
+                if msg.trigger:
+                    if type(msg) is message.Command and msg.admin:
+                        if self.bot.parse_hostmask(msg.sender)["host"] not in self.bot.ops:
+                            self.bot.private_message(msg.location, "Please ask a bot operator to "
+                                                                   "perform this action for you.")
+                            continue
+                    if msg.needs_own_thread:
                         # Begin a new thread if necessary
-                        threading.Thread(name=message.trigger.__name__, target=message.trigger,
-                                         args=message.args).start()
+                        threading.Thread(name=msg.trigger.__name__, target=msg.trigger,
+                                         args=msg.args).start()
                     else:
-                        if message.args:
-                            message.trigger(*message.args)
+                        if msg.args:
+                            msg.trigger(*msg.args)
                         else:
-                            message.trigger()
+                            msg.trigger()
                     self.message_q.task_done()

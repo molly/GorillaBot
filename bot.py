@@ -49,6 +49,7 @@ class Bot(object):
         self.channels = []                  # Channels to which I'm joined
         self.opped_channels = []            # Channels in which I'm opped
         self.base_path = os.path.dirname(os.path.abspath(__file__))
+        self.ops = []
 
         # Initialize bot
         self.admin_commands, self.commands = self.load_commands()
