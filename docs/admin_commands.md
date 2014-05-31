@@ -16,3 +16,7 @@ In the examples below, I use the `!command` syntax, but the other two would work
 ### join
     !join #channel
 Joins the specified channel. Only joins one channel at a time.
+
+### part
+    !part [#channel]
+Parts from the specified channel, or the current channel if unspecified. Only parts from one channel at a time.
