@@ -15,8 +15,10 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import message
 import os
 import pickle
+import queue
 
 
 def admin(*args):
@@ -61,3 +63,30 @@ def command(*args):
         return func
 
     return decorator
+
+
+def get_admin(m):
+    m.bot.response_lock.acquire()
+    ignored_messages = []
+    for nick in m.bot.settings['botop']:
+        m.bot.send("WHOIS " + nick)
+        while True:
+            try:
+                msg= m.bot.message_q.get(True, 120)
+            except queue.Empty:
+                m.bot.logger.error("No response while getting admins. Shutting down.")
+                m.bot.shutdown.set()
+            else:
+                if type(msg) is message.Numeric:
+                    if msg.number == '311':
+                        line = msg.body.split()
+                        m.bot.ops.append(line[2])
+                        break
+                    elif msg.number == '401':   # User isn't logged in
+                        break
+                    else:
+                        print(msg)
+                ignored_messages.append(msg)
+    m.bot.response_lock.release()
+    for msg in ignored_messages:
+        m.bot.message_q.put(msg)
