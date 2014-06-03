@@ -88,7 +88,7 @@ class Configurator(object):
         verify = ''
         while verify != 'y':
             print('\n')
-            host = self.prompt("Host", "irc.freenode.net")
+            host = self.prompt("Host", "chat.freenode.net")
             port = self.prompt("Port", 6667)
             nick = self.prompt("Nick", "GorillaBot")
             realname = self.prompt("Ident", "GorillaBot")

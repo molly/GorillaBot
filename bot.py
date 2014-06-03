@@ -79,8 +79,7 @@ class Bot(object):
             if self.settings['password']:
                 self.send("PASS {0}".format(self.settings['password']), hide=True)
             self.send("NICK {0}".format(self.settings['nick']))
-            self.send("USER {0} {1} * :{2}".format(self.settings['ident'], self.settings['host'],
-                                                   self.settings['realname']))
+            self.send("USER {0} 0 * :{1}".format(self.settings['ident'], self.settings['realname']))
             self.loop()
 
     def dispatch(self, line):
