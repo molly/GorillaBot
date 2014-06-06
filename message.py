@@ -17,6 +17,7 @@
 
 import logging
 import plugins
+import re
 from time import time
 
 
@@ -163,6 +164,14 @@ class Privmsg(Message):
 
     def __init__(self, *args):
         super(Privmsg, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
+        self.urls = None
 
     def __str__(self):
         return "Privmsg from {0} in {1}: {2}".format(self.sender, self.location, self.body)
+
+    def set_trigger(self):
+        m = re.search(r'(https?://\S+)', self.body)
+        if m:
+            self.trigger = plugins.link.link
+            self.args.append(self)
+            self.args.append(m.groups())

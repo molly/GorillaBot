@@ -17,4 +17,5 @@
 
 import plugins.connection
 import plugins.freenode
+import plugins.link
 import plugins.misc
