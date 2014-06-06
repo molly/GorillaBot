@@ -129,8 +129,9 @@ class Bot(object):
         parser.add_argument("-q", "--quiet", action="store_true",
                             help="Display log messages with level 'WARNING' or higher in the "
                                  "console.")
+        parser.add_argument("-f", "--file", help="Choose the configuration file path.")
         args = parser.parse_args()
-        configurator = Configurator(args.default)
+        configurator = Configurator(args.default, args.file)
         self.settings = configurator.get_configuration()
         self.setup_logging(args.quiet)
 
