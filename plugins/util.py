@@ -70,7 +70,7 @@ def get_admin(m):
         # We have to treat this differently because Twitch doesn't support WHOIS
         for nick in m.bot.settings['botop']:
             nick = nick.lower()
-            m.bot.ops.append(nick + "!" + nick + "@" + nick + ".tmi.twitch.tv")
+            m.bot.ops.append(nick + ".tmi.twitch.tv")
     else:
         m.bot.response_lock.acquire()
         ignored_messages = []
