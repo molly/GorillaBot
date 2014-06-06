@@ -96,7 +96,7 @@ class Bot(object):
                 message = Numeric(self, *line)
             elif line[1] == "NOTICE":
                 message = Notice(self, *line)
-            elif line[1] in ["JOIN", "MODE"]:
+            elif line[1] == "MODE":
                 message = Operation(self, *line)
             elif line[1] == "PRIVMSG" and (line[2] == self.settings["nick"] or
                                            line[3][1] == "!" or

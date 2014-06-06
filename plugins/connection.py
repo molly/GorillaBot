@@ -23,12 +23,13 @@ def join(m):
     if len(m.line) == 1:
         m.bot.private_message(m.location, "Please specify a channel to join.")
     else:
-        if m.line[1][0] != "#":
-            m.bot.join(["#" + m.line[1]])
-            m.bot.logger.info("Joining #" + m.line[1])
-        else:
-            m.bot.join(m.line[1])
-            m.bot.logger.info("Joining " + m.line[1])
+        chan = m.line[1]
+        if chan[0] != "#":
+            chan = "#" + chan
+        if m.bot.settings["host"] == "irc.twitch.tv":
+            chan = chan.lower()
+        m.bot.join(m.line[1])
+        m.bot.logger.info("Joining " + m.line[1])
 
 @admin("leave")
 def part(m):
@@ -45,6 +46,8 @@ def part(m):
         channel = "#" + m.line[1]
     else:
         channel = m.line[1]
+    if m.bot.settings["host"] == "irc.twitch.tv":
+        channel = channel.lower()
     if channel in m.bot.channels:
         m.bot.send("PART " + channel + " :" + part_msg)
         m.bot.logger.info("Parting from " + channel + ".")
