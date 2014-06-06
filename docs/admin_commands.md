@@ -20,3 +20,7 @@ Joins the specified channel. Only joins one channel at a time.
 ### part
     !part [#channel] [message]
 Parts from the specified channel, or the current channel if unspecified. Only parts from one channel at a time. If a message is included, this will be used as the part message.
+
+### set
+    !set [#channel] [setting]
+Change settings for a command. Allowed settings for each command are viewable in the command documentation.

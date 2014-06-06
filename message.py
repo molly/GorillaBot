@@ -156,3 +156,13 @@ class Ping(Message):
         else:
             # Record when the pong was received
             self.bot.last_received = time()
+
+
+class Privmsg(Message):
+    """Represents a PRIVMSG from a user."""
+
+    def __init__(self, *args):
+        super(Privmsg, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
+
+    def __str__(self):
+        return "Privmsg from {0} in {1}: {2}".format(self.sender, self.location, self.body)

@@ -66,6 +66,7 @@ def command(*args):
 
 
 def get_admin(m):
+    """Get the hostnames for the bot admins."""
     if m.bot.settings["host"] == "irc.twitch.tv":
         # We have to treat this differently because Twitch doesn't support WHOIS
         for nick in m.bot.settings['botop']:
