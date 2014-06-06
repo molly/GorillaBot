@@ -121,10 +121,7 @@ class Operation(Message):
         return "{0} from {1} in {2}: {3}".format(self.type, self.sender, self.location, self.body)
 
     def set_trigger(self):
-        if self.type == "JOIN":
-            if self.bot.parse_hostmask(self.sender) == self.bot.settings["nick"]:
-                self.logger.info("Joined {0}.".format(self.location))
-        elif self.type == "MODE":
+        if self.type == "MODE":
             lowerbody = self.body.lower()
             lowernick = self.bot.settings["nick"].lower()
             if "+o {0}".format(lowernick) == lowerbody:
