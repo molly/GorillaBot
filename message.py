@@ -123,7 +123,8 @@ class Operation(Message):
 
     def set_trigger(self):
         if self.type == "JOIN":
-            self.logger.info("Joined {0}.".format(self.location))
+            if self.bot.parse_hostmask(self.sender) == self.bot.settings["nick"]:
+                self.logger.info("Joined {0}.".format(self.location))
         elif self.type == "MODE":
             lowerbody = self.body.lower()
             lowernick = self.bot.settings["nick"].lower()
