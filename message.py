@@ -53,14 +53,13 @@ class Command(Message):
 
     def set_trigger(self):
         """Set the trigger function if this message warrants a response."""
-        if self.bot.admin_commands:
-            if self.command in self.bot.admin_commands:
-                self.admin = True
-                self.trigger = eval(self.bot.admin_commands[self.command])
-                self.args.append(self)
-            elif self.command in self.bot.commands:
-                self.trigger = eval(self.bot.commands[self.command])
-                self.args.append(self)
+        if self.bot.admin_commands and self.command in self.bot.admin_commands:
+            self.admin = True
+            self.trigger = eval(self.bot.admin_commands[self.command])
+            self.args.append(self)
+        elif self.bot.commands and self.command in self.bot.commands:
+            self.trigger = eval(self.bot.commands[self.command])
+            self.args.append(self)
 
 
 class Numeric(Message):
