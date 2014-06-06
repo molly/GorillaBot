@@ -220,6 +220,7 @@ class Bot(object):
         if (time() - self.last_message_sent) < 1:
             sleep(1)
         try:
+            message = re.sub(r'(\n|\r)', "", message)
             self.socket.sendall(bytes((message + "\r\n"), "utf-8"))
         except socket.error:
             self.shutdown.set()
