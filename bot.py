@@ -50,6 +50,7 @@ class Bot(object):
         self.opped_channels = []            # Channels in which I'm opped
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.ops = []
+        self.command_settings = {}
 
         # Initialize bot
         self.admin_commands, self.commands = self.load_commands()
@@ -98,10 +99,13 @@ class Bot(object):
                 message = Notice(self, *line)
             elif line[1] == "MODE":
                 message = Operation(self, *line)
-            elif line[1] == "PRIVMSG" and (line[2] == self.settings["nick"] or
-                                           line[3][1] == "!" or
-                                           line[3].startswith(":" + self.settings["nick"])):
-                message = Command(self, *line)
+            elif line[1] == "PRIVMSG":
+                if (line[2] == self.settings["nick"] or
+                   line[3][1] == "!" or
+                   line[3].startswith(":" + self.settings["nick"])):
+                    message = Command(self, *line)
+                else:
+                    message = Privmsg(self, *line)
         if message:
             self.message_q.put(message)
         else:
