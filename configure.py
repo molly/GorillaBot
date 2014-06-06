@@ -25,9 +25,12 @@ class Configurator(object):
     """Deals with the configuration file. It will create a new one if one doesn't exist,
     or find or modify an existing one. """
 
-    def __init__(self, default):
+    def __init__(self, default, file):
         self.config = configparser.ConfigParser()
-        self.config_path = os.path.dirname(os.path.abspath(__file__)) + '/config.cfg'
+        if file:
+            self.config_path = os.path.dirname(os.path.abspath(__file__)) + '/' + file
+        else:
+            self.config_path = os.path.dirname(os.path.abspath(__file__)) + '/config.cfg'
         self.logger = logging.getLogger("GorillaBot")
         self.default = default
         self.options = ('host', 'port', 'nick', 'ident', 'realname', 'chans', 'botop', 'password',
