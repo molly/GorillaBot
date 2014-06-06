@@ -28,8 +28,8 @@ def join(m):
             chan = "#" + chan
         if m.bot.settings["host"] == "irc.twitch.tv":
             chan = chan.lower()
-        m.bot.join(m.line[1])
-        m.bot.logger.info("Joining " + m.line[1])
+        m.bot.join(chan)
+        m.bot.logger.info("Joining " + chan)
 
 @admin("leave")
 def part(m):
