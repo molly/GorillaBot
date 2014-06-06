@@ -89,14 +89,10 @@ class Bot(object):
         if length <= 2:
             if line[0] == "PING":
                 message = Ping(self, *line)
-            elif line[0] == "PONG":
-                message = Ping(self, *line)
         if length >= 2:
-            if line[1] == "PING":
+            if line[1] == "PONG":
                 message = Ping(self, *line)
-            elif line[1] == "PONG":
-                message = Ping(self, *line)
-            if line[1].isdigit():
+            elif line[1].isdigit():
                 message = Numeric(self, *line)
             elif line[1] == "NOTICE":
                 message = Notice(self, *line)
