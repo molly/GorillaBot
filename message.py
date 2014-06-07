@@ -170,8 +170,14 @@ class Privmsg(Message):
         return "Privmsg from {0} in {1}: {2}".format(self.sender, self.location, self.body)
 
     def set_trigger(self):
-        m = re.search(r'(https?://\S+)', self.body)
-        if m:
-            self.trigger = plugins.link.link
-            self.args.append(self)
-            self.args.append(m.groups())
+        try:
+            link_setting = self.bot.command_settings["link"]
+        except KeyError:
+            pass
+        else:
+            if link_setting == "auto":
+                m = re.search(r'(https?://\S+)', self.body)
+                if m:
+                    self.trigger = plugins.link.link
+                    self.args.append(self)
+                    self.args.append(m.groups())
