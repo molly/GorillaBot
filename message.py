@@ -178,6 +178,7 @@ class Privmsg(Message):
             if link_setting == "auto":
                 m = re.search(r'(https?://\S+)', self.body)
                 if m:
+                    self.needs_own_thread = True
                     self.trigger = plugins.link.link
                     self.args.append(self)
                     self.args.append(m.groups())

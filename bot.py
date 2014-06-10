@@ -51,6 +51,7 @@ class Bot(object):
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.ops = []
         self.command_settings = {}
+        self.header = {"User-Agent": "GorillaBot (https://github.com/molly/GorillaBot)"}
 
         # Initialize bot
         self.admin_commands, self.commands = self.load_commands()

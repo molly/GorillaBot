@@ -19,34 +19,29 @@ from bs4 import BeautifulSoup
 from plugins.util import command
 import re
 from urllib.parse import urlparse
-from urllib.request import urlopen, URLError
+from urllib.request import Request, urlopen, URLError
 
 
 @command()
 def link(m, urls=None):
-    print("1")
     if urls is None:
-        print("2")
         match = re.search(r'(https?://\S+)', m.body)
         if match:
-            print("3")
             urls = match.groups()
         else:
             m.bot.private_message(m.location, "Please provide a link.")
             return
     for url in urls:
-        print("4")
+        m.bot.logger.info("Retrieving link for " + url)
+        request = Request(url, headers=m.bot.header)
         try:
-            html = urlopen(url)
+            html = urlopen(request)
         except URLError as e:
             # Don't try to do anything fancy, just ignore the URL
-            print(e)
-            print(e.code)
+            m.bot.logger.info(e.reason)
             pass
         else:
-            print("6")
             parsed = urlparse(url)
-            print(parsed.netloc)
             soup = BeautifulSoup(html)
             if parsed.netloc == "www.twitch.tv":
                 meta = (soup.find(property="og:title"), soup.find(property="og:description"))
@@ -67,30 +62,40 @@ def link(m, urls=None):
             elif parsed.netloc == "www.imgur.com":
                 message = "Imgur - " + soup.title.string.strip()
             elif parsed.netloc == "www.reddit.com":
-                # if "comments" in url:
-                #     print("here")
-                #     title = soup.find("p", class_="title")
-                #     if title:
-                #         title = "\"" + title.a.string + "\""
-                #     sub = soup.find("h1", class_="redditname")
-                #     if sub:
-                #         sub = sub.a.string
-                #     message = ""
-                #     linkinfo = soup.find("div", "linkinfo")
-                #     print(linkinfo)
-                #     votes = None
-                #     if linkinfo:
-                #         up = linkinfo.find("span", "upvotes")
-                #         down = linkinfo.find("span", "downvotes")
-                #         print(up, down)
-                #         if up and down:
-                #             votes = "(" + up.string + "↑ " + down.string + "↓)"
-                #     msg = (title, votes, sub)
-                #     msg = [x for x in msg]
-                #     message = " - ".join(msg)
-                if "/r/" in url:
+                if "comments" in url:
+                    user = None
+                    if (url[-1] != "/" and parsed.path.count("/") == 6) or \
+                            (url[-1] == "!" and parsed.path.count("/") == 7):
+                        # Comment link
+                        title = soup.find("p", class_="title")
+                        if title:
+                            c_id = url.rsplit("/", maxsplit=1)[1]
+                            comment = soup.find("div", class_ = "id-t1_" + c_id)\
+                                .find("div", class_="entry")
+                            if comment:
+                                user = comment.find("a", class_="author").string
+                                title = "Comment by " + user + " on \"" + title.a.string + "\""
+                            else:
+                                title = "Comment on \"" + title.a.string + "\""
+                    else:
+                        title = soup.find("p", class_="title")
+                        if title:
+                            title = "\"" + title.a.string + "\""
                     sub = soup.find("h1", class_="redditname")
-                    message = "Reddit - " + sub.a.string
+                    if sub:
+                        sub = "r/" + sub.a.string
+                    linkinfo = soup.find("div", "linkinfo")
+                    votes = None
+                    if linkinfo and not user:
+                        up = linkinfo.find("span", "upvotes").find("span", class_="number")
+                        down = linkinfo.find("span", "downvotes").find("span", class_="number")
+                        if up and down:
+                            votes = "(" + up.string + "↑ " + down.string + "↓)"
+                    msg = [x for x in (title, votes, sub) if x]
+                    message = " - ".join(msg)
+                elif "/r/" in url:
+                    sub = soup.find("h1", class_="redditname")
+                    message = "Reddit - r/" + sub.a.string
                 else:
                     message = soup.title.string
             else:
