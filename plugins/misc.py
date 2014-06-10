@@ -24,5 +24,8 @@ def setcommand(m):
     if len(m.line) < 3:
         m.bot.private_message(m.location, "Please format the command: !set [command] [setting]")
     else:
-        m.bot.command_settings[m.line[1].lower()] = m.line[2].lower()
-    print(m.bot.command_settings)
+        command = m.line[1].lower()
+        setting = m.line[2].lower()
+        m.bot.command_settings[command] = setting
+        m.bot.logger.info("Command \"" + command + "\" set to " + setting + " by " + m.sender + ".")
+        m.bot.private_message(m.location, "Command \"" + command + "\" set to " + setting + ".")
