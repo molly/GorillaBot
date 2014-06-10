@@ -24,6 +24,13 @@ from urllib.request import Request, urlopen, URLError
 
 @command()
 def link(m, urls=None):
+    try:
+        link_setting = m.bot.command_settings["link"]
+        if link_setting == "disable":
+            return
+    except KeyError:
+        # No setting set
+        pass
     if urls is None:
         match = re.search(r'(https?://\S+)', m.body)
         if match:
