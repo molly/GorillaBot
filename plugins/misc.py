@@ -15,7 +15,21 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from plugins.util import admin
+from plugins.util import admin, command
+
+@command("admins")
+def adminlist(m):
+    """Provide a list of current bot admins."""
+    ops = m.bot.settings["botop"]
+    if ops:
+        print(ops)
+        if len(ops) == 1:
+            m.bot.private_message(m.location, "My bot admin is " + ops[0] + ".")
+        else:
+            m.bot.private_message(m.location, "My bot admins are " + ", ".join(ops) + ".")
+    else:
+        m.bot.private_message(m.location, m.bot.settings["nick"] + " has no master. " +
+                              m.bot.settings["nick"] + " is a free bot.")
 
 
 @admin("set")

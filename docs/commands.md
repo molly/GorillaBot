@@ -12,10 +12,15 @@ In the examples below, I use the `!command` syntax, but the other two would work
 
 ##Commands
 
+### adminlist
+    !adminlist
+
+Say the current bot operators.
+
 ### link
     !link [url]
 
-Provide information about the provided link. By default it formats links as "Link: - [page title]", but it provides richer information about the following domains:
+Provide information about the given link. By default it formats links as "Link: - [page title]", but it provides richer information about the following domains:
 
 * twitch.tv
 * youtube.com

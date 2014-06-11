@@ -52,6 +52,7 @@ class Bot(object):
         self.ops = []
         self.command_settings = {}
         self.header = {"User-Agent": "GorillaBot (https://github.com/molly/GorillaBot)"}
+        self.users = {}
 
         # Initialize bot
         self.admin_commands, self.commands = self.load_commands()
@@ -98,7 +99,7 @@ class Bot(object):
                 message = Numeric(self, *line)
             elif line[1] == "NOTICE":
                 message = Notice(self, *line)
-            elif line[1] == "MODE":
+            elif line[1] in ["MODE", "JOIN", "PART"]:
                 message = Operation(self, *line)
             elif line[1] == "PRIVMSG":
                 if (line[2] == self.settings["nick"] or
