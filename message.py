@@ -81,6 +81,9 @@ class Numeric(Message):
 
     def set_trigger(self):
         """Set the trigger function if this message warrants a response."""
+        if self.number == "353":
+            self.trigger = plugins.util.record_user
+            self.args.append(self)
         if self.number == "375" and self.bot.settings['wait'].lower() != "y":
             self.trigger = self.bot.join
         elif self.number == "376":
@@ -133,6 +136,9 @@ class Operation(Message):
                 self.logger.info("De-opped in {0}.".format(self.location))
                 if self.location in self.bot.opped_channels:
                     self.bot.opped_channels.remove(self.location)
+        if self.type == "JOIN" or self.type == "PART":
+            self.trigger = plugins.util.record_user
+            self.args.append(self)
 
 
 class Ping(Message):

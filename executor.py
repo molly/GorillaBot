@@ -57,7 +57,6 @@ class Executor(object):
                             continue
                     if msg.needs_own_thread:
                         # Begin a new thread if necessary
-                        print("BEEPBOOP!")
                         threading.Thread(name=msg.trigger.__name__, target=msg.trigger,
                                          args=msg.args).start()
                     else:
