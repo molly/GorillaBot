@@ -4,3 +4,4 @@ logs/
 .idea/
 __pycache__
 *.pkl
+db/*

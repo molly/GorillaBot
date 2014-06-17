@@ -15,82 +15,123 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import configparser
 from getpass import getpass
 import logging
-import os
+import sqlite3
 
 
 class Configurator(object):
-    """Deals with the configuration file. It will create a new one if one doesn't exist,
-    or find or modify an existing one. """
+    """Handles the configuration settings in the database."""
 
-    def __init__(self, default, file):
-        self.config = configparser.ConfigParser()
-        if file:
-            self.config_path = os.path.dirname(os.path.abspath(__file__)) + '/' + file
-        else:
-            self.config_path = os.path.dirname(os.path.abspath(__file__)) + '/config.cfg'
+    def __init__(self, db_conn):
+        self.db_conn = db_conn
         self.logger = logging.getLogger("GorillaBot")
-        self.default = default
-        self.options = ('host', 'port', 'nick', 'ident', 'realname', 'chans', 'botop', 'password',
-                        'wait')
 
-    def get_configuration(self):
-        """Return configuration as a dictionary."""
-        # Load existing configuration, or create a new config file.
-        self.load()
+    def configure(self):
+        """Provide the user with prompts to interact with the configuration of the bot."""
+        ans = ''
+        while ans not in ["0", "1", "2", "3", "4"]:
+            data = self.get_settings()
+            if data is not None and len(data) > 0:
+                print("Existing configurations:")
+                for row in data:
+                    print('\t' + row[0])
+                print("\n[0] Load configuration\n[1] Create new configuration\n[2] View "
+                      "configuration\n[3] Remove configuration\n[4] Exit")
+                ans = input("")
+                if ans == "0":
+                    self.load_settings()
+                    return True
+                elif ans == "1":
+                    self.create_new()
+                    return True
+                elif ans == "2":
+                    self.view()
+                elif ans == "3":
+                    self.delete()
+                elif ans == "4":
+                    return False
+                ans = ''
+            else:
+                ans = ''
+                while ans not in ["0", "1"]:
+                    print("\n[0] Create new configuration\n[1] Exit")
+                    ans = input("")
+                    if ans == "0":
+                        self.create_new()
+                    elif ans == "1":
+                        return False
 
-        # Read config values
-        host = self.config.get("irc", "Host")
-        port = int(self.config.get("irc", "Port"))
-        nick = self.config.get("irc", "Nick")
-        realname = self.config.get("irc", "Realname")
-        ident = self.config.get("irc", "Ident")
-        chans = self.config.get("irc", "Chans")
-        botop = self.config.get("irc", "Botop")
-        password = self.config.get("irc", "Password")
-        wait = self.config.get("irc", "Wait")
-
-        # Allow comma- or space-separated lists
-        if ',' in chans:
-            chanlist = chans.split(',')
-        else:
-            chanlist = chans.split(' ')
-        for i in range(len(chanlist)):
-            chanlist[i] = chanlist[i].strip()
-            # Ensure each channel name begins with at least one hash
-            if chanlist[i][0] != '#':
-                chanlist[i] = '#' + chanlist[i]
-
-        if ',' in botop:
-            oplist = botop.split(',')
-        else:
-            oplist = botop.split(' ')
-        for i in range(len(oplist)):
-            oplist[i] = oplist[i].strip()
-        return {"host": host, "port": port, "nick": nick, "realname": realname, "ident": ident,
-                "chans": chanlist, "botop": oplist, "password": password, "wait": wait}
-
-    def load(self):
-        """Try to load an existing configuration file. If it exists, validate it. If it does not,
-        begin to create a new one. """
+    def get_settings(self):
+        """Retrieve existing configurations, or create the table if it does not exist."""
+        cursor = self.db_conn.cursor()
         try:
-            self.config.read_file(open(self.config_path))
-        except IOError:
-            # File doesn't exist; create new one.
-            self.logger.info(
-                'Unable to open {}. Creating a new configuration file.'.format(self.config_path))
-            self.make_new()
+            cursor.execute('''SELECT name FROM settings''')
+        except sqlite3.OperationalError as e:
+            print(e)
+            cursor.execute('''CREATE TABLE settings (name TEXT NOT NULL UNIQUE,
+                                                     host TEXT NOT NULL,
+                                                     port INTEGER NOT NULL,
+                                                     nick TEXT NOT NULL,
+                                                     realname TEXT NOT NULL,
+                                                     ident TEXT NOT NULL,
+                                                     chans INTEGER,
+                                                     botop INTEGER,
+                                                     password TEXT,
+                                                     wait BOOLEAN NOT NULL CHECK (wait IN (0,1))
+                                                     )''')
+            self.db_conn.commit()
+            cursor.close()
+            data = None
         else:
-            # File exists; make sure it's properly formatted
-            self.verify()
+            data = cursor.fetchall()
+            cursor.close()
+        return data
 
-    def make_new(self):
-        """Create a new configuration file from scratch."""
+    def load_settings(self):
+        """Show a given configuration, and allow the user to modify it if needed."""
+        while True:
+            configuration = input("Please choose an existing configuration: ")
+            cursor = self.db_conn.cursor()
+            cursor.execute("SELECT * FROM settings WHERE name = ?",
+                                (configuration,))
+            data = cursor.fetchone()
+            if data is not None:
+                self.verify(data)
+                return
+            else:
+                print("{0} is not the name of an existing configuration.".format(
+                    configuration))
+
+    def view(self):
+        """Open a configuration for viewing."""
+        configuration = input("Please choose an existing configuration: ")
+        cursor = self.db_conn.cursor()
+        cursor.execute("SELECT * FROM settings WHERE name = ?", (configuration,))
+        data = cursor.fetchone()
+        if data is not None:
+            self.display(data)
+        else:
+            print("{0} is not the name of an existing configuration.".format(
+                configuration))
+
+    def delete(self, name=None):
+        """Delete a configuration."""
+        if name is None:
+            name = input("Please choose an existing configuration: ")
+        cursor = self.db_conn.cursor()
+        cursor.execute("DELETE FROM settings WHERE name = ?", (name,))
+        self.db_conn.commit()
+        cursor.close()
+
+    def create_new(self):
+        """Create a new configuration."""
         verify = ''
         while verify != 'y':
             print('\n')
+            name = ""
+            while name == "":
+                name = input("Unique name for this configuration: ")
             host = self.prompt("Host", "chat.freenode.net")
             port = self.prompt("Port", 6667)
             nick = self.prompt("Nick", "GorillaBot")
@@ -99,46 +140,62 @@ class Configurator(object):
             chans = self.prompt("Chans")
             botop = self.prompt("Bot operator(s)", '')
             password = self.prompt("Server password", hidden=True)
-            wait = self.prompt("Wait to join before entering channels? [Y/N]", 'n')
-            print(
-                "------------------------------\n Host: {0}\n Port: {1}\n Nickname: {2}\n Real "
-                "name: {3}\n Identifier: {4}\n Channels: {5}\n Bot operator(s): {"
-                "6}\n Server password: {7}\n Wait to join?: {8}\n------------------------------"
-                .format( host, port, nick, realname, ident, chans, botop,
-                         "[hidden]" if password else "[none]", wait))
-            verify = input('Is this configuration correct? [Y/N]: ').lower()
-            if verify == 'y':
-                break
-        self.config.add_section("irc")
-        self.config.set("irc", "host", host)
-        self.config.set("irc", "port", str(port))
-        self.config.set("irc", "nick", nick)
-        self.config.set("irc", "realname", realname)
-        self.config.set("irc", "ident", ident)
-        self.config.set("irc", "chans", chans)
-        self.config.set("irc", "botop", botop)
-        self.config.set("irc", "password", password)
-        self.config.set("irc", "wait", wait)
-        with open(self.config_path, 'w') as config_file:
-            self.config.write(config_file)
-        self.logger.info("Configuration file saved.")
+            wait = ""
+            while wait != 'y' and wait != 'n':
+                wait = self.prompt("Wait to join before entering channels? [y/n]", 'n')
+                wait.lower()
+            wait = 0 if wait == 'n' else 1
+            self.display((name, host, port, nick, realname, ident, chans, botop, password, wait))
+            verify = input('Is this configuration correct? [y/n]: ').lower()
+        self.save_config((name, host, port, nick, realname, ident, chans, botop, password, wait))
 
-    def print_settings(self):
-        """Display existing settings in a configuration file."""
-        host = self.config.get("irc", "host")
-        port = self.config.get("irc", "port")
-        nick = self.config.get("irc", "nick")
-        realname = self.config.get("irc", "realname")
-        ident = self.config.get("irc", "ident")
-        chans = self.config.get("irc", "chans")
-        botop = self.config.get("irc", "botop")
-        password = self.config.get("irc", "password")
-        wait = self.config.get("irc", "wait")
-        print("------------------------------\n Host: {0}\n Port: {1}\n Nickname: {2}\n Real "
-              "name: {3}\n Identifier: {4}\n Channels: {5}\n Bot operator(s): {"
-              "6}\nServer password: {7}\nWait to join?: {8}\n------------------------------".
-              format(host, port, nick, realname, ident, chans, botop,
-                     "[hidden]" if password else "[none]", wait))
+    def save_config(self, data):
+        """Save changes to the configuration table."""
+        cursor = self.db_conn.cursor()
+        cursor.execute('''INSERT INTO settings VALUES (?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?)''',
+                       (data[0], data[1], data[2], data[3], data[4], data[5], data[8], data[9]))
+        self.db_conn.commit()
+        cursor.close()
+        #TODO: Channels, botops
+
+    def display(self, data):
+        """Display a configuration."""
+        print(
+            "------------------------------\n Host: {0}\n Port: {1}\n Nickname: {2}\n Real "
+            "name: {3}\n Identifier: {4}\n Channels: {5}\n Bot operator(s): {"
+            "6}\n Server password: {7}\n Wait to join?: {8}\n------------------------------"
+            .format(data[1], data[2], data[3], data[4], data[5], data[6], data[7],
+                     "[hidden]" if data[8] else "[none]", "n" if data[9] == 0 else "y"))
+
+    def verify(self, data):
+        """Verify a configuration, and make changes if needed."""
+        self.display(data)
+        verify = input('Is this configuration correct? [y/n]: ').lower()
+        if verify == 'y':
+            return
+        else:
+            verify = ''
+            while verify != 'y':
+                print('\n')
+                name = data[0]
+                host = self.prompt("Host", data[1])
+                port = self.prompt("Port", data[2])
+                nick = self.prompt("Nick", data[3])
+                realname = self.prompt("Ident", data[4])
+                ident = self.prompt("Realname", data[5])
+                chans = self.prompt("Chans", data[6])
+                botop = self.prompt("Bot operator(s)", data[7])
+                password = self.prompt("Server password", hidden=True)
+                wait = ""
+                while wait != 'y' and wait != 'n':
+                    wait = self.prompt("Wait to join before entering channels? [y/n]", data[9])
+                    wait.lower()
+                wait = 0 if wait == 'n' else 1
+                self.display((name, host, port, nick, realname, ident, chans, botop, password, wait))
+                verify = input('Is this configuration correct? [y/n]: ').lower()
+            self.delete(name)
+            self.save_config((name, host, port, nick, realname, ident, chans, botop, password,
+                             wait))
 
     def prompt(self, field, default=None, hidden=False):
         """Prompt a user for input, displaying a default value if one exists."""
@@ -152,33 +209,3 @@ class Configurator(object):
         if default is not None and answer == '':
             return default
         return answer
-
-    def reconfigure(self):
-        """Overwrite the existing configuration file with a new one."""
-        try:
-            os.remove(self.config_path)
-        except OSError:
-            self.logger.error('Unable to remove existing configuration file.')
-        else:
-            self.config = configparser.ConfigParser()
-            self.make_new()
-
-    def verify(self):
-        """Verify that a configuration file is valid."""
-        for option in self.options:
-            if not self.config.has_option("irc", option):
-                print('Configuration file is invalid. Reconfiguring.')
-                self.logger.info('Configuration file is invalid. Reconfiguring.')
-                self.reconfigure()
-        self.logger.info('Valid configuration file found.')
-
-        # Allow reconfiguration even if the file is valid
-        if not self.default:
-            self.print_settings()
-            reconfigure = ''
-            while reconfigure != 'y' and reconfigure != 'n':
-                reconfigure = input("Valid reconfiguration file found. Would you like to "
-                                    "reconfigure? [Y/N] ").lower()
-            if reconfigure == 'y':
-                self.logger.debug('User has requested to reconfigure.')
-                self.reconfigure()
