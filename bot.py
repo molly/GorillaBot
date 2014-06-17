@@ -15,7 +15,6 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import argparse
 from configure import Configurator
 from executor import Executor
 import logging
@@ -26,6 +25,7 @@ import pickle
 import queue
 import re
 import socket
+import sqlite3
 import threading
 from time import sleep, strftime, time
 
@@ -34,7 +34,8 @@ class Bot(object):
     """The core of the IRC bot. It maintains the IRC connection, and delegates other tasks."""
 
     def __init__(self):
-        self.log_path = os.path.dirname(os.path.abspath(__file__)) + '/logs'
+        self.base_path = os.path.dirname(os.path.abspath(__file__))
+        self.log_path = self.base_path + '/logs'
 
         self.last_message_sent = time()
         self.last_ping_sent = time()
@@ -48,13 +49,14 @@ class Bot(object):
         self.executor = Executor(self, self.message_q, self.shutdown)
         self.channels = []                  # Channels to which I'm joined
         self.opped_channels = []            # Channels in which I'm opped
-        self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.ops = []
         self.command_settings = {}
         self.header = {"User-Agent": "GorillaBot (https://github.com/molly/GorillaBot)"}
         self.users = {}
 
         # Initialize bot
+        os.makedirs(self.base_path + '/db', exist_ok=True)
+        self.db_conn = sqlite3.connect(self.base_path + '/db/GorillaBot.db')
         self.admin_commands, self.commands = self.load_commands()
         self.initialize()
 
@@ -115,27 +117,19 @@ class Bot(object):
 
     def initialize(self):
         """Initialize the bot. Parse command-line options, configure, and set up logging."""
+        self.setup_logging()
         print('\n  ."`".'
               '\n / _=_ \\ \x1b[32m      __   __   __  . .   .     __   __   __  '
               '___\x1b[0m\n(,(oYo),) \x1b[32m    / _` /  \ |__) | |   |    |__| '
               '|__) /  \  |  \x1b[0m\n|   "   | \x1b[32m    \__| \__/ |  \ | |___'
               '|___ |  | |__) \__/  |  \x1b[0m \n \(\_/)/\n')
-
-        # Parse arguments from the command line
-        parser = argparse.ArgumentParser(description="This is the command-line utility for "
-                                                     "setting up and running GorillaBot, "
-                                                     "a simple IRC bot.")
-        parser.add_argument("-d", "--default", action="store_true",
-                            help="If a valid configuration file is found, this will proceed with "
-                                 "the connection without asking for verification of settings.")
-        parser.add_argument("-q", "--quiet", action="store_true",
-                            help="Display log messages with level 'WARNING' or higher in the "
-                                 "console.")
-        parser.add_argument("-f", "--file", help="Choose the configuration file path.")
-        args = parser.parse_args()
-        configurator = Configurator(args.default, args.file)
-        self.settings = configurator.get_configuration()
-        self.setup_logging(args.quiet)
+        start = Configurator(self.db_conn).configure()
+        print(start)
+        if start:
+            # self.start()
+            pass
+        else:
+            return
 
     def join(self, chans=None):
         """Join the given channel, list of channels, or if no channel is specified, join any
@@ -232,7 +226,7 @@ class Bot(object):
                 self.logger.debug("Sent message: " + message)
             self.last_message_sent = time()
 
-    def setup_logging(self, quiet):
+    def setup_logging(self):
         """Set up logging to a logfile and the console."""
         self.logger = logging.getLogger('GorillaBot')
 
@@ -258,8 +252,6 @@ class Bot(object):
             "%(asctime)s - %(threadName)s - %(levelname)s: %(message)s", datefmt="%I:%M:%S %p")
         consolehandler = logging.StreamHandler()
         consolehandler.setFormatter(console_formatter)
-        if quiet:
-            consolehandler.setLevel(logging.WARNING)
 
         self.logger.addHandler(consolehandler)
         self.logger.info("Console logger created.")
@@ -278,7 +270,7 @@ class Bot(object):
         except KeyboardInterrupt:
             self.logger.info("Caught KeyboardInterrupt. Shutting down.")
             self.shutdown.set()
+            self.db_conn.close()
 
 if __name__ == "__main__":
     bot = Bot()
-    bot.start()
