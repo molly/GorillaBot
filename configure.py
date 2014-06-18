@@ -101,7 +101,7 @@ class Configurator(object):
                                user TEXT,
                                host TEXT,
                                botop BOOLEAN NOT NULL CHECK(botop IN(0,1)))''')
-            cursor.execute('''CREATE TABLE IF NOT EXISTS users_to_channels
+            cursor.execute('''CREATE TEMP TABLE users_to_channels
                               (user_id INTEGER,
                                chan_id INTEGER,
                                FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,
@@ -142,6 +142,10 @@ class Configurator(object):
         """Show a given configuration, and allow the user to modify it if needed."""
         while True:
             data, channels, botops = self.view()
+            cursor = self.db_conn.cursor()
+            cursor.execute('''DROP TABLE IF EXISTS users''')
+            self.db_conn.commit()
+            cursor.close()
             self.verify(data, channels, botops)
             return
 
@@ -159,11 +163,12 @@ class Configurator(object):
                 cursor.execute('''SELECT name FROM channels WHERE setting = ?''',
                         (configuration,))
                 channels = cursor.fetchall()
-                channels = [x[0] for x in channels]
                 cursor.close()
+                channels = [x[0] for x in channels]
                 cursor = self.db_conn.cursor()
                 cursor.execute('''SELECT nick FROM users WHERE botop = 1''')
                 botops = cursor.fetchall()
+                cursor.close()
                 botops = [x[0] for x in botops]
                 self.display(data, channels, botops)
                 return (data, channels, botops)
@@ -224,6 +229,8 @@ class Configurator(object):
             self.delete(name)
             cursor = self.db_conn.cursor()
             cursor.execute('''DELETE FROM channels WHERE setting = ?''', (name,))
+            self.db_conn.commit()
+            cursor.close()
             self.save_config((name, host, port, nick, realname, ident, chans, botop, password,
                              wait))
 
