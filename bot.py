@@ -55,7 +55,8 @@ class Bot(object):
         self.users = {}
 
         # Initialize bot
-        os.makedirs(self.base_path + '/db', exist_ok=True)
+        if not os.path.isdir(self.base_path + "/db"):
+            os.makedirs(self.base_path + "/db")
         self.db_conn = sqlite3.connect(self.base_path + '/db/GorillaBot.db')
         self.admin_commands, self.commands = self.load_commands()
         self.initialize()

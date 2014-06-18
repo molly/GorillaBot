@@ -17,6 +17,7 @@
 
 from getpass import getpass
 import logging
+import re
 import sqlite3
 
 
@@ -68,23 +69,45 @@ class Configurator(object):
         try:
             cursor.execute('''SELECT name FROM settings''')
         except sqlite3.OperationalError as e:
-            print(e)
-            cursor.execute('''CREATE TABLE settings (name TEXT NOT NULL UNIQUE,
-                                                     host TEXT NOT NULL,
-                                                     port INTEGER NOT NULL,
-                                                     nick TEXT NOT NULL,
-                                                     realname TEXT NOT NULL,
-                                                     ident TEXT NOT NULL,
-                                                     chans INTEGER,
-                                                     botop INTEGER,
-                                                     password TEXT,
-                                                     wait BOOLEAN NOT NULL CHECK (wait IN (0,1))
-                                                     )''')
+            # No settings table exists in the DB, so create one
+            cursor.execute('''CREATE TABLE settings
+                              (name TEXT NOT NULL PRIMARY KEY,
+                               host TEXT NOT NULL,
+                               port INTEGER NOT NULL,
+                               nick TEXT NOT NULL,
+                               realname TEXT NOT NULL,
+                               ident TEXT NOT NULL,
+                               password TEXT,
+                               wait BOOLEAN NOT NULL CHECK(wait IN(0,1)))''')
             self.db_conn.commit()
             cursor.close()
             data = None
         else:
             data = cursor.fetchall()
+            cursor.close()
+        finally:
+            # Create channels, users, and users_to_channels tables
+            cursor = self.db_conn.cursor()
+            cursor.execute('''CREATE TABLE IF NOT EXISTS channels
+                              (chan_id INTEGER PRIMARY KEY,
+                               name TEXT NOT NULL UNIQUE,
+                               joined BOOLEAN NOT NULL CHECK(joined IN(0,1)),
+                               setting TEXT,
+                               FOREIGN KEY(setting) REFERENCES settings(name) ON DELETE CASCADE)
+                               ''')
+            cursor.execute('''CREATE TABLE IF NOT EXISTS users
+                              (user_id INTEGER PRIMARY KEY,
+                               nick TEXT NOT NULL UNIQUE,
+                               user TEXT,
+                               host TEXT,
+                               botop BOOLEAN NOT NULL CHECK(botop IN(0,1)))''')
+            cursor.execute('''CREATE TABLE IF NOT EXISTS users_to_channels
+                              (user_id INTEGER,
+                               chan_id INTEGER,
+                               FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                               FOREIGN KEY(chan_id) REFERENCES channels(chan_id) ON DELETE CASCADE)
+                               ''')
+            self.db_conn.commit()
             cursor.close()
         return data
 
@@ -96,7 +119,14 @@ class Configurator(object):
             cursor.execute("SELECT * FROM settings WHERE name = ?",
                                 (configuration,))
             data = cursor.fetchone()
+            cursor.close()
             if data is not None:
+                cursor = self.db_conn.cursor()
+                cursor.execute('''SELECT name FROM channels WHERE setting = ?''',
+                        (configuration,))
+                channels = cursor.fetchall()
+                print("CHANNELS:", channels)
+                cursor.close()
                 self.verify(data)
                 return
             else:
@@ -152,11 +182,22 @@ class Configurator(object):
     def save_config(self, data):
         """Save changes to the configuration table."""
         cursor = self.db_conn.cursor()
-        cursor.execute('''INSERT INTO settings VALUES (?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?)''',
+        cursor.execute('''INSERT INTO settings VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
                        (data[0], data[1], data[2], data[3], data[4], data[5], data[8], data[9]))
+        channels = re.split(',? ', data[6])
+        botops = re.split(',? ', data[7])
+        cursor.execute('''DELETE FROM users''')
+        if channels != ['']:
+            for chan in channels:
+                if chan[0] != "#":
+                    chan = "#" + chan
+                cursor.execute('''INSERT OR IGNORE INTO channels VALUES (NULL, ?, 0, ?)''',
+                        (chan, data[0]))
+        if botops != ['']:
+            for op in botops:
+                cursor.execute('''INSERT INTO users VALUES (NULL, ?, NULL, NULL, 1)''', (op,))
         self.db_conn.commit()
         cursor.close()
-        #TODO: Channels, botops
 
     def display(self, data):
         """Display a configuration."""
@@ -164,10 +205,11 @@ class Configurator(object):
             "------------------------------\n Host: {0}\n Port: {1}\n Nickname: {2}\n Real "
             "name: {3}\n Identifier: {4}\n Channels: {5}\n Bot operator(s): {"
             "6}\n Server password: {7}\n Wait to join?: {8}\n------------------------------"
-            .format(data[1], data[2], data[3], data[4], data[5], data[6], data[7],
-                     "[hidden]" if data[8] else "[none]", "n" if data[9] == 0 else "y"))
+            .format(data[1], data[2], data[3], data[4], data[5], "None", "None",
+                     "[hidden]" if data[6] else "[none]", "n" if data[7] == 0 else "y"))
+            #TODO: Display chans, botops
 
-    def verify(self, data):
+    def verify(self, data, chans=None, botops=None):
         """Verify a configuration, and make changes if needed."""
         self.display(data)
         verify = input('Is this configuration correct? [y/n]: ').lower()
@@ -183,12 +225,13 @@ class Configurator(object):
                 nick = self.prompt("Nick", data[3])
                 realname = self.prompt("Ident", data[4])
                 ident = self.prompt("Realname", data[5])
-                chans = self.prompt("Chans", data[6])
-                botop = self.prompt("Bot operator(s)", data[7])
+                chans = self.prompt("Chans") #TODO: No prompt
+                botop = self.prompt("Bot operator(s)") #TODO: No prompt
                 password = self.prompt("Server password", hidden=True)
                 wait = ""
                 while wait != 'y' and wait != 'n':
-                    wait = self.prompt("Wait to join before entering channels? [y/n]", data[9])
+                    wait = 'y' if data[7] == 1 else 'n'
+                    wait = self.prompt("Wait to join before entering channels? [y/n]", wait)
                     wait.lower()
                 wait = 0 if wait == 'n' else 1
                 self.display((name, host, port, nick, realname, ident, chans, botop, password, wait))
