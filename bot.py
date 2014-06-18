@@ -81,9 +81,7 @@ class Bot(object):
         self.socket.settimeout(5)
         cursor = self.db_conn.cursor()
         cursor.execute('''SELECT * FROM settings WHERE name = ?''', (self.configuration,))
-        print(self.configuration)
         data = cursor.fetchone()
-        print(data)
         cursor.close()
         name, host, port, nick, realname, ident, password, wait = data
         try:
