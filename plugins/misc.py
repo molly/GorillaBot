@@ -20,7 +20,11 @@ from plugins.util import admin, command
 @command("admins")
 def adminlist(m):
     """Provide a list of current bot admins."""
-    ops = m.bot.settings["botop"]
+    cursor = m.bot.db_conn.cursor()
+    cursor.execute('''SELECT nick FROM users WHERE botop = 1''')
+    data = cursor.fetchall()
+    cursor.close
+    ops = [x[0] for x in data] 
     if ops:
         print(ops)
         if len(ops) == 1:
@@ -28,8 +32,8 @@ def adminlist(m):
         else:
             m.bot.private_message(m.location, "My bot admins are " + ", ".join(ops) + ".")
     else:
-        m.bot.private_message(m.location, m.bot.settings["nick"] + " has no master. " +
-                              m.bot.settings["nick"] + " is a free bot.")
+        nick = m.bot.get_setting("nick")
+        m.bot.private_message(m.location, "{0} has no master. {0} is a free bot.".format(nick))
 
 
 @admin("set")

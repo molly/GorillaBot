@@ -41,8 +41,7 @@ class Configurator(object):
                       "configuration\n[3] Remove configuration\n[4] Exit")
                 ans = input("")
                 if ans == "0":
-                    self.load_settings()
-                    return True
+                    return self.load_settings()
                 elif ans == "1":
                     self.create_new()
                     return True
@@ -60,6 +59,7 @@ class Configurator(object):
                     ans = input("")
                     if ans == "0":
                         self.create_new()
+                        return True
                     elif ans == "1":
                         return False
 
@@ -137,17 +137,18 @@ class Configurator(object):
             self.display((name, host, port, nick, realname, ident, password, wait), chans, botop)
             verify = input('Is this configuration correct? [y/n]: ').lower()
         self.save_config((name, host, port, nick, realname, ident, chans, botop, password, wait))
+        return name
 
     def load_settings(self):
         """Show a given configuration, and allow the user to modify it if needed."""
         while True:
-            data, channels, botops = self.view()
+            name, data, channels, botops = self.view()
             cursor = self.db_conn.cursor()
             cursor.execute('''DROP TABLE IF EXISTS users''')
             self.db_conn.commit()
             cursor.close()
             self.verify(data, channels, botops)
-            return
+            return name
 
     def view(self):
         """Open a configuration for viewing."""
@@ -171,7 +172,7 @@ class Configurator(object):
                 cursor.close()
                 botops = [x[0] for x in botops]
                 self.display(data, channels, botops)
-                return (data, channels, botops)
+                return (configuration, data, channels, botops)
             else:
                 print("{0} is not the name of an existing configuration.".format(
                     configuration))
@@ -239,6 +240,8 @@ class Configurator(object):
         cursor = self.db_conn.cursor()
         cursor.execute('''INSERT INTO settings VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
                        (data[0], data[1], data[2], data[3], data[4], data[5], data[8], data[9]))
+        self.db_conn.commit()
+        cursor.close()
         if type(data[6]) is str:
             channels = re.split(',? ', data[6])
         else:
@@ -247,6 +250,7 @@ class Configurator(object):
             botops = re.split(',? ', data[7])
         else:
             botops = data[7]
+        cursor = self.db_conn.cursor()
         cursor.execute('''DELETE FROM users''')
         if channels != ['']:
             for chan in channels:
@@ -254,6 +258,9 @@ class Configurator(object):
                     chan = "#" + chan
                 cursor.execute('''INSERT OR IGNORE INTO channels VALUES (NULL, ?, 0, ?)''',
                         (chan, data[0]))
+        self.db_conn.commit()
+        cursor.close()
+        cursor = self.db_conn.cursor()
         if botops != ['']:
             for op in botops:
                 cursor.execute('''INSERT INTO users VALUES (NULL, ?, NULL, NULL, 1)''', (op,))

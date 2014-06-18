@@ -84,7 +84,7 @@ class Numeric(Message):
         if self.number == "353":
             self.trigger = plugins.util.record_user
             self.args.append(self)
-        if self.number == "375" and self.bot.settings['wait'].lower() != "y":
+        if self.number == "375" and self.bot.get_setting("wait") == 0:
             self.trigger = self.bot.join
         elif self.number == "376":
             self.trigger = plugins.util.get_admin
@@ -127,7 +127,8 @@ class Operation(Message):
     def set_trigger(self):
         if self.type == "MODE":
             lowerbody = self.body.lower()
-            lowernick = self.bot.settings["nick"].lower()
+            nick = self.bot.get_setting("nick")
+            lowernick = nick.lower()
             if "+o {0}".format(lowernick) == lowerbody:
                 self.logger.info("Opped in {0}.".format(self.location))
                 if self.location not in self.bot.opped_channels:

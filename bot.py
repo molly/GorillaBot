@@ -37,11 +37,11 @@ class Bot(object):
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.log_path = self.base_path + '/logs'
 
+        self.configuration = None
         self.last_message_sent = time()
         self.last_ping_sent = time()
         self.last_received = None
         self.logger = None
-        self.settings = {}
         self.shutdown = threading.Event()
         self.response_lock = threading.Lock()
         self.socket = None
@@ -53,12 +53,15 @@ class Bot(object):
         self.command_settings = {}
         self.header = {"User-Agent": "GorillaBot (https://github.com/molly/GorillaBot)"}
         self.users = {}
+        #TODO: Replace
 
         # Initialize bot
         if not os.path.isdir(self.base_path + "/db"):
             os.makedirs(self.base_path + "/db")
-        self.db_conn = sqlite3.connect(self.base_path + '/db/GorillaBot.db')
+        self.db_conn = sqlite3.connect(self.base_path + '/db/GorillaBot.db',
+                check_same_thread=False)
         self.admin_commands, self.commands = self.load_commands()
+        #TODO: Replace
         self.initialize()
 
     def caffeinate(self):
@@ -76,20 +79,28 @@ class Bot(object):
         self.logger.debug('Thread created.')
         self.socket = socket.socket()
         self.socket.settimeout(5)
+        cursor = self.db_conn.cursor()
+        cursor.execute('''SELECT * FROM settings WHERE name = ?''', (self.configuration,))
+        print(self.configuration)
+        data = cursor.fetchone()
+        print(data)
+        cursor.close()
+        name, host, port, nick, realname, ident, password, wait = data
         try:
             self.logger.info('Initiating connection.')
-            self.socket.connect((self.settings['host'], self.settings['port']))
+            self.socket.connect((host, port))
         except OSError:
             self.logger.error("Unable to connect to IRC server. Check your Internet connection.")
         else:
-            if self.settings['password']:
-                self.send("PASS {0}".format(self.settings['password']), hide=True)
-            self.send("NICK {0}".format(self.settings['nick']))
-            self.send("USER {0} 0 * :{1}".format(self.settings['ident'], self.settings['realname']))
+            if password:
+                self.send("PASS {0}".format(password), hide=True)
+            self.send("NICK {0}".format(nick))
+            self.send("USER {0} 0 * :{1}".format(ident, realname))
             self.loop()
 
     def dispatch(self, line):
         """Inspect this line and determine if further processing is necessary."""
+        nick = self.get_setting("nick")
         length = len(line)
         message = None
         if length <= 2:
@@ -105,9 +116,9 @@ class Bot(object):
             elif line[1] in ["MODE", "JOIN", "PART"]:
                 message = Operation(self, *line)
             elif line[1] == "PRIVMSG":
-                if (line[2] == self.settings["nick"] or
+                if (line[2] == nick or
                    line[3][1] == "!" or
-                   line[3].startswith(":" + self.settings["nick"])):
+                   line[3].startswith(":" + nick)):
                     message = Command(self, *line)
                 else:
                     message = Privmsg(self, *line)
@@ -115,6 +126,15 @@ class Bot(object):
             self.message_q.put(message)
         else:
             print(line)
+
+    def get_setting(self, setting):
+        """Retrieve the given setting from the database."""
+        cursor = self.db_conn.cursor()
+        cursor.execute('''SELECT ? FROM channels WHERE setting = ?''',
+                (setting, self.configuration))
+        value = cursor.fetchone()
+        cursor.close()
+        return value[0] if value else None
 
     def initialize(self):
         """Initialize the bot. Parse command-line options, configure, and set up logging."""
@@ -124,11 +144,9 @@ class Bot(object):
               '___\x1b[0m\n(,(oYo),) \x1b[32m    / _` /  \ |__) | |   |    |__| '
               '|__) /  \  |  \x1b[0m\n|   "   | \x1b[32m    \__| \__/ |  \ | |___'
               '|___ |  | |__) \__/  |  \x1b[0m \n \(\_/)/\n')
-        start = Configurator(self.db_conn).configure()
-        print(start)
-        if start:
-            # self.start()
-            pass
+        self.configuration = Configurator(self.db_conn).configure()
+        if self.configuration:
+            self.start()
         else:
             return
 
@@ -136,7 +154,12 @@ class Bot(object):
         """Join the given channel, list of channels, or if no channel is specified, join any
         channels that exist in the config but are not already joined."""
         if chans is None:
-            chans = self.settings["chans"]
+            cursor = self.db_conn.cursor()
+            cursor.execute('''SELECT name FROM channels WHERE setting = ?''',
+                    (self.configuration,))
+            chans = cursor.fetchall()
+            cursor.close()
+            print(chans)
         if type(chans) is str:
             chans = [chans]
         if type(chans) is list:
@@ -200,8 +223,9 @@ class Bot(object):
 
     def ping(self):
         """Send a ping to the server."""
-        self.logger.debug("Pinging {}.".format(self.settings['host']))
-        self.send('PING {}'.format(self.settings['host']))
+        host = self.get_setting("host")
+        self.logger.debug("Pinging {}.".format(host))
+        self.send('PING {}'.format(host))
 
     def pong(self, server):
         """Respond to a ping from the server."""
