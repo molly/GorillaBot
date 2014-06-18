@@ -145,6 +145,18 @@ class Configurator(object):
             cursor.execute('''DROP TABLE IF EXISTS users''')
             self.db_conn.commit()
             cursor.close()
+            cursor = self.db_conn.cursor()
+            cursor.execute('''CREATE TABLE users
+                              (user_id INTEGER PRIMARY KEY,
+                               nick TEXT NOT NULL UNIQUE,
+                               user TEXT,
+                               host TEXT,
+                               botop BOOLEAN NOT NULL CHECK(botop IN(0,1)))''')
+            if botops != ['']:
+                for op in botops:
+                    cursor.execute('''INSERT INTO users VALUES (NULL, ?, NULL, NULL, 1)''', (op,))
+            self.db_conn.commit()
+            cursor.close()
             self.verify(data, channels, botops)
             return name
 
