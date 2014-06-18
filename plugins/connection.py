@@ -26,7 +26,7 @@ def join(m):
         chan = m.line[1]
         if chan[0] != "#":
             chan = "#" + chan
-        if m.bot.settings["host"] == "irc.twitch.tv":
+        if m.bot.get_setting("host") == "irc.twitch.tv":
             chan = chan.lower()
         m.bot.join(chan)
         m.bot.logger.info("Joining " + chan)
@@ -46,7 +46,7 @@ def part(m):
         channel = "#" + m.line[1]
     else:
         channel = m.line[1]
-    if m.bot.settings["host"] == "irc.twitch.tv":
+    if m.bot.get_setting("host") == "irc.twitch.tv":
         channel = channel.lower()
     if channel in m.bot.channels:
         m.bot.send("PART " + channel + " :" + part_msg)
