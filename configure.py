@@ -114,6 +114,13 @@ class Configurator(object):
     def load_settings(self):
         """Show a given configuration, and allow the user to modify it if needed."""
         while True:
+            data, channels, botops = self.view()
+            self.verify(data, channels, botops)
+            return
+
+    def view(self):
+        """Open a configuration for viewing."""
+        while True:
             configuration = input("Please choose an existing configuration: ")
             cursor = self.db_conn.cursor()
             cursor.execute("SELECT * FROM settings WHERE name = ?",
@@ -125,25 +132,17 @@ class Configurator(object):
                 cursor.execute('''SELECT name FROM channels WHERE setting = ?''',
                         (configuration,))
                 channels = cursor.fetchall()
-                print("CHANNELS:", channels)
+                channels = [x[0] for x in channels]
                 cursor.close()
-                self.verify(data)
-                return
+                cursor = self.db_conn.cursor()
+                cursor.execute('''SELECT nick FROM users WHERE botop = 1''')
+                botops = cursor.fetchall()
+                botops = [x[0] for x in botops]
+                self.display(data, channels, botops)
+                return (data, channels, botops)
             else:
                 print("{0} is not the name of an existing configuration.".format(
                     configuration))
-
-    def view(self):
-        """Open a configuration for viewing."""
-        configuration = input("Please choose an existing configuration: ")
-        cursor = self.db_conn.cursor()
-        cursor.execute("SELECT * FROM settings WHERE name = ?", (configuration,))
-        data = cursor.fetchone()
-        if data is not None:
-            self.display(data)
-        else:
-            print("{0} is not the name of an existing configuration.".format(
-                configuration))
 
     def delete(self, name=None):
         """Delete a configuration."""
@@ -184,8 +183,10 @@ class Configurator(object):
         cursor = self.db_conn.cursor()
         cursor.execute('''INSERT INTO settings VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
                        (data[0], data[1], data[2], data[3], data[4], data[5], data[8], data[9]))
-        channels = re.split(',? ', data[6])
-        botops = re.split(',? ', data[7])
+        if type(data[6]) is str:
+            channels = re.split(',? ', data[6])
+        if type(data[7]) is str:
+            botops = re.split(',? ', data[7])
         cursor.execute('''DELETE FROM users''')
         if channels != ['']:
             for chan in channels:
@@ -199,19 +200,20 @@ class Configurator(object):
         self.db_conn.commit()
         cursor.close()
 
-    def display(self, data):
+    def display(self, data, chans=None, botops=None):
         """Display a configuration."""
+        chans = ", ".join(chans) if chans else ""
+        botops = ", ".join(botops) if botops else ""
+        password = "[hidden]" if data[6] else "[none]"
+        wait = "n" if data[7] else "y"
         print(
-            "------------------------------\n Host: {0}\n Port: {1}\n Nickname: {2}\n Real "
+            "\n------------------------------\n Host: {0}\n Port: {1}\n Nickname: {2}\n Real "
             "name: {3}\n Identifier: {4}\n Channels: {5}\n Bot operator(s): {"
-            "6}\n Server password: {7}\n Wait to join?: {8}\n------------------------------"
-            .format(data[1], data[2], data[3], data[4], data[5], "None", "None",
-                     "[hidden]" if data[6] else "[none]", "n" if data[7] == 0 else "y"))
-            #TODO: Display chans, botops
+            "6}\n Server password: {7}\n Wait to join?: {8}\n------------------------------\n"
+            .format(data[1], data[2], data[3], data[4], data[5], chans, botops, password, wait))
 
     def verify(self, data, chans=None, botops=None):
         """Verify a configuration, and make changes if needed."""
-        self.display(data)
         verify = input('Is this configuration correct? [y/n]: ').lower()
         if verify == 'y':
             return
@@ -225,8 +227,8 @@ class Configurator(object):
                 nick = self.prompt("Nick", data[3])
                 realname = self.prompt("Ident", data[4])
                 ident = self.prompt("Realname", data[5])
-                chans = self.prompt("Chans") #TODO: No prompt
-                botop = self.prompt("Bot operator(s)") #TODO: No prompt
+                chans = self.prompt("Chans", ", ".join(chans))
+                botop = self.prompt("Bot operator(s)", ", ".join(botops))
                 password = self.prompt("Server password", hidden=True)
                 wait = ""
                 while wait != 'y' and wait != 'n':
@@ -237,6 +239,8 @@ class Configurator(object):
                 self.display((name, host, port, nick, realname, ident, chans, botop, password, wait))
                 verify = input('Is this configuration correct? [y/n]: ').lower()
             self.delete(name)
+            cursor = self.db_conn.cursor()
+            cursor.execute('''DELETE FROM channels WHERE setting = ?''', (name,))
             self.save_config((name, host, port, nick, realname, ident, chans, botop, password,
                              wait))
 
