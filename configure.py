@@ -43,8 +43,7 @@ class Configurator(object):
                 if ans == "0":
                     return self.load_settings()
                 elif ans == "1":
-                    self.create_new()
-                    return True
+                    return self.create_new()
                 elif ans == "2":
                     self.view()
                 elif ans == "3":
@@ -58,8 +57,7 @@ class Configurator(object):
                     print("\n[0] Create new configuration\n[1] Exit")
                     ans = input("")
                     if ans == "0":
-                        self.create_new()
-                        return True
+                        return self.create_new()
                     elif ans == "1":
                         return False
 
