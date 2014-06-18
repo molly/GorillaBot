@@ -111,6 +111,33 @@ class Configurator(object):
             cursor.close()
         return data
 
+    def create_new(self):
+        """Create a new configuration."""
+        verify = ''
+        while verify != 'y':
+            print('\n')
+            name = ""
+            while name == "":
+                name = input("Unique name for this configuration: ")
+            host = self.prompt("Host", "chat.freenode.net")
+            port = self.prompt("Port", 6667)
+            nick = self.prompt("Nick", "GorillaBot")
+            realname = self.prompt("Ident", "GorillaBot")
+            ident = self.prompt("Realname", "GorillaBot")
+            chans = self.prompt("Chans")
+            botop = self.prompt("Bot operator(s)", '')
+            password = self.prompt("Server password", hidden=True)
+            wait = ""
+            while wait != 'y' and wait != 'n':
+                wait = self.prompt("Wait to join before entering channels? [y/n]", 'n')
+                wait.lower()
+            wait = 0 if wait == 'n' else 1
+            chans = re.split(',? ', chans)
+            botop = re.split(',? ', botop)
+            self.display((name, host, port, nick, realname, ident, password, wait), chans, botop)
+            verify = input('Is this configuration correct? [y/n]: ').lower()
+        self.save_config((name, host, port, nick, realname, ident, chans, botop, password, wait))
+
     def load_settings(self):
         """Show a given configuration, and allow the user to modify it if needed."""
         while True:
@@ -153,57 +180,10 @@ class Configurator(object):
         self.db_conn.commit()
         cursor.close()
 
-    def create_new(self):
-        """Create a new configuration."""
-        verify = ''
-        while verify != 'y':
-            print('\n')
-            name = ""
-            while name == "":
-                name = input("Unique name for this configuration: ")
-            host = self.prompt("Host", "chat.freenode.net")
-            port = self.prompt("Port", 6667)
-            nick = self.prompt("Nick", "GorillaBot")
-            realname = self.prompt("Ident", "GorillaBot")
-            ident = self.prompt("Realname", "GorillaBot")
-            chans = self.prompt("Chans")
-            botop = self.prompt("Bot operator(s)", '')
-            password = self.prompt("Server password", hidden=True)
-            wait = ""
-            while wait != 'y' and wait != 'n':
-                wait = self.prompt("Wait to join before entering channels? [y/n]", 'n')
-                wait.lower()
-            wait = 0 if wait == 'n' else 1
-            self.display((name, host, port, nick, realname, ident, chans, botop, password, wait))
-            verify = input('Is this configuration correct? [y/n]: ').lower()
-        self.save_config((name, host, port, nick, realname, ident, chans, botop, password, wait))
-
-    def save_config(self, data):
-        """Save changes to the configuration table."""
-        cursor = self.db_conn.cursor()
-        cursor.execute('''INSERT INTO settings VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                       (data[0], data[1], data[2], data[3], data[4], data[5], data[8], data[9]))
-        if type(data[6]) is str:
-            channels = re.split(',? ', data[6])
-        if type(data[7]) is str:
-            botops = re.split(',? ', data[7])
-        cursor.execute('''DELETE FROM users''')
-        if channels != ['']:
-            for chan in channels:
-                if chan[0] != "#":
-                    chan = "#" + chan
-                cursor.execute('''INSERT OR IGNORE INTO channels VALUES (NULL, ?, 0, ?)''',
-                        (chan, data[0]))
-        if botops != ['']:
-            for op in botops:
-                cursor.execute('''INSERT INTO users VALUES (NULL, ?, NULL, NULL, 1)''', (op,))
-        self.db_conn.commit()
-        cursor.close()
-
-    def display(self, data, chans=None, botops=None):
+    def display(self, data, chans, botops):
         """Display a configuration."""
-        chans = ", ".join(chans) if chans else ""
-        botops = ", ".join(botops) if botops else ""
+        chans = ", ".join(chans)
+        botops = ", ".join(botops)
         password = "[hidden]" if data[6] else "[none]"
         wait = "n" if data[7] else "y"
         print(
@@ -212,7 +192,7 @@ class Configurator(object):
             "6}\n Server password: {7}\n Wait to join?: {8}\n------------------------------\n"
             .format(data[1], data[2], data[3], data[4], data[5], chans, botops, password, wait))
 
-    def verify(self, data, chans=None, botops=None):
+    def verify(self, data, chans, botops):
         """Verify a configuration, and make changes if needed."""
         verify = input('Is this configuration correct? [y/n]: ').lower()
         if verify == 'y':
@@ -236,13 +216,42 @@ class Configurator(object):
                     wait = self.prompt("Wait to join before entering channels? [y/n]", wait)
                     wait.lower()
                 wait = 0 if wait == 'n' else 1
-                self.display((name, host, port, nick, realname, ident, chans, botop, password, wait))
+                chans = re.split(',? ', chans)
+                botop = re.split(',? ', botop)
+                self.display((name, host, port, nick, realname, ident, password, wait), chans,
+                        botop)
                 verify = input('Is this configuration correct? [y/n]: ').lower()
             self.delete(name)
             cursor = self.db_conn.cursor()
             cursor.execute('''DELETE FROM channels WHERE setting = ?''', (name,))
             self.save_config((name, host, port, nick, realname, ident, chans, botop, password,
                              wait))
+
+    def save_config(self, data):
+        """Save changes to the configuration table."""
+        cursor = self.db_conn.cursor()
+        cursor.execute('''INSERT INTO settings VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                       (data[0], data[1], data[2], data[3], data[4], data[5], data[8], data[9]))
+        if type(data[6]) is str:
+            channels = re.split(',? ', data[6])
+        else:
+            channels = data[6]
+        if type(data[7]) is str:
+            botops = re.split(',? ', data[7])
+        else:
+            botops = data[7]
+        cursor.execute('''DELETE FROM users''')
+        if channels != ['']:
+            for chan in channels:
+                if chan[0] != "#":
+                    chan = "#" + chan
+                cursor.execute('''INSERT OR IGNORE INTO channels VALUES (NULL, ?, 0, ?)''',
+                        (chan, data[0]))
+        if botops != ['']:
+            for op in botops:
+                cursor.execute('''INSERT INTO users VALUES (NULL, ?, NULL, NULL, 1)''', (op,))
+        self.db_conn.commit()
+        cursor.close()
 
     def prompt(self, field, default=None, hidden=False):
         """Prompt a user for input, displaying a default value if one exists."""
