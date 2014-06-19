@@ -98,7 +98,6 @@ class Bot(object):
 
     def dispatch(self, line):
         """Inspect this line and determine if further processing is necessary."""
-        nick = self.get_setting("nick")
         length = len(line)
         message = None
         if length <= 2:
@@ -114,6 +113,7 @@ class Bot(object):
             elif line[1] in ["MODE", "JOIN", "PART"]:
                 message = Operation(self, *line)
             elif line[1] == "PRIVMSG":
+                nick = self.get_setting("nick")
                 if (line[2] == nick or
                    line[3][1] == "!" or
                    line[3].startswith(":" + nick)):
@@ -128,10 +128,10 @@ class Bot(object):
     def get_setting(self, setting):
         """Retrieve the given setting from the database."""
         cursor = self.db_conn.cursor()
-        cursor.execute('''SELECT ? FROM channels WHERE setting = ?''',
-                (setting, self.configuration))
+        cursor.execute('''SELECT ? FROM settings WHERE name=?''', (setting, self.configuration))
         value = cursor.fetchone()
         cursor.close()
+        print(value)
         return value[0] if value else None
 
     def initialize(self):
@@ -157,7 +157,7 @@ class Bot(object):
                     (self.configuration,))
             chans = cursor.fetchall()
             cursor.close()
-            print(chans)
+            print("\n\n\n" + ", ".join(chans) + "\n\n\n" )
         if type(chans) is str:
             chans = [chans]
         if type(chans) is list:

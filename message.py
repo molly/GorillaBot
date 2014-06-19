@@ -81,6 +81,7 @@ class Numeric(Message):
 
     def set_trigger(self):
         """Set the trigger function if this message warrants a response."""
+        print(self.bot.get_setting("wait"))
         if self.number == "353":
             self.trigger = plugins.util.record_user
             self.args.append(self)
