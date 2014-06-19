@@ -128,10 +128,10 @@ class Bot(object):
     def get_setting(self, setting):
         """Retrieve the given setting from the database."""
         cursor = self.db_conn.cursor()
-        cursor.execute('''SELECT ? FROM settings WHERE name=?''', (setting, self.configuration))
+        query = '''SELECT %s FROM settings WHERE name = ?''' % setting
+        cursor.execute(query, (self.configuration,))
         value = cursor.fetchone()
         cursor.close()
-        print(value)
         return value[0] if value else None
 
     def initialize(self):
@@ -153,21 +153,31 @@ class Bot(object):
         channels that exist in the config but are not already joined."""
         if chans is None:
             cursor = self.db_conn.cursor()
-            cursor.execute('''SELECT name FROM channels WHERE setting = ?''',
+            cursor.execute('''SELECT name, joined FROM channels WHERE setting = ?''',
                     (self.configuration,))
-            chans = cursor.fetchall()
+            data = cursor.fetchall()
             cursor.close()
-            print("\n\n\n" + ", ".join(chans) + "\n\n\n" )
+            for row in data:
+                if row[1] == 0:
+                    self.logger.info("Joining {0}.".format(row[0]))
+                    self.send('JOIN ' + row[0])
+                    cursor = self.db_conn.cursor()
+                    cursor.execute('''UPDATE channels SET joined = 1 WHERE name = ?''', (row[0],))
+                    self.db_conn.commit()
+                    cursor.close()
         if type(chans) is str:
             chans = [chans]
         if type(chans) is list:
             for chan in chans:
-                if chan in self.channels:
-                    self.logger.info("Already in channel {0}. Not joining.".format(chan))
-                else:
-                    self.logger.info("Joining {0}.".format(chan))
-                    self.send('JOIN ' + chan)
-                    self.channels.append(chan)
+                self.logger.info("Joining {0}.".format(chan))
+                self.send('JOIN ' + chan)
+                cursor = self.db_conn.cursor()
+                cursor.execute('''UPDATE channels SET joined = 1 WHERE name = ?''', (row[0],))
+                if cursor.rowcount() < 1:
+                    cursor.execute('''INSERT INTO channels VALUES (NULL, ?, 1, ?)''',
+                            (chan, self.configuration))
+                self.db_conn.commit()
+                cursor.close()
 
     def load_commands(self):
             try:
@@ -293,6 +303,10 @@ class Bot(object):
         except KeyboardInterrupt:
             self.logger.info("Caught KeyboardInterrupt. Shutting down.")
             self.shutdown.set()
+            cursor = self.db_conn.cursor()
+            cursor.execute('''UPDATE channels SET joined = 0''')
+            self.db_conn.commit()
+            cursor.close()
             self.db_conn.close()
 
 if __name__ == "__main__":
