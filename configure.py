@@ -201,7 +201,7 @@ class Configurator(object):
         chans = ", ".join(chans)
         botops = ", ".join(botops)
         password = "[hidden]" if data[6] else "[none]"
-        wait = "n" if data[7] else "y"
+        wait = "n" if data[7] == 0 else "y"
         print(
             "\n------------------------------\n Host: {0}\n Port: {1}\n Nickname: {2}\n Real "
             "name: {3}\n Identifier: {4}\n Channels: {5}\n Bot operator(s): {"
@@ -228,7 +228,7 @@ class Configurator(object):
                 password = self.prompt("Server password", hidden=True)
                 wait = ""
                 while wait != 'y' and wait != 'n':
-                    wait = 'y' if data[7] == 1 else 'n'
+                    wait = 'n' if data[7] == 0 else 'y'
                     wait = self.prompt("Wait to join before entering channels? [y/n]", wait)
                     wait.lower()
                 wait = 0 if wait == 'n' else 1
