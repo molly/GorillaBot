@@ -128,28 +128,3 @@ def get_admin(m):
         m.bot.response_lock.release()
         for msg in ignored_messages:
             m.bot.message_q.put(msg)
-
-
-def record_user(m):
-    """Record all users in a channel."""
-    if type(m) is message.Operation and m.type == "JOIN":
-        nick = m.bot.parse_hostmask(m.sender)["nick"]
-        if m.location in m.bot.users:
-            if nick != m.bot.settings["nick"].lower() and nick not in m.bot.users[m.location]:
-                m.bot.users[m.location].append(nick)
-        else:
-            if nick != m.bot.settings["nick"].lower():
-                m.bot.users[m.location] = [nick]
-    elif type(m) is message.Operation and m.type == "PART":
-        nick = m.bot.parse_hostmask(m.sender)["nick"]
-        if m.location in m.bot.users:
-            m.bot.users[m.location].remove(nick)
-    else:
-        msg = m.body.rsplit(":", 1)[1]
-        for nick in msg.split():
-            if m.location in m.bot.users:
-                if nick != m.bot.settings["nick"].lower() and nick not in m.bot.users[m.location]:
-                    m.bot.users[m.location].append(nick)
-            else:
-                if nick != m.bot.settings["nick"].lower():
-                    m.bot.users[m.location] = [nick]
