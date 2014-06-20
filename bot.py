@@ -305,6 +305,7 @@ class Bot(object):
             self.shutdown.set()
             cursor = self.db_conn.cursor()
             cursor.execute('''UPDATE channels SET joined = 0''')
+            cursor.execute('''DROP TABLE users_to_channels''')
             self.db_conn.commit()
             cursor.close()
             self.db_conn.close()

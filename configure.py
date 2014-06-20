@@ -98,8 +98,11 @@ class Configurator(object):
                                nick TEXT NOT NULL UNIQUE,
                                user TEXT,
                                host TEXT,
-                               botop BOOLEAN NOT NULL CHECK(botop IN(0,1)))''')
-            cursor.execute('''CREATE TEMP TABLE users_to_channels
+                               botop BOOLEAN NOT NULL CHECK(botop IN(0,1)),
+                               setting TEXT,
+                               FOREIGN KEY(setting) REFERENCES settings(name) ON DELETE CASCADE)
+                               ''')
+            cursor.execute('''CREATE TABLE users_to_channels
                               (user_id INTEGER,
                                chan_id INTEGER,
                                FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,
@@ -142,21 +145,28 @@ class Configurator(object):
         while True:
             name, data, channels, botops = self.view()
             cursor = self.db_conn.cursor()
-            cursor.execute('''DROP TABLE IF EXISTS users''')
             self.db_conn.commit()
             cursor.close()
             cursor = self.db_conn.cursor()
-            cursor.execute('''CREATE TABLE users
+            cursor.execute('''CREATE TABLE IF NOT EXISTS users
                               (user_id INTEGER PRIMARY KEY,
                                nick TEXT NOT NULL UNIQUE,
                                user TEXT,
                                host TEXT,
-                               botop BOOLEAN NOT NULL CHECK(botop IN(0,1)))''')
-            if botops != ['']:
-                for op in botops:
-                    cursor.execute('''INSERT INTO users VALUES (NULL, ?, NULL, NULL, 1)''', (op,))
+                               botop BOOLEAN NOT NULL CHECK(botop IN(0,1)),
+                               setting TEXT,
+                               FOREIGN KEY(setting) REFERENCES settings(name) ON DELETE CASCADE)
+                               ''')
+            cursor.execute('''DELETE FROM users WHERE setting = ?''', (name,))
             self.db_conn.commit()
             cursor.close()
+            if botops != ['']:
+                cursor = self.db_conn.cursor()
+                for op in botops:
+                    cursor.execute('''INSERT INTO users VALUES (NULL, ?, NULL, NULL, 1, ?)''',
+                            (op, name))
+                self.db_conn.commit()
+                cursor.close()
             self.verify(data, channels, botops)
             return name
 
@@ -177,7 +187,8 @@ class Configurator(object):
                 cursor.close()
                 channels = [x[0] for x in channels]
                 cursor = self.db_conn.cursor()
-                cursor.execute('''SELECT nick FROM users WHERE botop = 1''')
+                cursor.execute('''SELECT nick FROM users WHERE botop = 1 AND setting = ?''',
+                        (configuration,))
                 botops = cursor.fetchall()
                 cursor.close()
                 botops = [x[0] for x in botops]
@@ -240,6 +251,7 @@ class Configurator(object):
             self.delete(name)
             cursor = self.db_conn.cursor()
             cursor.execute('''DELETE FROM channels WHERE setting = ?''', (name,))
+            cursor.execute('''DELETE FROM users WHERE setting = ?''', (name,))
             self.db_conn.commit()
             cursor.close()
             self.save_config((name, host, port, nick, realname, ident, chans, botop, password,
@@ -261,7 +273,6 @@ class Configurator(object):
         else:
             botops = data[7]
         cursor = self.db_conn.cursor()
-        cursor.execute('''DELETE FROM users''')
         if channels != ['']:
             for chan in channels:
                 if chan[0] != "#":
@@ -273,7 +284,8 @@ class Configurator(object):
         cursor = self.db_conn.cursor()
         if botops != ['']:
             for op in botops:
-                cursor.execute('''INSERT INTO users VALUES (NULL, ?, NULL, NULL, 1)''', (op,))
+                cursor.execute('''INSERT INTO users VALUES (NULL, ?, NULL, NULL, 1, ?)''',
+                        (op, data[0]))
         self.db_conn.commit()
         cursor.close()
 
