@@ -51,7 +51,12 @@ class Executor(object):
                 # If this message has a trigger, execute the function
                 if msg.trigger:
                     if type(msg) is message.Command and msg.admin:
-                        if self.bot.parse_hostmask(msg.sender)["host"] not in self.bot.ops:
+                        cursor = self.bot.db_conn.cursor()
+                        cursor.execute('''SELECT nick, user, host FROM users WHERE botop = 1 AND
+                                 setting = ?''', (self.bot.configuration,))
+                        data = cursor.fetchone()
+                        cursor.close()
+                        if msg.sender != data[0] + "!" + data[1] + "@" + data[2]:
                             self.bot.private_message(msg.location, "Please ask a bot operator to "
                                                                    "perform this action for you.")
                             continue
