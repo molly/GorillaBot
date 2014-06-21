@@ -83,7 +83,7 @@ class Bot(object):
         cursor.execute('''SELECT * FROM settings WHERE name = ?''', (self.configuration,))
         data = cursor.fetchone()
         cursor.close()
-        name, host, port, nick, realname, ident, password, wait = data
+        name, host, port, nick, realname, ident, password = data
         try:
             self.logger.info('Initiating connection.')
             self.socket.connect((host, port))
@@ -94,6 +94,8 @@ class Bot(object):
                 self.send("PASS {0}".format(password), hide=True)
             self.send("NICK {0}".format(nick))
             self.send("USER {0} 0 * :{1}".format(ident, realname))
+            if "freenode.net" in self.get_setting("host"):
+                self.private_message("NickServ", "ACC")
             self.loop()
 
     def dispatch(self, line):
@@ -303,11 +305,6 @@ class Bot(object):
         except KeyboardInterrupt:
             self.logger.info("Caught KeyboardInterrupt. Shutting down.")
             self.shutdown.set()
-            cursor = self.db_conn.cursor()
-            cursor.execute('''UPDATE channels SET joined = 0''')
-            cursor.execute('''DROP TABLE users_to_channels''')
-            self.db_conn.commit()
-            cursor.close()
             self.db_conn.close()
 
 if __name__ == "__main__":
