@@ -30,6 +30,14 @@ class Configurator(object):
 
     def configure(self):
         """Provide the user with prompts to interact with the configuration of the bot."""
+        cursor = self.db_conn.cursor()
+        try:
+            cursor.execute('''UPDATE channels SET joined = 0''')
+        except sqlite3.OperationalError as e:
+            pass
+        cursor.execute('''DROP TABLE IF EXISTS users_to_channels''')
+        self.db_conn.commit()
+        cursor.close()
         ans = ''
         while ans not in ["0", "1", "2", "3", "4"]:
             data = self.get_settings()
@@ -75,8 +83,7 @@ class Configurator(object):
                                nick TEXT NOT NULL,
                                realname TEXT NOT NULL,
                                ident TEXT NOT NULL,
-                               password TEXT,
-                               wait BOOLEAN NOT NULL CHECK(wait IN(0,1)))''')
+                               password TEXT)''')
             self.db_conn.commit()
             cursor.close()
             data = None
@@ -95,7 +102,7 @@ class Configurator(object):
                                ''')
             cursor.execute('''CREATE TABLE IF NOT EXISTS users
                               (user_id INTEGER PRIMARY KEY,
-                               nick TEXT NOT NULL UNIQUE,
+                               nick TEXT NOT NULL,
                                user TEXT,
                                host TEXT,
                                botop BOOLEAN NOT NULL CHECK(botop IN(0,1)),
@@ -128,16 +135,11 @@ class Configurator(object):
             chans = self.prompt("Chans")
             botop = self.prompt("Bot operator(s)", '')
             password = self.prompt("Server password", hidden=True)
-            wait = ""
-            while wait != 'y' and wait != 'n':
-                wait = self.prompt("Wait to join before entering channels? [y/n]", 'n')
-                wait.lower()
-            wait = 0 if wait == 'n' else 1
             chans = re.split(',? ', chans)
             botop = re.split(',? ', botop)
-            self.display((name, host, port, nick, realname, ident, password, wait), chans, botop)
+            self.display((name, host, port, nick, realname, ident, password), chans, botop)
             verify = input('Is this configuration correct? [y/n]: ').lower()
-        self.save_config((name, host, port, nick, realname, ident, chans, botop, password, wait))
+        self.save_config((name, host, port, nick, realname, ident, chans, botop, password))
         return name
 
     def load_settings(self):
@@ -150,7 +152,7 @@ class Configurator(object):
             cursor = self.db_conn.cursor()
             cursor.execute('''CREATE TABLE IF NOT EXISTS users
                               (user_id INTEGER PRIMARY KEY,
-                               nick TEXT NOT NULL UNIQUE,
+                               nick TEXT NOT NULL,
                                user TEXT,
                                host TEXT,
                                botop BOOLEAN NOT NULL CHECK(botop IN(0,1)),
@@ -212,12 +214,11 @@ class Configurator(object):
         chans = ", ".join(chans)
         botops = ", ".join(botops)
         password = "[hidden]" if data[6] else "[none]"
-        wait = "n" if data[7] == 0 else "y"
         print(
             "\n------------------------------\n Host: {0}\n Port: {1}\n Nickname: {2}\n Real "
             "name: {3}\n Identifier: {4}\n Channels: {5}\n Bot operator(s): {"
-            "6}\n Server password: {7}\n Wait to join?: {8}\n------------------------------\n"
-            .format(data[1], data[2], data[3], data[4], data[5], chans, botops, password, wait))
+            "6}\n Server password: {7}\n------------------------------\n"
+            .format(data[1], data[2], data[3], data[4], data[5], chans, botops, password))
 
     def verify(self, data, chans, botops):
         """Verify a configuration, and make changes if needed."""
@@ -237,15 +238,9 @@ class Configurator(object):
                 chans = self.prompt("Chans", ", ".join(chans))
                 botop = self.prompt("Bot operator(s)", ", ".join(botops))
                 password = self.prompt("Server password", hidden=True)
-                wait = ""
-                while wait != 'y' and wait != 'n':
-                    wait = 'n' if data[7] == 0 else 'y'
-                    wait = self.prompt("Wait to join before entering channels? [y/n]", wait)
-                    wait.lower()
-                wait = 0 if wait == 'n' else 1
                 chans = re.split(',? ', chans)
                 botop = re.split(',? ', botop)
-                self.display((name, host, port, nick, realname, ident, password, wait), chans,
+                self.display((name, host, port, nick, realname, ident, password), chans,
                         botop)
                 verify = input('Is this configuration correct? [y/n]: ').lower()
             self.delete(name)
@@ -254,14 +249,13 @@ class Configurator(object):
             cursor.execute('''DELETE FROM users WHERE setting = ?''', (name,))
             self.db_conn.commit()
             cursor.close()
-            self.save_config((name, host, port, nick, realname, ident, chans, botop, password,
-                             wait))
+            self.save_config((name, host, port, nick, realname, ident, chans, botop, password))
 
     def save_config(self, data):
         """Save changes to the configuration table."""
         cursor = self.db_conn.cursor()
-        cursor.execute('''INSERT INTO settings VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                       (data[0], data[1], data[2], data[3], data[4], data[5], data[8], data[9]))
+        cursor.execute('''INSERT INTO settings VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                       (data[0], data[1], data[2], data[3], data[4], data[5], data[8]))
         self.db_conn.commit()
         cursor.close()
         if type(data[6]) is str:

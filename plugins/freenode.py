@@ -50,5 +50,4 @@ def identify(m):
     for msg in ignored_messages:
         m.bot.message_q.put(msg)
     m.bot.response_lock.release()
-    if m.bot.settings['chans']:
-        m.bot.join()
+    m.bot.join()
