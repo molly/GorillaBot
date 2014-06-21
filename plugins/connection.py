@@ -38,6 +38,11 @@ def part(m):
     if len(m.line) == 1:
         m.bot.send("PART " + m.location + " " + part_msg)
         m.bot.logger.info("Parting from #" + m.location)
+        cursor = m.bot.db_conn.cursor()
+        cursor.execute('''DELETE FROM channels WHERE name = ? AND setting = ?''',
+                (m.location, m.bot.configuration))
+        m.bot.db_conn.commit()
+        cursor.close()
         return
     channel = ""
     if len(m.line) > 2:
@@ -48,8 +53,10 @@ def part(m):
         channel = m.line[1]
     if m.bot.get_setting("host") == "irc.twitch.tv":
         channel = channel.lower()
-    if channel in m.bot.channels:
-        m.bot.send("PART " + channel + " :" + part_msg)
-        m.bot.logger.info("Parting from " + channel + ".")
-    else:
-        m.bot.private_message(m.location, "Not joined to " + channel + ".")
+    m.bot.send("PART " + channel + " :" + part_msg)
+    m.bot.logger.info("Parting from " + channel + ".")
+    cursor = m.bot.db_conn.cursor()
+    cursor.execute('''DELETE FROM channels WHERE name = ? AND setting = ?''',
+            (channel, m.bot.configuration))
+    m.bot.db_conn.commit()
+    cursor.close()

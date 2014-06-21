@@ -86,7 +86,8 @@ class Numeric(Message):
         elif self.number == "376":
             self.trigger = plugins.util.get_admin
             self.args.append(self)
-        elif self.number == "396":                # RPL_HOSTHIDDEN
+        elif self.number in ["396", "403"]:
+            # Pass the message along
             self.logger.info(self.body)
 
 

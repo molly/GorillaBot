@@ -165,15 +165,15 @@ class Bot(object):
                     cursor.execute('''UPDATE channels SET joined = 1 WHERE name = ?''', (row[0],))
                     self.db_conn.commit()
                     cursor.close()
-        if type(chans) is str:
-            chans = [chans]
-        if type(chans) is list:
+        else:
+            if type(chans) is str:
+                chans = [chans]
             for chan in chans:
                 self.logger.info("Joining {0}.".format(chan))
                 self.send('JOIN ' + chan)
                 cursor = self.db_conn.cursor()
-                cursor.execute('''UPDATE channels SET joined = 1 WHERE name = ?''', (row[0],))
-                if cursor.rowcount() < 1:
+                cursor.execute('''UPDATE channels SET joined = 1 WHERE name = ?''', (chan,))
+                if cursor.rowcount < 1:
                     cursor.execute('''INSERT INTO channels VALUES (NULL, ?, 1, ?)''',
                             (chan, self.configuration))
                 self.db_conn.commit()
