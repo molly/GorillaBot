@@ -61,6 +61,13 @@ def command(*args):
         commands[func.__name__] = command_name
         with open(path, 'wb') as pickle_file:
             pickle.dump(commands, pickle_file)
+        if link_setting == "auto":
+            m = re.search(r'(https?://\S+)', self.body)
+            if m:
+                self.needs_own_thread = True
+                self.trigger = plugins.link.link
+                self.args.append(self)
+                self.args.append(m.groups())
         return func
 
     return decorator
