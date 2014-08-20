@@ -61,6 +61,20 @@ class Command(Message):
         elif self.bot.commands and self.command in self.bot.commands:
             self.trigger = eval(self.bot.commands[self.command])
             self.args.append(self)
+        else:
+            try:
+                link_setting = self.bot.command_settings["link"]
+            except KeyError:
+                pass
+            else:
+                if link_setting == "auto":
+                    m = re.search(r'(https?://\S+)', self.body)
+                    if m:
+                        self.needs_own_thread = True
+                        self.trigger = plugins.link.link
+                        self.args.append(self)
+                        self.args.append(m.groups())
+
 
 
 class Numeric(Message):
@@ -137,6 +151,7 @@ class Operation(Message):
                 self.logger.info("De-opped in {0}.".format(self.location))
                 if self.location in self.bot.opped_channels:
                     self.bot.opped_channels.remove(self.location)
+
 
 class Ping(Message):
     """Represent a ping from the server."""
