@@ -143,7 +143,10 @@ class Bot(object):
               '___\x1b[0m\n(,(oYo),) \x1b[32m    / _` /  \ |__) | |   |    |__| '
               '|__) /  \  |  \x1b[0m\n|   "   | \x1b[32m    \__| \__/ |  \ | |___'
               '|___ |  | |__) \__/  |  \x1b[0m \n \(\_/)/\n')
-        self.configuration = Configurator(self.db_conn).configure()
+        try:
+            self.configuration = Configurator(self.db_conn).configure()
+        except KeyboardInterrupt:
+            self.logger.info("Caught KeyboardInterrupt. Shutting down.")
         if self.configuration:
             self.start()
         else:
@@ -184,12 +187,12 @@ class Bot(object):
             try:
                 with open(self.base_path + '/plugins/commands.pkl', 'rb') as admin_file:
                     admin_commands = pickle.load(admin_file)
-            except OSError:
+            except (OSError, IOError):
                 admin_commands = None
             try:
                 with open(self.base_path + '/plugins/admincommands.pkl', 'rb') as command_file:
                     commands = pickle.load(command_file)
-            except OSError:
+            except (OSError, IOError):
                 commands = None
             return admin_commands, commands
 
