@@ -83,10 +83,10 @@ class Bot(object):
         cursor.execute('''SELECT * FROM settings WHERE name = ?''', (self.configuration,))
         data = cursor.fetchone()
         cursor.close()
-        name, host, port, nick, realname, ident, password = data
+        name, nick, realname, ident, password = data
         try:
             self.logger.info('Initiating connection.')
-            self.socket.connect((host, port))
+            self.socket.connect(("chat.freenode.net", 6667))
         except OSError:
             self.logger.error("Unable to connect to IRC server. Check your Internet connection.")
         else:

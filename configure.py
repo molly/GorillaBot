@@ -102,6 +102,7 @@ class Configurator(object):
                               (user_id INTEGER PRIMARY KEY,
                                nick TEXT NOT NULL,
                                user TEXT,
+                               host TEXT,
                                botop BOOLEAN NOT NULL CHECK(botop IN(0,1)),
                                setting TEXT,
                                FOREIGN KEY(setting) REFERENCES settings(name) ON DELETE CASCADE)
