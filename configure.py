@@ -30,14 +30,25 @@ class Configurator(object):
 
     def configure(self):
         """Provide the user with prompts to interact with the configuration of the bot."""
-        cursor = self.db_conn.cursor()
+
+        # If there's an existing channels table, set joined to false for all channels
         try:
+            cursor = self.db_conn.cursor()
             cursor.execute('''UPDATE channels SET joined = 0''')
-        except sqlite3.OperationalError as e:
+            self.db_conn.commit()
+            cursor.close()
+        except sqlite3.OperationalError:
             pass
+
+        # Drop the users_to_channels table if it exists
+        cursor = self.db_conn.cursor()
         cursor.execute('''DROP TABLE IF EXISTS users_to_channels''')
         self.db_conn.commit()
         cursor.close()
+
+        self.create_tables()
+
+        # Prompt user for input
         ans = ''
         while ans not in ["0", "1", "2", "3", "4"]:
             data = self.get_settings()
@@ -69,52 +80,45 @@ class Configurator(object):
                     elif ans == "1":
                         return False
 
-    def get_settings(self):
-        """Retrieve existing configurations, or create the table if it does not exist."""
+    def create_tables(self):
         cursor = self.db_conn.cursor()
-        try:
-            cursor.execute('''SELECT name FROM settings''')
-        except sqlite3.OperationalError:
-            # No settings table exists in the DB, so create one
-            cursor.execute('''CREATE TABLE settings
+        cursor.execute('''CREATE TABLE IF NOT EXISTS settings
                               (name TEXT NOT NULL PRIMARY KEY,
                                nick TEXT NOT NULL,
                                realname TEXT NOT NULL,
                                ident TEXT NOT NULL,
                                password TEXT)''')
-            self.db_conn.commit()
-            cursor.close()
-            data = None
-        else:
-            data = cursor.fetchall()
-            cursor.close()
-        finally:
-            # Create channels, users, and users_to_channels tables
-            cursor = self.db_conn.cursor()
-            cursor.execute('''CREATE TABLE IF NOT EXISTS channels
-                              (chan_id INTEGER PRIMARY KEY,
-                               name TEXT NOT NULL UNIQUE,
-                               joined BOOLEAN NOT NULL CHECK(joined IN(0,1)),
-                               setting TEXT,
-                               FOREIGN KEY(setting) REFERENCES settings(name) ON DELETE CASCADE)
-                               ''')
-            cursor.execute('''CREATE TABLE IF NOT EXISTS users
-                              (user_id INTEGER PRIMARY KEY,
-                               nick TEXT NOT NULL,
-                               user TEXT,
-                               host TEXT,
-                               botop BOOLEAN NOT NULL CHECK(botop IN(0,1)),
-                               setting TEXT,
-                               FOREIGN KEY(setting) REFERENCES settings(name) ON DELETE CASCADE)
-                               ''')
-            cursor.execute('''CREATE TABLE users_to_channels
-                              (user_id INTEGER,
-                               chan_id INTEGER,
-                               FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-                               FOREIGN KEY(chan_id) REFERENCES channels(chan_id) ON DELETE CASCADE)
-                               ''')
-            self.db_conn.commit()
-            cursor.close()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS channels
+                          (chan_id INTEGER PRIMARY KEY,
+                           name TEXT NOT NULL UNIQUE,
+                           joined BOOLEAN NOT NULL CHECK(joined IN(0,1)),
+                           setting TEXT,
+                           FOREIGN KEY(setting) REFERENCES settings(name) ON DELETE CASCADE)
+                           ''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS users
+                          (user_id INTEGER PRIMARY KEY,
+                           nick TEXT NOT NULL,
+                           user TEXT,
+                           host TEXT,
+                           botop BOOLEAN NOT NULL CHECK(botop IN(0,1)),
+                           setting TEXT,
+                           FOREIGN KEY(setting) REFERENCES settings(name) ON DELETE CASCADE)
+                           ''')
+        cursor.execute('''CREATE TABLE users_to_channels
+                          (user_id INTEGER,
+                           chan_id INTEGER,
+                           FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                           FOREIGN KEY(chan_id) REFERENCES channels(chan_id) ON DELETE CASCADE)
+                           ''')
+        self.db_conn.commit()
+        cursor.close()
+
+    def get_settings(self):
+        """Retrieve existing configurations, or create the table if it does not exist."""
+        cursor = self.db_conn.cursor()
+        cursor.execute('''SELECT name FROM settings''')
+        data = cursor.fetchall()
+        cursor.close()
         return data
 
     def create_new(self):
