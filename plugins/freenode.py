@@ -31,7 +31,7 @@ def identify(m):
         m.bot.private_message('NickServ', 'identify ' + password, True)
         while True:
             try:
-                msg= m.bot.message_q.get(True, 120)
+                msg = m.bot.message_q.get(True, 120)
             except Empty:
                 logger.error("No response from NickServ when trying to identify. Shutting down.")
                 m.bot.shutdown.set()

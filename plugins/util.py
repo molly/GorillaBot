@@ -72,59 +72,50 @@ def get_admin(m):
     cursor.execute('''SELECT user_id, nick, setting FROM users WHERE botop = 1''')
     botops = cursor.fetchall()
     cursor.close()
-    if m.bot.get_setting("host") == "irc.twitch.tv":
-        # We have to treat this differently because Twitch doesn't support WHOIS
-        for op in botops:
-            if op[2] == m.bot.configuration:
-                nick = op[1].lower()
-                cursor = m.bot.db_conn.cursor()
-                cursor.execute('''REPLACE INTO users VALUES (?, ?, ?, ?, 1, ?)''',
-                        (op[0], nick, nick, nick + ".tmi.twitch.tv", op[2]))
-    else:
-        m.bot.response_lock.acquire()
-        ignored_messages = []
-        for op in botops:
-            if op[2] == m.bot.configuration:
-                m.bot.send("WHOIS " + op[1])
-                while True:
-                    try:
-                        msg= m.bot.message_q.get(True, 120)
-                    except queue.Empty:
-                        m.bot.logger.error("No response while getting admins. Shutting down.")
-                        m.bot.shutdown.set()
-                        break
-                    else:
-                        if type(msg) is message.Numeric:
-                            if msg.number == '311':
-                                # User info
-                                line = msg.body.split()
+    m.bot.response_lock.acquire()
+    ignored_messages = []
+    for op in botops:
+        if op[2] == m.bot.configuration:
+            m.bot.send("WHOIS " + op[1])
+            while True:
+                try:
+                    msg= m.bot.message_q.get(True, 120)
+                except queue.Empty:
+                    m.bot.logger.error("No response while getting admins. Shutting down.")
+                    m.bot.shutdown.set()
+                    break
+                else:
+                    if type(msg) is message.Numeric:
+                        if msg.number == '311':
+                            # User info
+                            line = msg.body.split()
+                            cursor = m.bot.db_conn.cursor()
+                            cursor.execute('''UPDATE users SET user=?, host=?
+                                     WHERE user_id=?''', (line[1], line[2], op[0]))
+                            m.bot.db_conn.commit()
+                            cursor.close()
+                        elif msg.number == '318':
+                            # End of WHOIS
+                            break
+                        elif msg.number == '319':
+                            # Channel info
+                            line = msg.body.split()
+                            channels = line[1:]
+                            for chan in channels:
+                                chan = re.sub(r'[^#]*(?=#)', '', chan)
                                 cursor = m.bot.db_conn.cursor()
-                                cursor.execute('''UPDATE users SET user=?, host=?
-                                         WHERE user_id=?''', (line[1], line[2], op[0]))
+                                cursor.execute('''SELECT chan_id FROM channels WHERE name=?
+                                         AND setting=?''', (chan, op[2]))
+                                data = cursor.fetchone()
+                                cursor.execute('''INSERT INTO users_to_channels
+                                         VALUES (?, ?)''',
+                                        (op[0], data[0]))
                                 m.bot.db_conn.commit()
                                 cursor.close()
-                            elif msg.number == '318':
-                                # End of WHOIS
-                                break
-                            elif msg.number == '319':
-                                # Channel info
-                                line = msg.body.split()
-                                channels = line[1:]
-                                for chan in channels:
-                                    chan = re.sub(r'[^#]*(?=#)', '', chan)
-                                    cursor = m.bot.db_conn.cursor()
-                                    cursor.execute('''SELECT chan_id FROM channels WHERE name=?
-                                             AND setting=?''', (chan, op[2]))
-                                    data = cursor.fetchone()
-                                    cursor.execute('''INSERT INTO users_to_channels
-                                             VALUES (?, ?)''',
-                                            (op[0], data[0]))
-                                    m.bot.db_conn.commit()
-                                    cursor.close()
-                            elif msg.number == '401':   # User isn't logged in
-                                # No such user
-                                break
-                        ignored_messages.append(msg)
-        m.bot.response_lock.release()
-        for msg in ignored_messages:
-            m.bot.message_q.put(msg)
+                        elif msg.number == '401':   # User isn't logged in
+                            # No such user
+                            break
+                    ignored_messages.append(msg)
+    m.bot.response_lock.release()
+    for msg in ignored_messages:
+        m.bot.message_q.put(msg)

@@ -74,12 +74,10 @@ class Configurator(object):
         cursor = self.db_conn.cursor()
         try:
             cursor.execute('''SELECT name FROM settings''')
-        except sqlite3.OperationalError as e:
+        except sqlite3.OperationalError:
             # No settings table exists in the DB, so create one
             cursor.execute('''CREATE TABLE settings
                               (name TEXT NOT NULL PRIMARY KEY,
-                               host TEXT NOT NULL,
-                               port INTEGER NOT NULL,
                                nick TEXT NOT NULL,
                                realname TEXT NOT NULL,
                                ident TEXT NOT NULL,
@@ -104,7 +102,6 @@ class Configurator(object):
                               (user_id INTEGER PRIMARY KEY,
                                nick TEXT NOT NULL,
                                user TEXT,
-                               host TEXT,
                                botop BOOLEAN NOT NULL CHECK(botop IN(0,1)),
                                setting TEXT,
                                FOREIGN KEY(setting) REFERENCES settings(name) ON DELETE CASCADE)
@@ -127,8 +124,6 @@ class Configurator(object):
             name = ""
             while name == "":
                 name = input("Unique name for this configuration: ")
-            host = self.prompt("Host", "chat.freenode.net")
-            port = self.prompt("Port", 6667)
             nick = self.prompt("Nick", "GorillaBot")
             realname = self.prompt("Ident", "GorillaBot")
             ident = self.prompt("Realname", "GorillaBot")
@@ -137,9 +132,9 @@ class Configurator(object):
             password = self.prompt("Server password", hidden=True)
             chans = re.split(',? ', chans)
             botop = re.split(',? ', botop)
-            self.display((name, host, port, nick, realname, ident, password), chans, botop)
+            self.display((name, nick, realname, ident, password), chans, botop)
             verify = input('Is this configuration correct? [y/n]: ').lower()
-        self.save_config((name, host, port, nick, realname, ident, chans, botop, password))
+        self.save_config((name, nick, realname, ident, chans, botop, password))
         return name
 
     def load_settings(self):
@@ -213,12 +208,12 @@ class Configurator(object):
         """Display a configuration."""
         chans = ", ".join(chans)
         botops = ", ".join(botops)
-        password = "[hidden]" if data[6] else "[none]"
+        password = "[hidden]" if data[4] else "[none]"
         print(
-            "\n------------------------------\n Host: {0}\n Port: {1}\n Nickname: {2}\n Real "
-            "name: {3}\n Identifier: {4}\n Channels: {5}\n Bot operator(s): {"
-            "6}\n Server password: {7}\n------------------------------\n"
-            .format(data[1], data[2], data[3], data[4], data[5], chans, botops, password))
+            "\n------------------------------\n Nickname: {0}\n Real "
+            "name: {1}\n Identifier: {2}\n Channels: {3}\n Bot operator(s): {"
+            "4}\n Server password: {5}\n------------------------------\n"
+            .format(data[1], data[2], data[3], chans, botops, password))
 
     def verify(self, data, chans, botops):
         """Verify a configuration, and make changes if needed."""
@@ -230,17 +225,15 @@ class Configurator(object):
             while verify != 'y':
                 print('\n')
                 name = data[0]
-                host = self.prompt("Host", data[1])
-                port = self.prompt("Port", data[2])
-                nick = self.prompt("Nick", data[3])
-                realname = self.prompt("Ident", data[4])
-                ident = self.prompt("Realname", data[5])
+                nick = self.prompt("Nick", data[1])
+                realname = self.prompt("Ident", data[2])
+                ident = self.prompt("Realname", data[3])
                 chans = self.prompt("Chans", ", ".join(chans))
                 botop = self.prompt("Bot operator(s)", ", ".join(botops))
                 password = self.prompt("Server password", hidden=True)
                 chans = re.split(',? ', chans)
                 botop = re.split(',? ', botop)
-                self.display((name, host, port, nick, realname, ident, password), chans,
+                self.display((name, nick, realname, ident, password), chans,
                         botop)
                 verify = input('Is this configuration correct? [y/n]: ').lower()
             self.delete(name)
@@ -249,23 +242,23 @@ class Configurator(object):
             cursor.execute('''DELETE FROM users WHERE setting = ?''', (name,))
             self.db_conn.commit()
             cursor.close()
-            self.save_config((name, host, port, nick, realname, ident, chans, botop, password))
+            self.save_config((name, nick, realname, ident, chans, botop, password))
 
     def save_config(self, data):
         """Save changes to the configuration table."""
         cursor = self.db_conn.cursor()
-        cursor.execute('''INSERT INTO settings VALUES (?, ?, ?, ?, ?, ?, ?)''',
-                       (data[0], data[1], data[2], data[3], data[4], data[5], data[8]))
+        cursor.execute('''INSERT INTO settings VALUES (?, ?, ?, ?, ?)''',
+                       (data[0], data[1], data[2], data[3], data[6],))
         self.db_conn.commit()
         cursor.close()
-        if type(data[6]) is str:
-            channels = re.split(',? ', data[6])
+        if type(data[4]) is str:
+            channels = re.split(',? ', data[4])
         else:
-            channels = data[6]
-        if type(data[7]) is str:
-            botops = re.split(',? ', data[7])
+            channels = data[4]
+        if type(data[5]) is str:
+            botops = re.split(',? ', data[5])
         else:
-            botops = data[7]
+            botops = data[5]
         cursor = self.db_conn.cursor()
         if channels != ['']:
             for chan in channels:

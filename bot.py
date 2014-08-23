@@ -94,8 +94,7 @@ class Bot(object):
                 self.send("PASS {0}".format(password), hide=True)
             self.send("NICK {0}".format(nick))
             self.send("USER {0} 0 * :{1}".format(ident, realname))
-            if "freenode.net" in self.get_setting("host"):
-                self.private_message("NickServ", "ACC")
+            self.private_message("NickServ", "ACC")
             self.loop()
 
     def dispatch(self, line):
