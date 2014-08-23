@@ -125,6 +125,13 @@ class Configurator(object):
             name = ""
             while name == "":
                 name = input("Unique name for this configuration: ")
+                cursor = self.db_conn.cursor()
+                cursor.execute('''SELECT * FROM settings WHERE name = ?''', (name,))
+                data = cursor.fetchone()
+                cursor.close()
+                if data:
+                    print('The name "{0}" is not unique.'.format(name))
+                    name = ""
             nick = self.prompt("Nick", "GorillaBot")
             realname = self.prompt("Ident", "GorillaBot")
             ident = self.prompt("Realname", "GorillaBot")
