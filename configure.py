@@ -46,6 +46,7 @@ class Configurator(object):
         self.db_conn.commit()
         cursor.close()
 
+        # Create all the tables that we need, if we need them
         self.create_tables()
 
         # Prompt user for input
