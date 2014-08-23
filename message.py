@@ -95,7 +95,7 @@ class Numeric(Message):
 
     def set_trigger(self):
         """Set the trigger function if this message warrants a response."""
-        if self.number == "375" and "freenode.net" not in self.bot.get_setting("host"):
+        if self.number == "375":
             self.trigger = self.bot.join
         elif self.number == "376":
             self.trigger = plugins.util.get_admin
