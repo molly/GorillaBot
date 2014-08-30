@@ -113,6 +113,13 @@ class Configurator(object):
                FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,
                FOREIGN KEY(chan_id) REFERENCES channels(chan_id) ON DELETE CASCADE)
                ''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS settings
+              (setting TEXT,
+               value TEXT,
+               chan_id INTEGER,
+               FOREIGN KEY(chan_id) REFERENCES channels(chan_id) ON DELETE CASCADE,
+               UNIQUE(setting, chan_id) ON CONFLICT REPLACE)
+               ''')
     self.db_conn.commit()
     cursor.close()
 
