@@ -117,12 +117,12 @@ class Notice(Message):
     def set_trigger(self):
         """Set the trigger function if this message warrants a response."""
         if self.sender == "NickServ!NickServ@services.":
-            if "ACC 0" in self.body:
-                self.trigger = self.bot.join
-            elif "identify" in self.body:
+            if "ACC 1" in self.body:
                 self.trigger = plugins.freenode.identify
                 self.args.append(self)
                 self.needs_own_thread = True
+            elif "ACC" in self.body:
+                self.trigger = self.bot.join
 
 
 class Operation(Message):
