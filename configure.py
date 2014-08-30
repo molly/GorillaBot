@@ -83,7 +83,7 @@ class Configurator(object):
 
     def create_tables(self):
         cursor = self.db_conn.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS settings
+        cursor.execute('''CREATE TABLE IF NOT EXISTS configs
                               (name TEXT NOT NULL PRIMARY KEY,
                                nick TEXT NOT NULL,
                                realname TEXT NOT NULL,
@@ -93,9 +93,10 @@ class Configurator(object):
                           (chan_id INTEGER PRIMARY KEY,
                            name TEXT NOT NULL,
                            joined BOOLEAN NOT NULL CHECK(joined IN(0,1)),
-                           setting TEXT,
-                           FOREIGN KEY(setting) REFERENCES settings(name) ON DELETE CASCADE,
-                           UNIQUE(name, setting) ON CONFLICT REPLACE)
+                           config TEXT,
+
+                           FOREIGN KEY(config) REFERENCES configs(name) ON DELETE CASCADE,
+                           UNIQUE(name, config) ON CONFLICT REPLACE)
                            ''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS users
                           (user_id INTEGER PRIMARY KEY,
@@ -103,8 +104,8 @@ class Configurator(object):
                            user TEXT,
                            host TEXT,
                            botop BOOLEAN NOT NULL CHECK(botop IN(0,1)),
-                           setting TEXT,
-                           FOREIGN KEY(setting) REFERENCES settings(name) ON DELETE CASCADE)
+                           config TEXT,
+                           FOREIGN KEY(config) REFERENCES configs(name) ON DELETE CASCADE)
                            ''')
         cursor.execute('''CREATE TABLE users_to_channels
                           (user_id INTEGER,
@@ -118,7 +119,7 @@ class Configurator(object):
     def get_settings(self):
         """Retrieve existing configurations, or create the table if it does not exist."""
         cursor = self.db_conn.cursor()
-        cursor.execute('''SELECT name FROM settings''')
+        cursor.execute('''SELECT name FROM configs''')
         data = cursor.fetchall()
         cursor.close()
         return data
@@ -132,7 +133,7 @@ class Configurator(object):
             while name == "":
                 name = input("Unique name for this configuration: ")
                 cursor = self.db_conn.cursor()
-                cursor.execute('''SELECT * FROM settings WHERE name = ?''', (name,))
+                cursor.execute('''SELECT * FROM configs WHERE name = ?''', (name,))
                 data = cursor.fetchone()
                 cursor.close()
                 if data:
@@ -165,10 +166,10 @@ class Configurator(object):
                                user TEXT,
                                host TEXT,
                                botop BOOLEAN NOT NULL CHECK(botop IN(0,1)),
-                               setting TEXT,
-                               FOREIGN KEY(setting) REFERENCES settings(name) ON DELETE CASCADE)
+                               config TEXT,
+                               FOREIGN KEY(config) REFERENCES configs(name) ON DELETE CASCADE)
                                ''')
-            cursor.execute('''DELETE FROM users WHERE setting = ?''', (name,))
+            cursor.execute('''DELETE FROM users WHERE config = ?''', (name,))
             self.db_conn.commit()
             cursor.close()
             if botops != ['']:
@@ -186,19 +187,19 @@ class Configurator(object):
         while True:
             configuration = input("Please choose an existing configuration: ")
             cursor = self.db_conn.cursor()
-            cursor.execute("SELECT * FROM settings WHERE name = ?",
+            cursor.execute("SELECT * FROM configs WHERE name = ?",
                                 (configuration,))
             data = cursor.fetchone()
             cursor.close()
             if data is not None:
                 cursor = self.db_conn.cursor()
-                cursor.execute('''SELECT name FROM channels WHERE setting = ?''',
+                cursor.execute('''SELECT name FROM channels WHERE config = ?''',
                         (configuration,))
                 channels = cursor.fetchall()
                 cursor.close()
                 channels = [x[0] for x in channels]
                 cursor = self.db_conn.cursor()
-                cursor.execute('''SELECT nick FROM users WHERE botop = 1 AND setting = ?''',
+                cursor.execute('''SELECT nick FROM users WHERE botop = 1 AND config = ?''',
                         (configuration,))
                 botops = cursor.fetchall()
                 cursor.close()
@@ -214,7 +215,7 @@ class Configurator(object):
         if name is None:
             name = input("Please choose an existing configuration: ")
         cursor = self.db_conn.cursor()
-        cursor.execute("DELETE FROM settings WHERE name = ?", (name,))
+        cursor.execute("DELETE FROM configs WHERE name = ?", (name,))
         self.db_conn.commit()
         cursor.close()
 
@@ -252,8 +253,8 @@ class Configurator(object):
                 verify = input('Is this configuration correct? [y/n]: ').lower()
             self.delete(name)
             cursor = self.db_conn.cursor()
-            cursor.execute('''DELETE FROM channels WHERE setting = ?''', (name,))
-            cursor.execute('''DELETE FROM users WHERE setting = ?''', (name,))
+            cursor.execute('''DELETE FROM channels WHERE config = ?''', (name,))
+            cursor.execute('''DELETE FROM users WHERE config = ?''', (name,))
             self.db_conn.commit()
             cursor.close()
             self.save_config((name, nick, realname, ident, chans, botop, password))
@@ -261,7 +262,7 @@ class Configurator(object):
     def save_config(self, data):
         """Save changes to the configuration table."""
         cursor = self.db_conn.cursor()
-        cursor.execute('''INSERT INTO settings VALUES (?, ?, ?, ?, ?)''',
+        cursor.execute('''INSERT INTO configs VALUES (?, ?, ?, ?, ?)''',
                        (data[0], data[1], data[2], data[3], data[6],))
         self.db_conn.commit()
         cursor.close()

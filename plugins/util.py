@@ -69,7 +69,7 @@ def command(*args):
 def get_admin(m):
     """Get the hostnames for the bot admins."""
     cursor = m.bot.db_conn.cursor()
-    cursor.execute('''SELECT user_id, nick, setting FROM users WHERE botop = 1''')
+    cursor.execute('''SELECT user_id, nick, config FROM users WHERE botop = 1''')
     botops = cursor.fetchall()
     cursor.close()
     m.bot.response_lock.acquire()
@@ -105,7 +105,7 @@ def get_admin(m):
                                 chan = re.sub(r'[^#]*(?=#)', '', chan)
                                 cursor = m.bot.db_conn.cursor()
                                 cursor.execute('''SELECT chan_id FROM channels WHERE name=?
-                                         AND setting=?''', (chan, op[2]))
+                                         AND config=?''', (chan, op[2]))
                                 data = cursor.fetchone()
                                 cursor.execute('''INSERT INTO users_to_channels
                                          VALUES (?, ?)''',

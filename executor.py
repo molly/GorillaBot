@@ -53,7 +53,7 @@ class Executor(object):
                     if type(msg) is message.Command and msg.admin:
                         cursor = self.bot.db_conn.cursor()
                         cursor.execute('''SELECT nick, user, host FROM users WHERE botop = 1 AND
-                                 setting = ?''', (self.bot.configuration,))
+                                 config = ?''', (self.bot.configuration,))
                         data = cursor.fetchone()
                         cursor.close()
                         if msg.sender != data[0] + "!" + data[1] + "@" + data[2]:

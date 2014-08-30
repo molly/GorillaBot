@@ -38,7 +38,7 @@ def adminlist(m):
 
 @admin("set")
 def setcommand(m):
-    """Adjust the settings on a command."""
+    """Adjust or view the settings on a command."""
     if len(m.line) < 3:
         m.bot.private_message(m.location, "Please format the command: !set [command] [setting]")
     else:
