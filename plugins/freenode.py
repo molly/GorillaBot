@@ -41,6 +41,7 @@ def identify(m):
                 continue
             if 'Invalid' in msg.body:
                 logger.info('Invalid password entered.')
+                break
             elif 'You are now identified' in msg.body:
                 logger.info('You have successfully identified.')
                 identified = True
