@@ -91,10 +91,11 @@ class Configurator(object):
                                password TEXT)''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS channels
                           (chan_id INTEGER PRIMARY KEY,
-                           name TEXT NOT NULL UNIQUE,
+                           name TEXT NOT NULL,
                            joined BOOLEAN NOT NULL CHECK(joined IN(0,1)),
                            setting TEXT,
-                           FOREIGN KEY(setting) REFERENCES settings(name) ON DELETE CASCADE)
+                           FOREIGN KEY(setting) REFERENCES settings(name) ON DELETE CASCADE,
+                           UNIQUE(name, setting) ON CONFLICT REPLACE)
                            ''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS users
                           (user_id INTEGER PRIMARY KEY,
@@ -277,7 +278,7 @@ class Configurator(object):
             for chan in channels:
                 if chan[0] != "#":
                     chan = "#" + chan
-                cursor.execute('''INSERT OR IGNORE INTO channels VALUES (NULL, ?, 0, ?)''',
+                cursor.execute('''INSERT INTO channels VALUES (NULL, ?, 0, ?)''',
                         (chan, data[0]))
         self.db_conn.commit()
         cursor.close()
