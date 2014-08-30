@@ -19,31 +19,31 @@ from plugins.util import admin, command
 
 @command("admins")
 def adminlist(m):
-    """Provide a list of current bot admins."""
-    cursor = m.bot.db_conn.cursor()
-    cursor.execute('''SELECT nick FROM users WHERE botop = 1''')
-    data = cursor.fetchall()
-    cursor.close
-    ops = [x[0] for x in data] 
-    if ops:
-        print(ops)
-        if len(ops) == 1:
-            m.bot.private_message(m.location, "My bot admin is " + ops[0] + ".")
-        else:
-            m.bot.private_message(m.location, "My bot admins are " + ", ".join(ops) + ".")
+  """Provide a list of current bot admins."""
+  cursor = m.bot.db_conn.cursor()
+  cursor.execute('''SELECT nick FROM users WHERE botop = 1''')
+  data = cursor.fetchall()
+  cursor.close
+  ops = [x[0] for x in data] 
+  if ops:
+    print(ops)
+    if len(ops) == 1:
+      m.bot.private_message(m.location, "My bot admin is " + ops[0] + ".")
     else:
-        nick = m.bot.get_setting("nick")
-        m.bot.private_message(m.location, "{0} has no master. {0} is a free bot.".format(nick))
+      m.bot.private_message(m.location, "My bot admins are " + ", ".join(ops) + ".")
+  else:
+    nick = m.bot.get_setting("nick")
+    m.bot.private_message(m.location, "{0} has no master. {0} is a free bot.".format(nick))
 
 
 @admin("set")
 def setcommand(m):
-    """Adjust or view the settings on a command."""
-    if len(m.line) < 3:
-        m.bot.private_message(m.location, "Please format the command: !set [command] [setting]")
-    else:
-        command = m.line[1].lower()
-        setting = m.line[2].lower()
-        m.bot.command_settings[command] = setting
-        m.bot.logger.info("Command \"" + command + "\" set to " + setting + " by " + m.sender + ".")
-        m.bot.private_message(m.location, "Command \"" + command + "\" set to " + setting + ".")
+  """Adjust or view the settings on a command."""
+  if len(m.line) < 3:
+    m.bot.private_message(m.location, "Please format the command: !set [command] [setting]")
+  else:
+    command = m.line[1].lower()
+    setting = m.line[2].lower()
+    m.bot.command_settings[command] = setting
+    m.bot.logger.info("Command \"" + command + "\" set to " + setting + " by " + m.sender + ".")
+    m.bot.private_message(m.location, "Command \"" + command + "\" set to " + setting + ".")
