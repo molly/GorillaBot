@@ -23,5 +23,5 @@ from urllib.request import Request, urlopen, URLError
 
 @command()
 def link(m, urls=None):
-    print(m)
-    print(urls)
+  print(m)
+  print(urls)
