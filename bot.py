@@ -156,21 +156,20 @@ class Bot(object):
     def join(self, chans=None):
         """Join the given channel, list of channels, or if no channel is specified, join any
         channels that exist in the config but are not already joined."""
-        print(chans)
         if chans is None:
             cursor = self.db_conn.cursor()
             cursor.execute('''SELECT name, joined FROM channels WHERE setting = ?''',
                     (self.configuration,))
             data = cursor.fetchall()
             cursor.close()
-            print(data)
             for row in data:
-                print(row)
                 if row[1] == 0:
                     self.logger.info("Joining {0}.".format(row[0]))
                     self.send('JOIN ' + row[0])
                     cursor = self.db_conn.cursor()
-                    cursor.execute('''UPDATE channels SET joined = 1 WHERE name = ?''', (row[0],))
+                    cursor.execute(
+                            '''UPDATE channels SET joined = 1 WHERE name = ? AND setting = ?''',
+                            (row[0], self.configuration))
                     self.db_conn.commit()
                     cursor.close()
         else:
