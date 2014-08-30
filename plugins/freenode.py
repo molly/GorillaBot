@@ -35,6 +35,7 @@ def identify(m):
             except Empty:
                 logger.error("No response from NickServ when trying to identify. Shutting down.")
                 m.bot.shutdown.set()
+                return
             if not isinstance(msg, message.Notice) or msg.sender != \
                     "NickServ!NickServ@services.":
                 ignored_messages.append(msg)
