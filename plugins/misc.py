@@ -23,7 +23,7 @@ def adminlist(m):
   cursor = m.bot.db_conn.cursor()
   cursor.execute('''SELECT nick FROM users WHERE botop = 1''')
   data = cursor.fetchall()
-  cursor.close
+  cursor.close()
   ops = [x[0] for x in data] 
   if ops:
     print(ops)
@@ -39,11 +39,17 @@ def adminlist(m):
 @admin("set")
 def setcommand(m):
   """Adjust or view the settings on a command."""
-  if len(m.line) < 3:
-    m.bot.private_message(m.location, "Please format the command: !set [command] [setting]")
-  else:
-    command = m.line[1].lower()
-    setting = m.line[2].lower()
-    m.bot.command_settings[command] = setting
-    m.bot.logger.info("Command \"" + command + "\" set to " + setting + " by " + m.sender + ".")
-    m.bot.private_message(m.location, "Command \"" + command + "\" set to " + setting + ".")
+  cursor = m.bot.db_conn.cursor()
+  cursor.execute('''SELECT chan_id FROM channels WHERE name = ? and config = ?''',
+    (m.location, m.bot.configuration))
+  data = cursor.fetchone()
+  print(data)
+  chan_id = data[0]
+  print(chan_id)
+  setting = m.line[1].lower()
+  value = m.line[2].lower()
+  cursor.execute('''INSERT INTO settings VALUES (?, ?, ?)''', (setting, value, chan_id))
+  cursor.close
+  m.bot.logger.info("Setting \"" + setting + "\" set to " + value + " in " + m.location +
+    " by " + m.sender + ".")
+  m.bot.private_message(m.location, "Command \"" + command + "\" set to " + setting + ".")
