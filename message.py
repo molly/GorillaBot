@@ -76,6 +76,26 @@ class Command(Message):
                         self.args.append(m.groups())
 
 
+class Notice(Message):
+    """Represent a notice received from the server or another user."""
+
+    def __init__(self, *args):
+        super(Notice, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
+
+    def __str__(self):
+        return "Notice from {0} in {1}: {2}".format(self.sender, self.location, self.body)
+
+    def set_trigger(self):
+        """Set the trigger function if this message warrants a response."""
+        if self.sender == "NickServ!NickServ@services.":
+            if "ACC 1" in self.body:
+                self.trigger = plugins.freenode.identify
+                self.args.append(self)
+                self.needs_own_thread = True
+            elif "ACC" in self.body:
+                print("1")
+                self.trigger = self.bot.join
+
 
 class Numeric(Message):
     """Represent a numeric reply from the server."""
@@ -95,34 +115,14 @@ class Numeric(Message):
 
     def set_trigger(self):
         """Set the trigger function if this message warrants a response."""
-        if self.number == "375":
-            self.trigger = self.bot.join
-        elif self.number == "376":
+        if self.number == "376":
             self.trigger = plugins.util.get_admin
             self.args.append(self)
-        elif self.number in ["396", "403"]:
+        elif self.number == "396":
+            self.trigger = self.bot.join
+        elif self.number in ["403"]:
             # Pass the message along
             self.logger.info(self.body)
-
-
-class Notice(Message):
-    """Represent a notice received from the server or another user."""
-
-    def __init__(self, *args):
-        super(Notice, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
-
-    def __str__(self):
-        return "Notice from {0} in {1}: {2}".format(self.sender, self.location, self.body)
-
-    def set_trigger(self):
-        """Set the trigger function if this message warrants a response."""
-        if self.sender == "NickServ!NickServ@services.":
-            if "ACC 1" in self.body:
-                self.trigger = plugins.freenode.identify
-                self.args.append(self)
-                self.needs_own_thread = True
-            elif "ACC" in self.body:
-                self.trigger = self.bot.join
 
 
 class Operation(Message):

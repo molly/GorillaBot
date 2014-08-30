@@ -89,6 +89,7 @@ class Bot(object):
             self.socket.connect(("chat.freenode.net", 6667))
         except OSError:
             self.logger.error("Unable to connect to IRC server. Check your Internet connection.")
+            self.shutdown.set()
         else:
             if password:
                 self.send("PASS {0}".format(password), hide=True)
@@ -155,13 +156,16 @@ class Bot(object):
     def join(self, chans=None):
         """Join the given channel, list of channels, or if no channel is specified, join any
         channels that exist in the config but are not already joined."""
+        print(chans)
         if chans is None:
             cursor = self.db_conn.cursor()
             cursor.execute('''SELECT name, joined FROM channels WHERE setting = ?''',
                     (self.configuration,))
             data = cursor.fetchall()
             cursor.close()
+            print(data)
             for row in data:
+                print(row)
                 if row[1] == 0:
                     self.logger.info("Joining {0}.".format(row[0]))
                     self.send('JOIN ' + row[0])
@@ -235,9 +239,8 @@ class Bot(object):
 
     def ping(self):
         """Send a ping to the server."""
-        host = self.get_setting("host")
-        self.logger.debug("Pinging {}.".format(host))
-        self.send('PING {}'.format(host))
+        self.logger.debug("Pinging chat.freenode.net.")
+        self.send("PING chat.freenode.net")
 
     def pong(self, server):
         """Respond to a ping from the server."""
