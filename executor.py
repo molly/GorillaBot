@@ -23,50 +23,49 @@ from time import sleep
 
 
 class Executor(object):
-    """Waits for messages to appear in the queue, then executes commands as needed."""
+  """Waits for messages to appear in the queue, then executes commands as needed."""
 
-    def __init__(self, bot, message_q, shutdown):
-        self.bot = bot
-        self.message_q = message_q
-        self.logger = logging.getLogger("GorillaBot")
-        self.shutdown = shutdown
+  def __init__(self, bot, message_q, shutdown):
+    self.bot = bot
+    self.message_q = message_q
+    self.logger = logging.getLogger("GorillaBot")
+    self.shutdown = shutdown
 
-    def loop(self):
-        self.logger.debug("Thread created.")
-        while not self.shutdown.is_set():
-            # Block until a message exists in the queue
-            try:
-                if self.bot.response_lock.locked():
-                    raise threading.ThreadError
-                else:
-                    msg = self.message_q.get(timeout=5)
-            except queue.Empty:
-                # No messages in the queue, continue loop
-                pass
-            except threading.ThreadError:
-                # Wait for other process to release the lock
-                sleep(5)
+  def loop(self):
+    self.logger.debug("Thread created.")
+    while not self.shutdown.is_set():
+      # Block until a message exists in the queue
+      try:
+        if self.bot.response_lock.locked():
+          raise threading.ThreadError
+        else:
+          msg = self.message_q.get(timeout=5)
+      except queue.Empty:
+        # No messages in the queue, continue loop
+        pass
+      except threading.ThreadError:
+        # Wait for other process to release the lock
+        sleep(5)
+      else:
+        print(msg)
+        # If this message has a trigger, execute the function
+        if msg.trigger:
+          if type(msg) is message.Command and msg.admin:
+            cursor = self.bot.db_conn.cursor()
+            cursor.execute('''SELECT nick, user, host FROM users WHERE botop = 1 AND config = ?''',
+              (self.bot.configuration,))
+            data = cursor.fetchone()
+            cursor.close()
+            if msg.sender != data[0] + "!" + data[1] + "@" + data[2]:
+              self.bot.private_message(msg.location, "Please ask a bot operator to perform this"
+                "action for you.")
+              continue
+          if msg.needs_own_thread:
+            # Begin a new thread if necessary
+            threading.Thread(name=msg.trigger.__name__, target=msg.trigger, args=msg.args).start()
+          else:
+            if msg.args:
+              msg.trigger(*msg.args)
             else:
-                print(msg)
-                # If this message has a trigger, execute the function
-                if msg.trigger:
-                    if type(msg) is message.Command and msg.admin:
-                        cursor = self.bot.db_conn.cursor()
-                        cursor.execute('''SELECT nick, user, host FROM users WHERE botop = 1 AND
-                                 config = ?''', (self.bot.configuration,))
-                        data = cursor.fetchone()
-                        cursor.close()
-                        if msg.sender != data[0] + "!" + data[1] + "@" + data[2]:
-                            self.bot.private_message(msg.location, "Please ask a bot operator to "
-                                                                   "perform this action for you.")
-                            continue
-                    if msg.needs_own_thread:
-                        # Begin a new thread if necessary
-                        threading.Thread(name=msg.trigger.__name__, target=msg.trigger,
-                                         args=msg.args).start()
-                    else:
-                        if msg.args:
-                            msg.trigger(*msg.args)
-                        else:
-                            msg.trigger()
-                    self.message_q.task_done()
+              msg.trigger()
+          self.message_q.task_done()
