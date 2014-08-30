@@ -37,7 +37,7 @@ def part(m):
         m.bot.send("PART " + m.location + " " + part_msg)
         m.bot.logger.info("Parting from #" + m.location)
         cursor = m.bot.db_conn.cursor()
-        cursor.execute('''DELETE FROM channels WHERE name = ? AND setting = ?''',
+        cursor.execute('''DELETE FROM channels WHERE name = ? AND config = ?''',
                 (m.location, m.bot.configuration))
         m.bot.db_conn.commit()
         cursor.close()
@@ -52,7 +52,7 @@ def part(m):
     m.bot.send("PART " + channel + " :" + part_msg)
     m.bot.logger.info("Parting from " + channel + ".")
     cursor = m.bot.db_conn.cursor()
-    cursor.execute('''DELETE FROM channels WHERE name = ? AND setting = ?''',
+    cursor.execute('''DELETE FROM channels WHERE name = ? AND config = ?''',
             (channel, m.bot.configuration))
     m.bot.db_conn.commit()
     cursor.close()

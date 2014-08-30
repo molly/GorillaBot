@@ -80,7 +80,7 @@ class Bot(object):
         self.socket = socket.socket()
         self.socket.settimeout(5)
         cursor = self.db_conn.cursor()
-        cursor.execute('''SELECT * FROM settings WHERE name = ?''', (self.configuration,))
+        cursor.execute('''SELECT * FROM configs WHERE name = ?''', (self.configuration,))
         data = cursor.fetchone()
         cursor.close()
         name, nick, realname, ident, password = data
@@ -130,7 +130,7 @@ class Bot(object):
     def get_setting(self, setting):
         """Retrieve the given setting from the database."""
         cursor = self.db_conn.cursor()
-        query = '''SELECT %s FROM settings WHERE name = ?''' % setting
+        query = '''SELECT %s FROM configs WHERE name = ?''' % setting
         cursor.execute(query, (self.configuration,))
         value = cursor.fetchone()
         cursor.close()
@@ -158,7 +158,7 @@ class Bot(object):
         channels that exist in the config but are not already joined."""
         if chans is None:
             cursor = self.db_conn.cursor()
-            cursor.execute('''SELECT name, joined FROM channels WHERE setting = ?''',
+            cursor.execute('''SELECT name, joined FROM channels WHERE config = ?''',
                     (self.configuration,))
             data = cursor.fetchall()
             cursor.close()
@@ -168,7 +168,7 @@ class Bot(object):
                     self.send('JOIN ' + row[0])
                     cursor = self.db_conn.cursor()
                     cursor.execute(
-                            '''UPDATE channels SET joined = 1 WHERE name = ? AND setting = ?''',
+                            '''UPDATE channels SET joined = 1 WHERE name = ? AND config = ?''',
                             (row[0], self.configuration))
                     self.db_conn.commit()
                     cursor.close()
