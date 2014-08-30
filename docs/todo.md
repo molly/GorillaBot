@@ -1,1 +1,0 @@
-- [x] Allow several configurations to be saved
