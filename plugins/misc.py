@@ -63,7 +63,7 @@ def setcommand(m):
   if len(m.line) == 1:
     cursor.execute('''SELECT setting, value FROM settings WHERE chan_id = ?''', (chan_id,))
     data = cursor.fetchall()
-    if data is None:
+    if data == []:
       m.bot.private_message(m.location, "Nothing has been set for {0}.".format(chan))
     else:
       m.bot.private_message(m.location,
@@ -88,3 +88,27 @@ def setcommand(m):
                       .format(setting, value, chan, m.sender))
     m.bot.private_message(m.location,
       '"{0}" set to "{1}" in {2}.'.format(setting, value, chan))
+
+@admin()
+def unset(m):
+  '''Unset a given setting.'''
+  if len(m.line) != 2 and not (len(m.line) == 3 and m.line[2][0] == "#"):
+      m.bot.private_message(m.location,
+        'Poorly-formatted command. Use "!unset setting [#channel]".')
+      return
+  chan = m.location if len(m.line) == 2 else m.line[2]
+  chan_id = m.bot.get_chan_id(chan)
+  if chan_id is None:
+    m.bot.private_message(m.location,
+      "Cannot unset setting for {0}. Do I know about the channel?".format(chan))
+    return
+  cursor = m.bot.db_conn.cursor()
+  cursor.execute('''DELETE FROM settings WHERE setting = ? AND chan_id = ?''',
+    (m.line[1], chan_id))
+  m.bot.db_conn.commit()
+  cursor.close()
+  if cursor.rowcount == 1:
+    m.bot.private_message(m.location, '"{0}" unset for {1}.'.format(m.line[1], chan))
+  else:
+    m.bot.logger.info("Couldn't unset {0} for {1}.".format(m.line[1], chan))
+    m.bot.private_message(m.location, "Cannot unset {0} for {1}.".format(m.line[1], chan))
