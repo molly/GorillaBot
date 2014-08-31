@@ -48,6 +48,8 @@ class Command(Message):
     self.command = self.line[0].strip("!:")
     self.admin = False
     super(Command, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
+    if self.location == self.bot.get_config('nick'):
+      self.location = self.bot.parse_hostmask(self.sender)['nick']
 
   def __str__(self):
     return "Command message from {0} in {1}: {2}".format(self.sender, self.location, self.body)
@@ -93,7 +95,6 @@ class Notice(Message):
         self.args.append(self)
         self.needs_own_thread = True
       elif "ACC" in self.body:
-        print("1")
         self.trigger = self.bot.join
 
 
@@ -182,6 +183,8 @@ class Privmsg(Message):
 
   def __init__(self, *args):
     super(Privmsg, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
+    if self.location == self.bot.get_config('nick'):
+      self.location = self.bot.parse_hostmask(self.sender)['nick']
     self.urls = None
 
   def __str__(self):
