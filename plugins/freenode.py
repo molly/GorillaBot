@@ -22,33 +22,33 @@ from queue import Empty
 
 
 def identify(m):
-  logger = logging.getLogger("GorillaBot")
-  m.bot.response_lock.acquire()
-  identified = False
-  ignored_messages = []
-  while not identified:
-    password = getpass("Please enter your password to identify to NickServ: ")
-    m.bot.private_message('NickServ', 'identify ' + password, True)
-    while True:
-      try:
-        msg = m.bot.message_q.get(True, 120)
-      except Empty:
-        logger.error("No response from NickServ when trying to identify. Shutting down.")
-        m.bot.shutdown.set()
-        return
-      if not isinstance(msg, message.Notice) or msg.sender != "NickServ!NickServ@services.":
-        ignored_messages.append(msg)
-        continue
-      if 'Invalid' in msg.body:
-        logger.info('Invalid password entered.')
-        break
-      elif 'You are now identified' in msg.body:
-        logger.info('You have successfully identified.')
-        identified = True
-        break
-      else:
-        ignored_messages.append(msg)
-  for msg in ignored_messages:
-    m.bot.message_q.put(msg)
-  m.bot.response_lock.release()
-  m.bot.join()
+    logger = logging.getLogger("GorillaBot")
+    m.bot.response_lock.acquire()
+    identified = False
+    ignored_messages = []
+    while not identified:
+        password = getpass("Please enter your password to identify to NickServ: ")
+        m.bot.private_message('NickServ', 'identify ' + password, True)
+        while True:
+            try:
+                msg = m.bot.message_q.get(True, 120)
+            except Empty:
+                logger.error("No response from NickServ when trying to identify. Shutting down.")
+                m.bot.shutdown.set()
+                return
+            if not isinstance(msg, message.Notice) or msg.sender != "NickServ!NickServ@services.":
+                ignored_messages.append(msg)
+                continue
+            if 'Invalid' in msg.body:
+                logger.info('Invalid password entered.')
+                break
+            elif 'You are now identified' in msg.body:
+                logger.info('You have successfully identified.')
+                identified = True
+                break
+            else:
+                ignored_messages.append(msg)
+    for msg in ignored_messages:
+        m.bot.message_q.put(msg)
+    m.bot.response_lock.release()
+    m.bot.join()

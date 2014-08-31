@@ -5,7 +5,7 @@
 # restriction, including without limitation the rights to use, copy, modify, merge, publish,
 # distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
 # Software is furnished to do so, subject to the following conditions:
-#
+
 # The above copyright notice and this permission notice shall be included in all copies or
 # substantial portions of the Software.
 #
@@ -22,25 +22,25 @@ from urllib.request import Request, urlopen, URLError
 
 @command()
 def link(m, urls=None):
-  if not urls:
-    match = re.findall(r'(https?://\S+)', m.body)
-    if match:
-      urls = match
-    else:
-      m.bot.private_message(m.location, "Please provide a link.")
-      return
-  for url in urls:
-    m.bot.logger.info("Retriving link for {}.".format(url))
-    request = Request(url, headers=m.bot.header)
-    try:
-      html = urlopen(request)
-    except URLError as e:
-      m.bot.logger.info("{0}: {1}".format(url, e.reason))
-    else:
-      try:
-        match = re.search(r'<title>(.+?)</title>', html.read().decode('utf-8'))
-      except UnicodeDecodeError as e:
-        m.bot.logger.info("{0}: {1}".format(url, e.reason))
-      else:
+    if not urls:
+        match = re.findall(r'(https?://\S+)', m.body)
         if match:
-          m.bot.private_message(m.location, re.sub('[\n\r\t]', ' ', match.group(1)))
+            urls = match
+        else:
+            m.bot.private_message(m.location, "Please provide a link.")
+            return
+    for url in urls:
+        m.bot.logger.info("Retriving link for {}.".format(url))
+        request = Request(url, headers=m.bot.header)
+        try:
+            html = urlopen(request)
+        except URLError as e:
+            m.bot.logger.info("{0}: {1}".format(url, e.reason))
+        else:
+            try:
+                match = re.search(r'<title>(.+?)</title>', html.read().decode('utf-8'))
+            except UnicodeDecodeError as e:
+                m.bot.logger.info("{0}: {1}".format(url, e.reason))
+            else:
+                if match:
+                    m.bot.private_message(m.location, re.sub('[\n\r\t]', ' ', match.group(1)))

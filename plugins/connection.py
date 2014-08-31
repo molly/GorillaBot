@@ -17,42 +17,44 @@
 
 from plugins.util import admin
 
+
 @admin()
 def join(m):
-  """Join a channel."""
-  if len(m.line) == 1:
-    m.bot.private_message(m.location, "Please specify a channel to join.")
-  else:
-    chan = m.line[1]
-    if chan[0] != "#":
-      chan = "#" + chan
-    m.bot.join(chan)
-    m.bot.logger.info("Joining " + chan)
+    """Join a channel."""
+    if len(m.line) == 1:
+        m.bot.private_message(m.location, "Please specify a channel to join.")
+    else:
+        chan = m.line[1]
+        if chan[0] != "#":
+            chan = "#" + chan
+        m.bot.join(chan)
+        m.bot.logger.info("Joining " + chan)
+
 
 @admin("leave")
 def part(m):
-  """Part from the specified channel."""
-  part_msg = ""
-  if len(m.line) == 1:
-    m.bot.send("PART " + m.location + " " + part_msg)
-    m.bot.logger.info("Parting from #" + m.location)
+    """Part from the specified channel."""
+    part_msg = ""
+    if len(m.line) == 1:
+        m.bot.send("PART " + m.location + " " + part_msg)
+        m.bot.logger.info("Parting from #" + m.location)
+        cursor = m.bot.db_conn.cursor()
+        cursor.execute('''DELETE FROM channels WHERE name = ? AND config = ?''',
+                       (m.location, m.bot.configuration))
+        m.bot.db_conn.commit()
+        cursor.close()
+        return
+    channel = ""
+    if len(m.line) > 2:
+        part_msg = " ".join(m.line[2:])
+    if m.line[1][0] != "#":
+        channel = "#" + m.line[1]
+    else:
+        channel = m.line[1]
+    m.bot.send("PART " + channel + " :" + part_msg)
+    m.bot.logger.info("Parting from " + channel + ".")
     cursor = m.bot.db_conn.cursor()
     cursor.execute('''DELETE FROM channels WHERE name = ? AND config = ?''',
-      (m.location, m.bot.configuration))
+                   (channel, m.bot.configuration))
     m.bot.db_conn.commit()
     cursor.close()
-    return
-  channel = ""
-  if len(m.line) > 2:
-    part_msg = " ".join(m.line[2:])
-  if m.line[1][0] != "#":
-    channel = "#" + m.line[1]
-  else:
-    channel = m.line[1]
-  m.bot.send("PART " + channel + " :" + part_msg)
-  m.bot.logger.info("Parting from " + channel + ".")
-  cursor = m.bot.db_conn.cursor()
-  cursor.execute('''DELETE FROM channels WHERE name = ? AND config = ?''',
-    (channel, m.bot.configuration))
-  m.bot.db_conn.commit()
-  cursor.close()
