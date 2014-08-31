@@ -141,7 +141,7 @@ class Operation(Message):
   def set_trigger(self):
     if self.type == "MODE":
       lowerbody = self.body.lower()
-      nick = self.bot.get_setting("nick")
+      nick = self.bot.get_config("nick")
       lowernick = nick.lower()
       if "+o {0}".format(lowernick) == lowerbody:
         self.logger.info("Opped in {0}.".format(self.location))
