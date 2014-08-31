@@ -229,7 +229,7 @@ class Configurator(object):
     password = "[hidden]" if data[4] else "[none]"
     print(
       "\n------------------------------\n Nickname: {0}\n Real name: {1}\n Identifier: {2}\n"
-      "Channels: {3}\n Bot operator(s): {4}\n Server password: {5}\n"
+      " Channels: {3}\n Bot operator(s): {4}\n Server password: {5}\n"
       "------------------------------\n"
       .format(data[1], data[2], data[3], chans, botops, password))
 

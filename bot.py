@@ -162,10 +162,10 @@ class Bot(object):
     """Initialize the bot. Parse command-line options, configure, and set up logging."""
     self.setup_logging()
     print('\n  ."`".'
-        '\n / _=_ \\ \x1b[32m    __   __   __  . .   .   __   __   __  '
-        '___\x1b[0m\n(,(oYo),) \x1b[32m  / _` /  \ |__) | |   |  |__| '
-        '|__) /  \  |  \x1b[0m\n|   "   | \x1b[32m  \__| \__/ |  \ | |___'
-        '|___ |  | |__) \__/  |  \x1b[0m \n \(\_/)/\n')
+        '\n / _=_ \\ \x1b[32m    __   __   __  . .   .    __   __   __  '
+        '___\x1b[0m\n(,(oYo),) \x1b[32m  / _` /  \ |__) | |   |   |__| '
+        '|__) /  \  |  \x1b[0m\n|   "   | \x1b[32m  \__| \__/ |  \ | |__ '
+        '|__ |  | |__) \__/  |  \x1b[0m \n \(\_/)/\n')
     try:
       self.configuration = Configurator(self.db_conn).configure()
     except KeyboardInterrupt:
