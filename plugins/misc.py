@@ -55,7 +55,7 @@ def setcommand(m):
   chan_id = m.bot.get_chan_id(chan)
   if chan_id is None:
     m.bot.private_message(m.location,
-      "Cannot enter setting for {0}. Do I know about the channel?".format(chan))
+      "Cannot access settings for {0}. Do I know about the channel?".format(chan))
     return
 
   # Respond to command
