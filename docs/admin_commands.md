@@ -22,5 +22,9 @@ Joins the specified channel. Only joins one channel at a time.
 Parts from the specified channel, or the current channel if unspecified. Only parts from one channel at a time. If a message is included, this will be used as the part message.
 
 ### set
-    !set [#channel] [setting]
-Change settings for a command. Allowed settings for each command are viewable in the command documentation.
+    !set setting value [#channel]
+Change settings for a command. Allowed and default settings for a command are viewable in the command's documentation. Settings can only be edited for channels the bot is joined to, or has been joined to in the past.
+
+### unset
+    !unset setting [#channel]
+Removes the setting for a channel. This will revert to the default value. Settings can only be edited for channels the bot is joined to, or has been joined to in the past.
