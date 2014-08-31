@@ -66,12 +66,12 @@ class Command(Message):
       self.trigger = eval(self.bot.commands[self.command])
       self.args.append(self)
     else:
-      m = re.search(r'(https?://\S+)', self.body)
+      m = re.findall(r'(https?://\S+)', self.body)
       if m:
         self.needs_own_thread = True
         self.trigger = plugins.link.link
         self.args.append(self)
-        self.args.append(m.groups())
+        self.args.append(m)
 
 
 class Notice(Message):
@@ -195,9 +195,9 @@ class Privmsg(Message):
   def set_trigger(self):
     link_setting = 'auto' if self.is_pm else self.bot.get_setting('link', self.location)
     if link_setting == "auto":
-      m = re.search(r'(https?://\S+)', self.body)
+      m = re.findall(r'(https?://\S+)', self.body)
       if m:
         self.needs_own_thread = True
         self.trigger = plugins.link.link
         self.args.append(self)
-        self.args.append(m.groups())
+        self.args.append(m)

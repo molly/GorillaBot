@@ -17,18 +17,30 @@
 
 from plugins.util import command
 import re
-from urllib.parse import urlparse
 from urllib.request import Request, urlopen, URLError
 
 
 @command()
 def link(m, urls=None):
   if not urls:
-    match = re.search(r'(https?://\S+)', m.body)
+    match = re.findall(r'(https?://\S+)', m.body)
     if match:
-      urls = match.groups()
+      urls = match
     else:
       m.bot.private_message(m.location, "Please provide a link.")
       return
   for url in urls:
-    print(url)
+    m.bot.logger.info("Retriving link for {}.".format(url))
+    request = Request(url, headers=m.bot.header)
+    try:
+      html = urlopen(request)
+    except URLError as e:
+      m.bot.logger.info("{0}: {1}".format(url, e.reason))
+    else:
+      try:
+        match = re.search(r'<title>(.+?)</title>', html.read().decode('utf-8'))
+      except UnicodeDecodeError as e:
+        m.bot.logger.info("{0}: {1}".format(url, e.reason))
+      else:
+        if match:
+          m.bot.private_message(m.location, re.sub('[\n\r\t]', ' ', match.group(1)))
