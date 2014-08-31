@@ -115,7 +115,7 @@ class Bot(object):
       elif line[1] in ["MODE", "JOIN", "PART"]:
         message = Operation(self, *line)
       elif line[1] == "PRIVMSG":
-        nick = self.get_setting("nick")
+        nick = self.get_config("nick")
         if (line[2] == nick or line[3][1] == "!" or line[3].startswith(":" + nick)):
           message = Command(self, *line)
         else:
@@ -125,14 +125,38 @@ class Bot(object):
     else:
       print(line)
 
-  def get_setting(self, setting):
-    """Retrieve the given setting from the database."""
+  def get_chan_id(self, channel):
+    '''Get the chan_id for the given channel.'''
     cursor = self.db_conn.cursor()
-    query = '''SELECT %s FROM configs WHERE name = ?''' % setting
+    cursor.execute('''SELECT chan_id FROM channels WHERE name = ? and config = ?''',
+        (channel, self.configuration))
+    data = cursor.fetchone()
+    cursor.close()
+    if data is None:
+      return data
+    else:
+      return data[0]
+
+  def get_config(self, config):
+    """Retrieve the given configuration setting from the database."""
+    cursor = self.db_conn.cursor()
+    query = '''SELECT %s FROM configs WHERE name = ?''' % config
     cursor.execute(query, (self.configuration,))
     value = cursor.fetchone()
     cursor.close()
     return value[0] if value else None
+
+  def get_setting(self, setting, chan):
+    """Retrieve the given setting from the database."""
+    chan_id = self.get_chan_id(chan)
+    if chan_id is None:
+      raise LookupError("{} doesn't exist in channels table.".format(chan))
+    cursor = self.db_conn.cursor()
+    cursor.execute('''SELECT value FROM settings WHERE chan_id = ? AND setting = ?''',
+        (chan_id, setting))
+    data = cursor.fetchone()
+    cursor.close()
+    return data[0] if data else None
 
   def initialize(self):
     """Initialize the bot. Parse command-line options, configure, and set up logging."""
