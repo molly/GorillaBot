@@ -33,7 +33,7 @@ class Message(object):
     self.trigger = None       # Command that this message triggers
     self.args = []          # Args to pass to trigger command
     self.needs_own_thread = False   # Does this trigger need its own thread?
-    self.set_trigger()
+    self.is_pm = False
 
   def set_trigger(self):
     """Set the trigger function if this message warrants a response."""
@@ -50,6 +50,8 @@ class Command(Message):
     super(Command, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
     if self.location == self.bot.get_config('nick'):
       self.location = self.bot.parse_hostmask(self.sender)['nick']
+      self.is_pm = True
+    self.set_trigger()
 
   def __str__(self):
     return "Command message from {0} in {1}: {2}".format(self.sender, self.location, self.body)
@@ -64,18 +66,12 @@ class Command(Message):
       self.trigger = eval(self.bot.commands[self.command])
       self.args.append(self)
     else:
-      try:
-        link_setting = self.bot.command_settings["link"]
-      except KeyError:
-        pass
-      else:
-        if link_setting == "auto":
-          m = re.search(r'(https?://\S+)', self.body)
-          if m:
-            self.needs_own_thread = True
-            self.trigger = plugins.link.link
-            self.args.append(self)
-            self.args.append(m.groups())
+      m = re.search(r'(https?://\S+)', self.body)
+      if m:
+        self.needs_own_thread = True
+        self.trigger = plugins.link.link
+        self.args.append(self)
+        self.args.append(m.groups())
 
 
 class Notice(Message):
@@ -83,6 +79,7 @@ class Notice(Message):
 
   def __init__(self, *args):
     super(Notice, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
+    self.set_trigger()
 
   def __str__(self):
     return "Notice from {0} in {1}: {2}".format(self.sender, self.location, self.body)
@@ -109,6 +106,7 @@ class Numeric(Message):
       super(Numeric, self).__init__(args[0], args[3], args[1][1:], None)
     else:
       super(Numeric, self).__init__(args[0], None, args[1][1:], None)
+    self.set_trigger()
 
   def __str__(self):
     return "Numeric message {0}: {1}, from {2} in {3}".format(self.number, self.body, self.sender,
@@ -135,6 +133,7 @@ class Operation(Message):
       super(Operation, self).__init__(args[0], args[3], args[1], None)
     else:
       super(Operation, self).__init__(args[0], args[3], args[1], " ".join(args[4:]))
+    self.set_trigger()
 
   def __str__(self):
     return "{0} from {1} in {2}: {3}".format(self.type, self.sender, self.location, self.body)
@@ -164,6 +163,7 @@ class Ping(Message):
     else:
       self.type = args[2]
       super(Ping, self).__init__(args[0], None, args[1][1:], None)
+    self.set_trigger()
 
   def __str__(self):
     return "{0} from {1}.".format(self.type, self.sender)
@@ -185,21 +185,19 @@ class Privmsg(Message):
     super(Privmsg, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
     if self.location == self.bot.get_config('nick'):
       self.location = self.bot.parse_hostmask(self.sender)['nick']
+      self.is_pm = True
     self.urls = None
+    self.set_trigger()
 
   def __str__(self):
     return "Privmsg from {0} in {1}: {2}".format(self.sender, self.location, self.body)
 
   def set_trigger(self):
-    try:
-      link_setting = self.bot.command_settings["link"]
-    except KeyError:
-      pass
-    else:
-      if link_setting == "auto":
-        m = re.search(r'(https?://\S+)', self.body)
-        if m:
-          self.needs_own_thread = True
-          self.trigger = plugins.link.link
-          self.args.append(self)
-          self.args.append(m.groups())
+    link_setting = 'auto' if self.is_pm else self.bot.get_setting('link', self.location)
+    if link_setting == "auto":
+      m = re.search(r'(https?://\S+)', self.body)
+      if m:
+        self.needs_own_thread = True
+        self.trigger = plugins.link.link
+        self.args.append(self)
+        self.args.append(m.groups())

@@ -50,7 +50,6 @@ class Bot(object):
     self.channels = []          # Channels to which I'm joined
     self.opped_channels = []      # Channels in which I'm opped
     self.ops = []
-    self.command_settings = {}
     self.header = {"User-Agent": "GorillaBot (https://github.com/molly/GorillaBot)"}
     self.users = {}
     #TODO: Replace

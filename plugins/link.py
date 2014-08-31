@@ -23,5 +23,12 @@ from urllib.request import Request, urlopen, URLError
 
 @command()
 def link(m, urls=None):
-  print(m)
-  print(urls)
+  if not urls:
+    match = re.search(r'(https?://\S+)', m.body)
+    if match:
+      urls = match.groups()
+    else:
+      m.bot.private_message(m.location, "Please provide a link.")
+      return
+  for url in urls:
+    print(url)
