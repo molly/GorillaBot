@@ -51,6 +51,10 @@ class Bot(object):
 
         self.initialize()
 
+    def action(self, target, message):
+        """Perform an action to target on the server."""
+        self.private_message(target,  "\x01ACTION " + message + "\x01")
+
     def caffeinate(self):
         """Make sure the connection stays open."""
         now = time()

@@ -119,3 +119,11 @@ def get_admin(m):
     m.bot.response_lock.release()
     for msg in ignored_messages:
         m.bot.message_q.put(msg)
+
+def humanize_list(l):
+    if len(l) == 1:
+        return l[0]
+    elif len(l) == 2:
+        return "{0} and {1}".format(l[0], l[1])
+    else:
+        return ", ".join(l[:-1]) + ", and " + l[-1]
