@@ -18,7 +18,7 @@
 from plugins.util import admin, command
 
 
-@command("admins")
+@command("admins", "botops", "oplist")
 def adminlist(m):
     """Provide a list of current bot admins."""
     cursor = m.bot.db_conn.cursor()
@@ -27,7 +27,6 @@ def adminlist(m):
     cursor.close()
     ops = [x[0] for x in data]
     if ops:
-        print(ops)
         if len(ops) == 1:
             m.bot.private_message(m.location, "My bot admin is " + ops[0] + ".")
         else:
@@ -36,6 +35,31 @@ def adminlist(m):
         nick = m.bot.get_config("nick")
         m.bot.private_message(m.location, "{0} has no master. {0} is a free bot.".format(nick))
 
+@command("admincommandlist")
+def admincommands(m):
+    """Provide a list of admin-only commands."""
+    commands = [key for key in m.bot.admin_commands.keys() if not m.bot.admin_commands[key][1]]
+    commands.sort()
+    if len(commands) == 0:
+        m.bot.private_message(m.location, "I have no available admin commands.")
+    elif len(commands) == 1:
+        m.bot.private_message(m.location, "My available admin command is {0}.".format(commands[0]))
+    else:
+        m.bot.private_message(m.location,
+                              "My available admin commands are {0}.".format(", ".join(commands)))
+
+@command("commandlist")
+def commands(m):
+    """Provide a list of commands available to all users."""
+    commands = [key for key in m.bot.commands.keys() if not m.bot.commands[key][1]]
+    commands.sort()
+    if len(commands) == 0:
+        m.bot.private_message(m.location, "I have no available commands.")
+    elif len(commands) == 1:
+        m.bot.private_message(m.location, "My available command is {0}.".format(commands[0]))
+    else:
+        m.bot.private_message(m.location,
+                              "My available commands are {0}.".format(", ".join(commands)))
 
 @admin("set")
 def setcommand(m):

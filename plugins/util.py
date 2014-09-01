@@ -35,8 +35,8 @@ def admin(*args):
         command_name = func.__module__ + '.' + func.__name__
         if args:
             for name in args:
-                commands[name] = command_name
-        commands[func.__name__] = command_name
+                commands[name] = (command_name, True)
+        commands[func.__name__] = (command_name, False)
         with open(path, 'wb') as pickle_file:
             pickle.dump(commands, pickle_file)
         return func
@@ -57,8 +57,8 @@ def command(*args):
         command_name = func.__module__ + '.' + func.__name__
         if args:
             for name in args:
-                commands[name] = command_name
-        commands[func.__name__] = command_name
+                commands[name] = (command_name, True)
+        commands[func.__name__] = (command_name, False)
         with open(path, 'wb') as pickle_file:
             pickle.dump(commands, pickle_file)
         return func
