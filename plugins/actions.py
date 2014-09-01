@@ -22,20 +22,26 @@ import re
 @command("hugs", "glomp")
 def hug(m):
     """Hugs the specified user or channel in general."""
-    match = re.match(r':!(?:\w+) ?(\w+)?(?: and | |, )?((?!and)\w+)?(?:,? and |, | )?((?!and)\w+)?',
-                     m.body)
-    users = [x for x in match.groups() if x] if match else []
-    if users == []:
-        m.bot.action(m.location, "distributes {0} evenly among the channel".format(_get_hug(m)))
+    if m.is_pm:
+        _hug_back(m)
     else:
-        bot_nick = m.bot.get_config('nick')
-        for user in users:
-            if user.lower() == bot_nick.lower():
-                sender_nick = m.bot.parse_hostmask(m.sender)['nick']
-                m.bot.action(m.location, "{0} {1} back".format(_get_hug(m), sender_nick))
-                users.remove(user)
-        if users != []:
-            m.bot.action(m.location, "{0} {1}".format(_get_hug(m), humanize_list(users)))
+        match = re.match(
+            r':!(?:\w+) ?(\w+)?(?: and | |, )?((?!and)\w+)?(?:,? and |, | )?((?!and)\w+)?', m.body)
+        users = [x for x in match.groups() if x] if match else []
+        if users == []:
+            m.bot.action(m.location, "distributes {0} evenly among the channel".format(_get_hug(m)))
+        else:
+            bot_nick = m.bot.get_config('nick')
+            for user in users:
+                if user.lower() == bot_nick.lower():
+                    _hug_back(m)
+                    users.remove(user)
+            if users != []:
+                m.bot.action(m.location, "{0} {1}".format(_get_hug(m), humanize_list(users)))
+
+def _hug_back(m):
+    sender_nick = m.bot.parse_hostmask(m.sender)['nick']
+    m.bot.action(m.location, "{0} {1} back".format(_get_hug(m), sender_nick))
 
 def _get_hug(m):
     with open(m.bot.base_path + '/plugins/responses/hugs.txt', 'r') as hugs:
