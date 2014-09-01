@@ -36,3 +36,8 @@ Provide information about the given link.
     
 #### Settings
 * `auto` - All links entered in the chat will be parsed, regardless of whether they're prefaced with `!link`.
+
+### xkcd
+    !xkcd [number|query]
+    !relevantxkcd [number|query]
+Without any arguments, this provides a random xkcd comic. When a number is supplied, it tries to return the xkcd comic with that given number. When a query string is supplied, it tries to return the xkcd comic that most closely matches that query.
