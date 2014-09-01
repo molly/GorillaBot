@@ -47,7 +47,117 @@
 <li>Run <code>python3 bot.py</code> from the source directory. This will step you through configuring the bot. If you already have already configured the bot, you can use that configuration or create a new one.</li>
 <li>Enter any information when prompted.</li>
 <li>Once the bot has successfully connected, command the bot using <a href="https://github.com/mollywhite/GorillaBot/blob/master/docs/commands.md">these commands</a>. There are also a number of <a href="https://github.com/molly/GorillaBot/blob/rewrite/docs/admin_commands.md">admin commands</a> available to bot operators.</li>
-</ol>
+</ol><h1>
+<a name="commanding-the-bot" class="anchor" href="#commanding-the-bot"><span class="octicon octicon-link"></span></a>Commanding the bot</h1>
+
+<h2>
+<a name="all-user-commands" class="anchor" href="#all-user-commands"><span class="octicon octicon-link"></span></a>All-user commands</h2>
+
+<p>These are the commands that are available to all users.</p>
+
+<p>The bot receives commands in one of three ways:</p>
+
+<ol>
+<li>Detecting a word preceded by an exclamation point: <code>!command</code><br>
+</li>
+<li>Receiving a message addressed to it directly: <code>GorillaBot: command</code> or <code>GorillaBot: !command</code><br>
+</li>
+<li>Receiving a command in a private message: <code>/msg GorillaBot command</code>
+</li>
+</ol><p>In the examples below, I use the <code>!command</code> syntax, but the other two would work equally well.</p>
+
+<h3>
+<a name="admincommands" class="anchor" href="#admincommands"><span class="octicon octicon-link"></span></a>admincommands</h3>
+
+<pre><code>!admincommands
+!admincommandlist
+</code></pre>
+
+<p>Say the available admin-only commands. This does not display command aliases.</p>
+
+<h3>
+<a name="adminlist" class="anchor" href="#adminlist"><span class="octicon octicon-link"></span></a>adminlist</h3>
+
+<pre><code>!adminlist
+</code></pre>
+
+<p>Say the current bot operators.</p>
+
+<h3>
+<a name="commands" class="anchor" href="#commands"><span class="octicon octicon-link"></span></a>commands</h3>
+
+<pre><code>!commands
+!commandlist
+</code></pre>
+
+<p>Say the available admin-only commands. This does not display command aliases.</p>
+
+<h3>
+<a name="link" class="anchor" href="#link"><span class="octicon octicon-link"></span></a>link</h3>
+
+<pre><code>!link [url]
+</code></pre>
+
+<p>Provide information about the given link.</p>
+
+<h4>
+<a name="settings" class="anchor" href="#settings"><span class="octicon octicon-link"></span></a>Settings</h4>
+
+<ul>
+<li>
+<code>auto</code> - All links entered in the chat will be parsed, regardless of whether they're prefaced with <code>!link</code>.</li>
+</ul><h3>
+<a name="xkcd" class="anchor" href="#xkcd"><span class="octicon octicon-link"></span></a>xkcd</h3>
+
+<pre><code>!xkcd [number|query]
+!relevantxkcd [number|query]
+</code></pre>
+
+<p>Without any arguments, this provides a random xkcd comic. When a number is supplied, it tries to return the xkcd comic with that given number. When a query string is supplied, it tries to return the xkcd comic that most closely matches that query.</p>
+
+<h2>
+<a name="admin-only-commands" class="anchor" href="#admin-only-commands"><span class="octicon octicon-link"></span></a>Admin-only commands</h2>
+
+<h3>
+<a name="join" class="anchor" href="#join"><span class="octicon octicon-link"></span></a>join</h3>
+
+<pre><code>!join #channel
+</code></pre>
+
+<p>Joins the specified channel. Only joins one channel at a time.</p>
+
+<h3>
+<a name="part" class="anchor" href="#part"><span class="octicon octicon-link"></span></a>part</h3>
+
+<pre><code>!part [#channel] [message]
+</code></pre>
+
+<p>Parts from the specified channel, or the current channel if unspecified. Only parts from one channel at a time. If a message is included, this will be used as the part message.</p>
+
+<h3>
+<a name="quit" class="anchor" href="#quit"><span class="octicon octicon-link"></span></a>quit</h3>
+
+<pre><code>!quit [message]
+!shutdown [message]
+</code></pre>
+
+<p>Quits the bot from the network and shuts down.</p>
+
+<h3>
+<a name="set" class="anchor" href="#set"><span class="octicon octicon-link"></span></a>set</h3>
+
+<pre><code>!set setting value [#channel]
+</code></pre>
+
+<p>Change settings for a command. Allowed and default settings for a command are viewable in the command's documentation. Settings can only be edited for channels the bot is joined to, or has been joined to in the past.</p>
+
+<h3>
+<a name="unset" class="anchor" href="#unset"><span class="octicon octicon-link"></span></a>unset</h3>
+
+<pre><code>!unset setting [#channel]
+</code></pre>
+
+<p>Removes the setting for a channel. This will revert to the default value. Settings can only be edited for channels the bot is joined to, or has been joined to in the past.</p>
       </section>
     </div>
 
