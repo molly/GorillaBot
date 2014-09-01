@@ -21,6 +21,11 @@ Joins the specified channel. Only joins one channel at a time.
     !part [#channel] [message]
 Parts from the specified channel, or the current channel if unspecified. Only parts from one channel at a time. If a message is included, this will be used as the part message.
 
+### quit
+    !quit [message]
+    !shutdown [message]
+Quits the bot from the network and shuts down.
+
 ### set
     !set setting value [#channel]
 Change settings for a command. Allowed and default settings for a command are viewable in the command's documentation. Settings can only be edited for channels the bot is joined to, or has been joined to in the past.
