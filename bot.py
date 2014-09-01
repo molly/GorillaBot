@@ -47,20 +47,8 @@ class Bot(object):
         self.socket = None
         self.message_q = queue.Queue()
         self.executor = Executor(self, self.message_q, self.shutdown)
-        self.channels = []  # Channels to which I'm joined
-        self.opped_channels = []  # Channels in which I'm opped
-        self.ops = []
         self.header = {"User-Agent": "GorillaBot (https://github.com/molly/GorillaBot)"}
-        self.users = {}
-        #TODO: Replace
 
-        # Initialize bot
-        if not os.path.isdir(self.base_path + "/db"):
-            os.makedirs(self.base_path + "/db")
-        self.db_conn = sqlite3.connect(self.base_path + '/db/GorillaBot.db',
-                                       check_same_thread=False)
-        self.admin_commands, self.commands = self.load_commands()
-        #TODO: Replace
         self.initialize()
 
     def caffeinate(self):
@@ -159,6 +147,11 @@ class Bot(object):
 
     def initialize(self):
         """Initialize the bot. Parse command-line options, configure, and set up logging."""
+        if not os.path.isdir(self.base_path + "/db"):
+            os.makedirs(self.base_path + "/db")
+        self.db_conn = sqlite3.connect(self.base_path + '/db/GorillaBot.db',
+                                       check_same_thread=False)
+        self.admin_commands, self.commands = self.load_commands()
         self.setup_logging()
         print('\n  ."`".'
               '\n / _=_ \\ \x1b[32m    __   __   __  . .   .    __   __   __  '
