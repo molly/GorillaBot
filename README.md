@@ -7,8 +7,8 @@ __Status:__ Stable<br />
 __Version:__ 2.0
 
 ## Installation
-_Download code from the `master` branch. Code in the `rewrite` branch is often incomplete and non-functional._
+_Download code from the `master` branch. Code in the `development` branch is often incomplete and non-functional._
 
 1. Run `python3 bot.py` from the source directory. This will step you through configuring the bot. If you already have already configured the bot, you can use that configuration or create a new one.
 2. Enter any information when prompted.
-3. Once the bot has successfully connected, command the bot using [these commands](https://github.com/mollywhite/GorillaBot/blob/master/docs/commands.md). There are also a number of [admin commands](https://github.com/molly/GorillaBot/blob/rewrite/docs/admin_commands.md) available to bot operators.
+3. Once the bot has successfully connected, command the bot via IRC. There are also a number of admin commands available to bot operators. These are outlined in the [documentation](http://molly.github.io/GorillaBot/).
