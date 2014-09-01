@@ -32,12 +32,7 @@ Say the available admin-only commands. This does not display command aliases.
 ### link
     !link [url]
 
-Provide information about the given link. By default it formats links as "Link: - [page title]", but it provides richer information about the following domains:
-
-* twitch.tv
-* youtube.com
-* imgur.com
-* reddit.com
+Provide information about the given link.
     
 #### Settings
 * `auto` - All links entered in the chat will be parsed, regardless of whether they're prefaced with `!link`.
