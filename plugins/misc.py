@@ -15,7 +15,7 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from plugins.util import admin, command
+from plugins.util import admin, command, humanize_list
 
 
 @command("admins", "botops", "oplist")
@@ -30,7 +30,7 @@ def adminlist(m):
         if len(ops) == 1:
             m.bot.private_message(m.location, "My bot admin is " + ops[0] + ".")
         else:
-            m.bot.private_message(m.location, "My bot admins are " + ", ".join(ops) + ".")
+            m.bot.private_message(m.location, "My bot admins are " + humanize_list(ops))
     else:
         nick = m.bot.get_config("nick")
         m.bot.private_message(m.location, "{0} has no master. {0} is a free bot.".format(nick))
@@ -46,7 +46,8 @@ def admincommands(m):
         m.bot.private_message(m.location, "My available admin command is {0}.".format(commands[0]))
     else:
         m.bot.private_message(m.location,
-                              "My available admin commands are {0}.".format(", ".join(commands)))
+                              "My available admin commands are {0}."
+                              .format(humanize_list(commands)))
 
 @command("commandlist")
 def commands(m):
@@ -59,7 +60,8 @@ def commands(m):
         m.bot.private_message(m.location, "My available command is {0}.".format(commands[0]))
     else:
         m.bot.private_message(m.location,
-                              "My available commands are {0}.".format(", ".join(commands)))
+                              "My available commands are {0}."
+                              .format(humanize_list(commands)))
 
 @admin("set")
 def setcommand(m):

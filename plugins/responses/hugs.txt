@@ -1,0 +1,7 @@
+hugs
+tackles
+flying-tackles
+glomps
+snuggles
+cuddles
+tackle-glomps
