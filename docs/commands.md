@@ -12,10 +12,22 @@ In the examples below, I use the `!command` syntax, but the other two would work
 
 ##Commands
 
+### admincommands
+    !admincommands
+    !admincommandlist
+
+Say the available admin-only commands. This does not display command aliases.
+
 ### adminlist
     !adminlist
 
 Say the current bot operators.
+
+### commands
+    !commands
+    !commandlist
+
+Say the available admin-only commands. This does not display command aliases.
 
 ### link
     !link [url]
