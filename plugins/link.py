@@ -43,4 +43,5 @@ def link(m, urls=None):
                 m.bot.logger.info("{0}: {1}".format(url, e.reason))
             else:
                 if match:
-                    m.bot.private_message(m.location, re.sub('[\n\r\t]', ' ', match.group(1)))
+                    m.bot.private_message(m.location, "Link: " +
+                                          re.sub('[\n\r\t]', ' ', match.group(1)))
