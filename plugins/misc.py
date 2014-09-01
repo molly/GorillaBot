@@ -41,12 +41,16 @@ def admincommands(m):
     commands = [key for key in m.bot.admin_commands.keys() if not m.bot.admin_commands[key][1]]
     commands.sort()
     if len(commands) == 0:
-        m.bot.private_message(m.location, "I have no available admin commands.")
+        m.bot.private_message(m.location, "I have no available admin commands. See "
+                                          "http://molly.github.io/GorillaBot for documentation.")
     elif len(commands) == 1:
-        m.bot.private_message(m.location, "My available admin command is {0}.".format(commands[0]))
+        m.bot.private_message(m.location, "My available admin command is {0}. See "
+                                          "http://molly.github.io/GorillaBot for "
+                                          "documentation.".format(commands[0]))
     else:
         m.bot.private_message(m.location,
-                              "My available admin commands are {0}."
+                              "My available admin commands are {0}. See "
+                              "http://molly.github.io/GorillaBot for documentation."
                               .format(humanize_list(commands)))
 
 @command("commandlist")
@@ -55,12 +59,16 @@ def commands(m):
     commands = [key for key in m.bot.commands.keys() if not m.bot.commands[key][1]]
     commands.sort()
     if len(commands) == 0:
-        m.bot.private_message(m.location, "I have no available commands.")
+        m.bot.private_message(m.location, "I have no available commands. See "
+                                          "http://molly.github.io/GorillaBot for documentation.")
     elif len(commands) == 1:
-        m.bot.private_message(m.location, "My available command is {0}.".format(commands[0]))
+        m.bot.private_message(m.location, "My available command is {0}. See "
+                                          "http://molly.github.io/GorillaBot for "
+                                          "documentation.".format(commands[0]))
     else:
         m.bot.private_message(m.location,
-                              "My available commands are {0}."
+                              "My available commands are {0}. See "
+                              "http://molly.github.io/GorillaBot for documentation."
                               .format(humanize_list(commands)))
 
 @admin("set")
