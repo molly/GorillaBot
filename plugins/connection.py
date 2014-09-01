@@ -58,3 +58,10 @@ def part(m):
                    (channel, m.bot.configuration))
     m.bot.db_conn.commit()
     cursor.close()
+
+@admin("shutdown")
+def quit(m):
+    """Shut down the bot entirely."""
+    msg = " ".join(m.line[1:]) if len(m.line) > 1 else ""
+    m.bot.send("QUIT :" + msg)
+    m.bot.shutdown.set()

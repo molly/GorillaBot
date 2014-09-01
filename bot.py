@@ -281,7 +281,7 @@ class Bot(object):
             self.logger.error("Message '" + message + "' failed to send. Shutting down.")
         else:
             if not hide:
-                self.logger.debug("Sent message: " + message)
+                self.logger.debug("Sent: " + message)
             self.last_message_sent = time()
 
     def setup_logging(self):
