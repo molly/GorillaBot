@@ -6,7 +6,7 @@ ENDPOINT = "https://api.spotify.com/v1/%ss/%s"
 
 @command()
 def spotify(m):
-    spotify_uris = re.finalall(SPOTIFY_URI_REGEX, m.body)
+    spotify_uris = re.findall(SPOTIFY_URI_REGEX, m.body)
     for spotify_uri in spotify_uris:
         try:
             type, id = _parse_spotify_uri(spotify_uri)
@@ -15,6 +15,7 @@ def spotify(m):
                 continue
             m.bot.private_message(m.location, r.json()["name"])
         except ValueError:
+            m.bot.logger.error("Invalid Spotify URI: %s" % spotify_uri)
             pass
 
 def _parse_spotify_uri(s):
