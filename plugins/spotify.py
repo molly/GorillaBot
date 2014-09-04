@@ -13,7 +13,11 @@ def spotify(m):
             r = requests.get(ENDPOINT % (type, id))
             if r.status_code != 200:
                 continue
-            m.bot.private_message(m.location, r.json()["name"])
+            response = r.json()
+            if type == "track" or type == "album":
+                m.bot.private_message(m.location, ' - '.join([response["artists"][0]["name"], response["name"]]))
+            else:
+                m.bot.private_message(m.location, response["name"])
         except ValueError:
             m.bot.logger.error("Invalid Spotify URI: %s" % spotify_uri)
             pass
