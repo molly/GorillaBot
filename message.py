@@ -76,7 +76,6 @@ class Command(Message):
                 self.args.append(self)
                 self.args.append(m)
 
-
 class Notice(Message):
     """Represent a notice received from the server or another user."""
 
@@ -197,10 +196,13 @@ class Privmsg(Message):
 
     def set_trigger(self):
         link_setting = 'auto' if self.is_pm else self.bot.get_setting('link', self.location)
-        if link_setting == "auto":
-            m = re.findall(r'(https?://\S+)', self.body)
-            if m:
-                self.needs_own_thread = True
-                self.trigger = plugins.link.link
-                self.args.append(self)
-                self.args.append(m)
+        m = re.findall(r'(https?://\S+)', self.body)
+        if m and link_settings == "auto":
+            self.needs_own_thread = True
+            self.trigger = plugins.link.link
+            self.args.append(self)
+            self.args.append(m)
+        elif re.findall(r'spotify:', self.body):
+            self.needs_own_thread = True
+            self.trigger = plugins.spotify.spotify
+            self.args.append(self)
