@@ -33,7 +33,7 @@ def link(m, urls=None):
             m.bot.private_message(m.location, "Please provide a link.")
             return
     for url in urls:
-        m.bot.logger.info("Retriving link for {}.".format(url))
+        m.bot.logger.info("Retrieving link for {}.".format(url))
         html = _get_url(m, url)
         if html:
             try:
