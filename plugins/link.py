@@ -16,6 +16,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from plugins.util import command
+from html.parser import HTMLParser
 from urllib.request import Request, urlopen, URLError
 from urllib.parse import quote
 import json
@@ -32,7 +33,7 @@ def link(m, urls=None):
             m.bot.private_message(m.location, "Please provide a link.")
             return
     for url in urls:
-        m.bot.logger.info("Retriving link for {}.".format(url))
+        m.bot.logger.info("Retrieving link for {}.".format(url))
         html = _get_url(m, url)
         if html:
             try:
@@ -41,8 +42,9 @@ def link(m, urls=None):
                 m.bot.logger.info("{0}: {1}".format(url, e.reason))
             else:
                 if match:
+                    h = HTMLParser()
                     m.bot.private_message(m.location, "Link: " +
-                                          re.sub('[\n\r\t]', ' ', match.group(1)))
+                                          h.unescape(re.sub('[\n\r\t]', ' ', match.group(1))))
 
 @command("relevantxkcd")
 def xkcd(m):
