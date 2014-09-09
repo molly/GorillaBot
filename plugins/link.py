@@ -17,7 +17,6 @@
 
 from plugins.util import command
 from html.parser import HTMLParser
-from urllib.request import Request, urlopen, URLError
 from urllib.parse import quote
 import json
 import re
@@ -34,7 +33,7 @@ def link(m, urls=None):
             return
     for url in urls:
         m.bot.logger.info("Retrieving link for {}.".format(url))
-        html = _get_url(m, url)
+        html = get_url(m, url)
         if html:
             try:
                 match = re.search(r'<title>(.+?)</title>', html)
@@ -51,14 +50,14 @@ def xkcd(m):
     """Get an xkcd comic based on given arguments."""
     if len(m.line) == 1:
         url = "http://c.xkcd.com/random/comic/"
-        html = _get_url(m, url)
+        html = get_url(m, url)
         message = _xkcd_direct(html)
         if message is None:
             m.bot.logger.error("Couldn't get random xkcd comic.")
             message = "Sorry, I'm broken. Tell GorillaWarfare to fix me."
     elif len(m.line) == 2 and m.line[1].isdigit():
         url = "http://xkcd.com/{0}/".format(m.line[1])
-        html = _get_url(m, url)
+        html = get_url(m, url)
         if html is None:
             m.bot.private_message(m.location, "There is no xkcd #{0}.".format(m.line[1]))
             return
@@ -70,20 +69,9 @@ def xkcd(m):
         query = " ".join(m.line[1:])
         url = 'https://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=site:xkcd.com%20{0}'\
               .format(quote(query))
-        html = _get_url(m, url)
+        html = get_url(m, url)
         message = _xkcd_google(html)
     m.bot.private_message(m.location, message)
-
-def _get_url(m, url):
-    """Request a given URL, handling any errors."""
-    request = Request(url, headers=m.bot.header)
-    try:
-        html = urlopen(request)
-    except URLError as e:
-        m.bot.logger.info("{0}: {1}".format(url, e.reason))
-        return None
-    else:
-        return html.read().decode('utf-8')
 
 def _xkcd_direct(html, url=None):
     """Try to return a title and link for a direct link to an xkcd comic."""

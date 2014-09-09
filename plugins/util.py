@@ -15,6 +15,7 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+from urllib.request import Request, urlopen, URLError
 import message
 import os
 import pickle
@@ -119,6 +120,17 @@ def get_admin(m):
     m.bot.response_lock.release()
     for msg in ignored_messages:
         m.bot.message_q.put(msg)
+
+def get_url(m, url):
+    """Request a given URL, handling any errors."""
+    request = Request(url, headers=m.bot.header)
+    try:
+        html = urlopen(request)
+    except URLError as e:
+        m.bot.logger.info("{0}: {1}".format(url, e.reason))
+        return None
+    else:
+        return html.read().decode('utf-8')
 
 def humanize_list(l):
     if len(l) == 1:
