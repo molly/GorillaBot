@@ -46,15 +46,14 @@ class Command(Message):
     def __init__(self, *args):
         self.line = args[4:]
         self.admin = False
-        self.command = None
         super(Command, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
         nick = self.bot.get_config('nick')
         if self.line[0].strip("!:") == nick:
-            self.command = self.line[1].strip("!")
+            self.line = self.line[1:]
         if self.location == nick:
             self.location = self.bot.parse_hostmask(self.sender)['nick']
             self.is_pm = True
-        self.command = self.line[0].strip("!:") if not self.command else self.command
+        self.command = self.line[0].strip("!:")
         self.set_trigger()
 
     def __str__(self):
