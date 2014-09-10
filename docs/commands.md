@@ -37,6 +37,15 @@ Provide information about the given link.
 #### Settings
 * `auto` - All links entered in the chat will be parsed, regardless of whether they're prefaced with `!link`.
 
+### spotify
+    !spotify [url]
+
+Provide information about the Spotify URI.
+
+#### Settings
+* `auto` - All Spotify URIs in the chat will be parsed, regardless of whether they're prefaced with
+`!spotify`.
+
 ### xkcd
     !xkcd [number|query]
     !relevantxkcd [number|query]
