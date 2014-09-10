@@ -75,6 +75,13 @@ class Command(Message):
                 self.trigger = plugins.link.link
                 self.args.append(self)
                 self.args.append(m)
+                return
+            m = re.findall(r'spotify:', self.body)
+            if m:
+                self.needs_own_thread = True
+                self.trigger = plugins.spotify.spotify
+                self.args.append(self)
+                return
 
 
 class Notice(Message):
@@ -197,6 +204,9 @@ class Privmsg(Message):
 
     def set_trigger(self):
         link_setting = 'auto' if self.is_pm else self.bot.get_setting('link', self.location)
+        spotify_setting = 'auto' if self.is_pm else self.bot.get_setting('spotify', self.location)
+        print(spotify_setting)
+        # TODO: This needs to be done better :S
         if link_setting == "auto":
             m = re.findall(r'(https?://\S+)', self.body)
             if m:
@@ -204,3 +214,11 @@ class Privmsg(Message):
                 self.trigger = plugins.link.link
                 self.args.append(self)
                 self.args.append(m)
+                return
+        if spotify_setting == "auto":
+            m = re.findall(r'spotify:', self.body)
+            if m:
+                self.needs_own_thread = True
+                self.trigger = plugins.spotify.spotify
+                self.args.append(self)
+                return
