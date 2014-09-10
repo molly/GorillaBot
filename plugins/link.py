@@ -33,7 +33,7 @@ def link(m, urls=None):
             return
     for url in urls:
         m.bot.logger.info("Retrieving link for {}.".format(url))
-        html = _get_url(m, url, True)
+        html = get_url(m, url, True)
         if html:
             try:
                 match = re.search(r'<title>(.+?)</title>', html)
@@ -96,3 +96,4 @@ def _xkcd_google(html):
         return "Could not retrieve xkcd using this query."
     else:
         return results[0]['titleNoFormatting'] + ': ' + results[0]['unescapedUrl']
+    
