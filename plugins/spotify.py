@@ -7,6 +7,7 @@ ENDPOINT = "https://api.spotify.com/v1/{0}s/{1}"
 
 @command()
 def spotify(m):
+    """Retrieve information about a Spotify URI."""
     spotify_uris = re.findall(SPOTIFY_URI_REGEX, m.body)
     for spotify_uri in spotify_uris:
         try:
@@ -26,5 +27,6 @@ def spotify(m):
                                           .format(blob["name"], blob["external_urls"]["spotify"]))
 
 def _parse_spotify_uri(s):
+    """Parse the type and ID from a Spotify URI."""
     [type, id] = s.split(':')
     return type, id
