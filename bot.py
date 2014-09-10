@@ -108,7 +108,7 @@ class Bot(object):
             elif line[1] == "PRIVMSG":
                 nick = self.get_config("nick")
                 if (length >= 3 and line[2] == nick) or \
-                    (length >= 4 and (line[3][1] == "!" or line[3].startswith(":" + nick))):
+                    (length >= 4 and (line[3].startswith(":!") or line[3].startswith(":" + nick))):
                     message = Command(self, *line)
                 else:
                     message = Privmsg(self, *line)
