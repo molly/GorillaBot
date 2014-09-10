@@ -38,7 +38,7 @@ Provide information about the given link.
 * `auto` - All links entered in the chat will be parsed, regardless of whether they're prefaced with `!link`.
 
 ### spotify
-    !spotify [url]
+    !spotify [uri]
 
 Provide information about the Spotify URI.
 
