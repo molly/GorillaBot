@@ -18,7 +18,7 @@
 from plugins.util import command, get_url
 from urllib.parse import quote
 from html import unescape
-from datetime import datetime, time
+from datetime import datetime
 import json
 import re
 
@@ -47,7 +47,7 @@ def xkcd(m):
     if len(m.line) == 1:
         url = "http://c.xkcd.com/random/comic/"
         html = get_url(m, url)
-        message = _xkcd_direct(html)
+        message = xkcd_direct(html)
         if message is None:
             m.bot.logger.error("Couldn't get random xkcd comic.")
             message = "Sorry, I'm broken. Tell GorillaWarfare to fix me."
@@ -57,7 +57,7 @@ def xkcd(m):
         if html is None:
             m.bot.private_message(m.location, "There is no xkcd #{0}.".format(m.line[1]))
             return
-        message = _xkcd_direct(html, url)
+        message = xkcd_direct(html, url)
         if message is None:
             m.bot.logger.error("Couldn't get xkcd comic #{0}.".format(m.line[1]))
             message = "Sorry, I'm broken. Tell GorillaWarfare to fix me."
@@ -66,12 +66,14 @@ def xkcd(m):
         url = 'https://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=site:xkcd.com%20{0}'\
               .format(quote(query))
         html = get_url(m, url)
-        message = _xkcd_google(html)
+        message = xkcd_google(html)
     m.bot.private_message(m.location, message)
+
 
 def clean(title):
     """Clean the title so entities are unescaped and there's no weird spacing."""
     return unescape(re.sub('[\n\r\t]', ' ', title))
+
 
 def youtube(m, url):
     """Retrieve information about the YouTube video."""
@@ -115,6 +117,7 @@ def youtube(m, url):
     # If there's no API key stored, or the URL is poorly formatted, fall back to generic linking
     return generic(m, url)
 
+
 def generic(m, url):
     """Retrieve the title of the webpage."""
     m.bot.logger.info("Retrieving link for {}.".format(url))
@@ -131,7 +134,8 @@ def generic(m, url):
                 m.bot.logger.info("No title element found.")
                 return None
 
-def _xkcd_direct(html, url=None):
+
+def xkcd_direct(html, url=None):
     """Try to return a title and link for a direct link to an xkcd comic."""
     if not html:
         return None
@@ -147,7 +151,8 @@ def _xkcd_direct(html, url=None):
     else:
         return None
 
-def _xkcd_google(html):
+
+def xkcd_google(html):
     """Try to pull out the first Google result for an xkcd comic."""
     blob = json.loads(html)
     results = blob['responseData']['results']
