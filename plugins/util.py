@@ -121,8 +121,9 @@ def get_admin(m):
     for msg in ignored_messages:
         m.bot.message_q.put(msg)
 
-def get_url(m, url):
-    """Request a given URL, handling any errors."""
+def get_url(m, url, title=False):
+    """Request a given URL, handling any errors. If 'title' is True, this will only return the
+    first 1000 bytes of the page in an effort to not load too much more than is necessary."""
     request = Request(url, headers=m.bot.header)
     try:
         html = urlopen(request)
@@ -130,7 +131,7 @@ def get_url(m, url):
         m.bot.logger.info("{0}: {1}".format(url, e.reason))
         return None
     else:
-        return html.read().decode('utf-8')
+        return html.read(1000 if title else -1).decode('utf-8')
 
 def humanize_list(l):
     if len(l) == 1:
