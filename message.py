@@ -205,7 +205,6 @@ class Privmsg(Message):
     def set_trigger(self):
         link_setting = 'auto' if self.is_pm else self.bot.get_setting('link', self.location)
         spotify_setting = 'auto' if self.is_pm else self.bot.get_setting('spotify', self.location)
-        print(spotify_setting)
         # TODO: This needs to be done better :S
         if link_setting == "auto":
             m = re.findall(r'(https?://\S+)', self.body)
