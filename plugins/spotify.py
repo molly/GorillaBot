@@ -19,12 +19,10 @@ def spotify(m):
             if req:
                 blob = json.loads(req)
                 if type == "track" or type == "album":
-                    m.bot.private_message(m.location, '"{0}" by {1} - {2}'
-                                          .format(blob["name"], blob["artists"][0]["name"],
-                                                  blob["external_urls"]["spotify"]))
+                    m.bot.private_message(m.location, '"{0}" by {1}'
+                                          .format(blob["name"], blob["artists"][0]["name"]))
                 else:
-                    m.bot.private_message(m.location, "{0} - {1}"
-                                          .format(blob["name"], blob["external_urls"]["spotify"]))
+                    m.bot.private_message(m.location, blob["name"])
 
 def _parse_spotify_uri(s):
     """Parse the type and ID from a Spotify URI."""
