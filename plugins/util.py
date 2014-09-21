@@ -131,7 +131,11 @@ def get_url(m, url, title=False):
         m.bot.logger.info("{0}: {1}".format(url, e.reason))
         return None
     else:
-        return html.read(5000 if title else -1).decode('utf-8')
+        try:
+            bytes = html.read(5000 if title else -1).decode('utf-8')
+        except UnicodeDecodeError as e:
+            m.bot.logger.info("{0}: {1}".format(url, e.reason))
+            return None
 
 def humanize_list(l):
     if len(l) == 1:
