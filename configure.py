@@ -152,7 +152,7 @@ class Configurator(object):
             nick = self.prompt("Nick", "GorillaBot")
             realname = self.prompt("Ident", "GorillaBot")
             ident = self.prompt("Realname", "GorillaBot")
-            chans = self.prompt("Chans")
+            chans = self.prompt("Channel(s)")
             botop = self.prompt("Bot operator(s)", '')
             password = self.prompt("Server password (optional)", hidden=True)
             youtube = self.prompt("YouTube API key (optional)", hidden=True)
