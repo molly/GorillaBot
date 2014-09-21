@@ -37,6 +37,8 @@ def link(m, urls=None):
             message = youtube(m, url)
         elif "reddit.com" in url:
             message = reddit(m, url)
+        elif "i.imgur.com" in url:
+            message = imgur(m, url)
         else:
             message = generic(m, url)
         if message:
@@ -74,7 +76,7 @@ def xkcd(m):
 
 def clean(title):
     """Clean the title so entities are unescaped and there's no weird spacing."""
-    return unescape(re.sub('[\n\r\t]', ' ', title))
+    return unescape(re.sub('[\s]+', ' ', title))
 
 
 def youtube(m, url):
@@ -169,12 +171,21 @@ def reddit(m, url):
     return generic(m, url)
 
 
+def imgur(m, url):
+    """Use Imgur ID to find the title of an image for a direct image link."""
+    match = re.search(r'i\.imgur\.com/(.+?)\.', url)
+    if match:
+        m.bot.logger.info("Retrieving imgur title for direct image link: {}.".format(url))
+        return generic(m, "http://imgur.com/" + match.group(1))
+
+
 def generic(m, url):
     """Retrieve the title of the webpage."""
     m.bot.logger.info("Retrieving link for {}.".format(url))
     html = get_url(m, url, True)
     if html:
-        match = re.search(r'<title>(.+?)</title>', html)
+        title_regex = re.compile(r'<title>(.+?)</title>', re.DOTALL)
+        match = re.search(title_regex, html)
         if match:
             return match.group(1)
         else:
