@@ -1,37 +1,34 @@
 <!DOCTYPE html>
 <html>
-
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="GorillaBot : GorillaBot is an IRC bot written in Python.">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
 
-    <title>GorillaBot</title>
+    <title>GorillaBot by molly</title>
   </head>
 
   <body>
+    <header>
+      <div class="inner">
+        <h1>GorillaBot</h1>
+        <h2>GorillaBot is an IRC bot written in Python.</h2>
+        <a href="https://github.com/molly/GorillaBot" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/molly/GorillaBot">View on GitHub</a>
-
-          <h1 id="project_title">GorillaBot</h1>
-          <h2 id="project_tagline">GorillaBot is an IRC bot written in Python.</h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/molly/GorillaBot/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/molly/GorillaBot/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
 <a name="gorillabot" class="anchor" href="#gorillabot"><span class="octicon octicon-link"></span></a>GorillaBot</h1>
 
 <p>GorillaBot is an IRC bot framework written in Python. The bot is initiated from the command line. Once it is connected, it receives its commands through IRC. Because I'm writing the framework mainly for use in a channel frequented by Wikipedia editors, there are a number of Wikipedia-specific commands.</p>
@@ -73,6 +70,11 @@
 !admincommandlist
 </code></pre>
 
+<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!admincommands
+<span class="nt">&lt; GorillaBot&gt; </span>My available admin commands are join, part, quit, setcommand,
+              and unset. See http://molly.github.io/GorillaBot for documentation.
+</pre></div>
+
 <p>Say the available admin-only commands. This does not display command aliases.</p>
 
 <h3>
@@ -80,6 +82,10 @@
 
 <pre><code>!adminlist
 </code></pre>
+
+<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!adminlist
+<span class="nt">&lt; GorillaBot&gt; </span>My bot admin is GorillaWarfare.
+</pre></div>
 
 <p>Say the current bot operators.</p>
 
@@ -90,15 +96,30 @@
 !commandlist
 </code></pre>
 
-<p>Say the available admin-only commands. This does not display command aliases.</p>
+<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!commands
+<span class="nt">&lt; GorillaBot&gt; </span>My available commands are admincommands, adminlist, commands, hug,
+              link, spotify, and xkcd. See http://molly.github.io/GorillaBot
+              for documentation.
+</pre></div>
+
+<p>Say the available all-user commands. This does not display command aliases.</p>
 
 <h3>
 <a name="link" class="anchor" href="#link"><span class="octicon octicon-link"></span></a>link</h3>
 
-<pre><code>!link [url]
+<pre><code>!link URL
 </code></pre>
 
+<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!link http://molly.github.io/GorillaBot/
+<span class="nt">&lt; GorillaBot&gt; </span><span class="na">Link:</span> GorillaBot
+<span class="nt">&lt; GorillaWarfare&gt; </span>!link https://www.youtube.com/watch?v=aSarf4-REgk
+<span class="nt">&lt; GorillaBot&gt; </span><span class="na">Link:</span> "Baby Gorilla Reunites With Mother" (01:43). Uploaded Mar 24,
+              2014. 164347 views. 513 likes, 32 dislikes.
+</pre></div>
+
 <p>Provide information about the given link.</p>
+
+<p>In order to provide rich information about YouTube videos, you must provide a YouTube API key when configuring the bot. You can get an API key by registering a project in the <a href="https://console.developers.google.com/">Google Developer Console</a>. Without a key, the normal linking will be used.</p>
 
 <h4>
 <a name="settings" class="anchor" href="#settings"><span class="octicon octicon-link"></span></a>Settings</h4>
@@ -109,8 +130,12 @@
 </ul><h3>
 <a name="spotify" class="anchor" href="#spotify"><span class="octicon octicon-link"></span></a>spotify</h3>
 
-<pre><code>!spotify [uri]
+<pre><code>!spotify URI
 </code></pre>
+
+<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!spotify spotify:track:6NmXV4o6bmp704aPGyTVVG
+<span class="nt">&lt; GorillaBot&gt; </span>"Bøn Fra Helvete (Live)" by Kaizers Orchestra
+</pre></div>
 
 <p>Provide information about the Spotify URI.</p>
 
@@ -127,6 +152,14 @@
 <pre><code>!xkcd [number|query]
 !relevantxkcd [number|query]
 </code></pre>
+
+<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!xkcd batman acne
+<span class="nt">&lt; GorillaBot&gt; </span><span class="na">xkcd:</span> Complexion: http://xkcd.com/700/
+<span class="nt">&lt; GorillaWarfare&gt; </span>!xkcd 700
+<span class="nt">&lt; GorillaBot&gt; </span><span class="na">xkcd:</span> Complexion: http://xkcd.com/700/
+<span class="nt">&lt; GorillaWarfare&gt; </span>!xkcd
+<span class="nt">&lt; GorillaBot&gt; </span><span class="na">xkcd:</span> Telescope Names: http://xkcd.com/1294/
+</pre></div>
 
 <p>Without any arguments, this provides a random xkcd comic. When a number is supplied, it tries to return the xkcd comic with that given number. When a query string is supplied, it tries to return the xkcd comic that most closely matches that query.</p>
 
@@ -166,6 +199,10 @@
 <pre><code>!set setting value [#channel]
 </code></pre>
 
+<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!set link auto
+<span class="nt">&lt; GorillaBot&gt; </span>"link" set to "auto" in ##GorillaBot.
+</pre></div>
+
 <p>Change settings for a command. Allowed and default settings for a command are viewable in the command's documentation. Settings can only be edited for channels the bot is joined to, or has been joined to in the past.</p>
 
 <h3>
@@ -174,19 +211,30 @@
 <pre><code>!unset setting [#channel]
 </code></pre>
 
+<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!unset link
+<span class="nt">&lt; GorillaBot&gt; </span>"link" unset for ##GorillaBot.
+</pre></div>
+
 <p>Removes the setting for a channel. This will revert to the default value. Settings can only be edited for channels the bot is joined to, or has been joined to in the past.</p>
-      </section>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/molly/GorillaBot/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/molly/GorillaBot/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/molly/GorillaBot"></a> is maintained by <a href="https://github.com/molly">molly</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
     </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">GorillaBot maintained by <a href="https://github.com/molly">molly</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-    
-
+  
   </body>
 </html>
