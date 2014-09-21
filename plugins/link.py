@@ -174,16 +174,12 @@ def generic(m, url):
     m.bot.logger.info("Retrieving link for {}.".format(url))
     html = get_url(m, url, True)
     if html:
-        try:
-            match = re.search(r'<title>(.+?)</title>', html)
-        except UnicodeDecodeError as e:
-            m.bot.logger.info("{0}: {1}".format(url, e.reason))
+        match = re.search(r'<title>(.+?)</title>', html)
+        if match:
+            return match.group(1)
         else:
-            if match:
-                return match.group(1)
-            else:
-                m.bot.logger.info("No title element found.")
-                return None
+            m.bot.logger.info("No title element found.")
+            return None
 
 
 def xkcd_direct(html, url=None):
