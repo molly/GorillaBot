@@ -136,6 +136,8 @@ def get_url(m, url, title=False):
         except UnicodeDecodeError as e:
             m.bot.logger.info("{0}: {1}".format(url, e.reason))
             return None
+        else:
+            return bytes
 
 def humanize_list(l):
     if len(l) == 1:
