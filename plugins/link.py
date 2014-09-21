@@ -18,6 +18,7 @@
 from plugins.util import command, get_url
 from urllib.parse import quote
 from html import unescape
+from datetime import datetime, time
 import json
 import re
 
@@ -32,17 +33,13 @@ def link(m, urls=None):
             m.bot.private_message(m.location, "Please provide a link.")
             return
     for url in urls:
-        m.bot.logger.info("Retrieving link for {}.".format(url))
-        html = get_url(m, url, True)
-        if html:
-            try:
-                match = re.search(r'<title>(.+?)</title>', html)
-            except UnicodeDecodeError as e:
-                m.bot.logger.info("{0}: {1}".format(url, e.reason))
-            else:
-                if match:
-                    m.bot.private_message(m.location, "Link: " +
-                                          unescape(re.sub('[\n\r\t]', ' ', match.group(1))))
+        if "youtube.com" in url or "youtu.be" in url:
+            message = youtube(m, url)
+        else:
+            message = generic(m, url)
+        if message:
+            m.bot.private_message(m.location, "Link: " + clean(message))
+
 
 @command("relevantxkcd")
 def xkcd(m):
@@ -71,6 +68,68 @@ def xkcd(m):
         html = get_url(m, url)
         message = _xkcd_google(html)
     m.bot.private_message(m.location, message)
+
+def clean(title):
+    """Clean the title so entities are unescaped and there's no weird spacing."""
+    return unescape(re.sub('[\n\r\t]', ' ', title))
+
+def youtube(m, url):
+    """Retrieve information about the YouTube video."""
+    api_key = m.bot.get_config('youtube')
+    if api_key:
+        match = re.search(r'youtu(?:be.com/watch\?v=|\.be/)(.+?)(?:\?|&|\Z)', url)
+        if match:
+            video_id = match.group(1)
+            m.bot.logger.info("Retrieving information from the YouTube API for {}.". format(url))
+            api_url = "https://www.googleapis.com/youtube/v3/videos?id={id}" \
+                      "&key={key}&part=snippet,contentDetails,statistics"
+            resp = get_url(m, api_url.format(id = video_id, key = api_key))
+            if resp:
+                # Load JSON
+                blob = json.loads(resp)["items"][0]
+
+                # Parse uploaded time
+                raw_time = datetime.strptime(blob["snippet"]["publishedAt"],
+                                             "%Y-%m-%dT%H:%M:%S.%fZ")
+                pretty_time = raw_time.strftime("%b %d, %Y")
+
+                # Parse video duration
+                dur_match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(\d+)S',
+                                     blob["contentDetails"]["duration"])
+                hr, min, sec = dur_match.groups()
+                if hr:
+                    pretty_dur = ":".join([hr, "00" if min is None else min.zfill(2), sec.zfill(2)])
+                else:
+                    pretty_dur = ":".join(["00" if min is None else min.zfill(2), sec.zfill(2)])
+
+                # Format and return message
+                return "\"{title}\" ({duration}). Uploaded {date}. {views} views. {likes} likes, " \
+                       "{dislikes} dislikes.".format(
+                    title = blob["snippet"]["title"],
+                    duration = pretty_dur,
+                    date = pretty_time,
+                    views = blob["statistics"]["viewCount"],
+                    likes = blob["statistics"]["likeCount"],
+                    dislikes = blob["statistics"]["dislikeCount"]
+                )
+    # If there's no API key stored, or the URL is poorly formatted, fall back to generic linking
+    return generic(m, url)
+
+def generic(m, url):
+    """Retrieve the title of the webpage."""
+    m.bot.logger.info("Retrieving link for {}.".format(url))
+    html = get_url(m, url, True)
+    if html:
+        try:
+            match = re.search(r'<title>(.+?)</title>', html)
+        except UnicodeDecodeError as e:
+            m.bot.logger.info("{0}: {1}".format(url, e.reason))
+        else:
+            if match:
+                return match.group(1)
+            else:
+                m.bot.logger.info("No title element found.")
+                return None
 
 def _xkcd_direct(html, url=None):
     """Try to return a title and link for a direct link to an xkcd comic."""
