@@ -35,6 +35,8 @@ def link(m, urls=None):
     for url in urls:
         if "youtube.com" in url or "youtu.be" in url:
             message = youtube(m, url)
+        else:
+            message = generic(m, url)
         if message:
             m.bot.private_message(m.location, "Link: " + clean(message))
 
