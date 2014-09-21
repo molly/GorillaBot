@@ -11,7 +11,6 @@ The bot receives commands in one of three ways:
 In the examples below, I use the `!command` syntax, but the other two would work equally well.
 
 ##Commands
-* [join](#join)
 
 ### join
     !join #channel
@@ -28,8 +27,20 @@ Quits the bot from the network and shuts down.
 
 ### set
     !set setting value [#channel]
+
+```irc
+< GorillaWarfare> !set link auto
+< GorillaBot> "link" set to "auto" in ##GorillaBot.
+```
+
 Change settings for a command. Allowed and default settings for a command are viewable in the command's documentation. Settings can only be edited for channels the bot is joined to, or has been joined to in the past.
 
 ### unset
     !unset setting [#channel]
+
+```irc
+< GorillaWarfare> !unset link
+< GorillaBot> "link" unset for ##GorillaBot.
+```
+
 Removes the setting for a channel. This will revert to the default value. Settings can only be edited for channels the bot is joined to, or has been joined to in the past.
