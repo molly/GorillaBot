@@ -35,6 +35,8 @@ def link(m, urls=None):
     for url in urls:
         if "youtube.com" in url or "youtu.be" in url:
             message = youtube(m, url)
+        elif "reddit.com" in url:
+            message = reddit(m, url)
         else:
             message = generic(m, url)
         if message:
@@ -115,6 +117,55 @@ def youtube(m, url):
                     dislikes = blob["statistics"]["dislikeCount"]
                 )
     # If there's no API key stored, or the URL is poorly formatted, fall back to generic linking
+    return generic(m, url)
+
+
+def reddit(m, url):
+    """Retrieve information about the Reddit link."""
+
+    # I'm sorry
+    reddit_regex = re.compile(r'reddit\.com/(?:u(?:ser)?/(?P<user>.+?)(?:\Z|#|/)|r/(?P<sub>.+?)'
+                              r'(?:/?\Z|/comments/(?P<id>.+?)(?:/?\Z|/(?P<title>.+?)'
+                              r'(?:/?\Z|/(?P<cid>.+?)(?:/|#|\Z)))))')
+
+    match = re.search(reddit_regex, url)
+    if match:
+        m.bot.logger("Retrieving information from the Reddit API for {}.".format(url))
+        if match.group("user"):
+            api_url = "http://www.reddit.com/user/{}/about.json"
+            user = match.group("user")
+            resp = get_url(m, api_url.format(user))
+            blob = json.loads(resp)["data"]
+            return "User {name}: {link_karma} link karma, {comment_karma} comment " \
+                   "karma.".format(**blob)
+        else:
+            api_url = "http://www.reddit.com/api/info.json?id={}"
+            sub, id, cid = match.group("sub"), match.group("id"), match.group("cid")
+            if cid:
+                resp = get_url(m, api_url.format("t1_" + cid))
+                blob = json.loads(resp)["data"]["children"][0]["data"]
+                parent_resp = get_url(m, api_url.format("t3_" + id))
+                parent_blob = json.loads(parent_resp)["data"]["children"][0]["data"]
+                parent_blob["nsfw"] = " \x0304[NSFW]\x03" if parent_blob["over_18"] else ""
+                return "Comment by {user} on \"{title}\"{nsfw} in /r/{sub}. {up}↑.".format(
+                    user = blob["author"],
+                    title = parent_blob["title"],
+                    nsfw = parent_blob["nsfw"],
+                    sub = blob["subreddit"],
+                    up = blob["ups"]
+                )
+            elif id:
+                resp = get_url(m, api_url.format("t3_" + id))
+                blob = json.loads(resp)["data"]["children"][0]["data"]
+                blob["nsfw"] = "\x0304[NSFW]\x03" if blob["over_18"] else ""
+                return "\"{title}\" in /r/{subreddit}. {ups}↑. {nsfw}".format(**blob)
+            else:
+                api_url = "http://www.reddit.com/r/{}/about.json"
+                resp = get_url(m, api_url.format(sub))
+                blob = json.loads(resp)["data"]
+                blob["nsfw"] = "\x0304[NSFW]\x03" if blob["over18"] else ""
+                return "/r/{display_name}. {title}. {subscribers} subscribers." \
+                       " {nsfw}".format(**blob)
     return generic(m, url)
 
 
