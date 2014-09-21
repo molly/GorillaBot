@@ -90,7 +90,8 @@ class Configurator(object):
                  nick TEXT NOT NULL,
                  realname TEXT NOT NULL,
                  ident TEXT NOT NULL,
-                 password TEXT)''')
+                 password TEXT,
+                 youtube TEXT)''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS channels
               (chan_id INTEGER PRIMARY KEY,
                name TEXT NOT NULL,
@@ -153,12 +154,13 @@ class Configurator(object):
             ident = self.prompt("Realname", "GorillaBot")
             chans = self.prompt("Chans")
             botop = self.prompt("Bot operator(s)", '')
-            password = self.prompt("Server password", hidden=True)
+            password = self.prompt("Server password (optional)", hidden=True)
+            youtube = self.prompt("YouTube API key (optional)", hidden=True)
             chans = re.split(',? ', chans)
             botop = re.split(',? ', botop)
-            self.display((name, nick, realname, ident, password), chans, botop)
+            self.display((name, nick, realname, ident, password, youtube), chans, botop)
             verify = input('Is this configuration correct? [y/n]: ').lower()
-        self.save_config((name, nick, realname, ident, chans, botop, password))
+        self.save_config((name, nick, realname, ident, chans, botop, password, youtube))
         return name
 
     def load_settings(self):
@@ -230,11 +232,12 @@ class Configurator(object):
         chans = ", ".join(chans)
         botops = ", ".join(botops)
         password = "[hidden]" if data[4] else "[none]"
+        youtube = "[hidden]" if data[5] else "[none]"
         print(
             "\n------------------------------\n Nickname: {0}\n Real name: {1}\n Identifier: {2}\n"
-            " Channels: {3}\n Bot operator(s): {4}\n Server password: {5}\n"
+            " Channels: {3}\n Bot operator(s): {4}\n Server password: {5}\nYouTube API key: {6}\n"
             "------------------------------\n".format(data[1], data[2], data[3], chans, botops,
-                                                      password))
+                                                      password, youtube))
 
     def verify(self, data, chans, botops):
         """Verify a configuration, and make changes if needed."""
@@ -251,10 +254,11 @@ class Configurator(object):
                 ident = self.prompt("Realname", data[3])
                 chans = self.prompt("Chans", ", ".join(chans))
                 botop = self.prompt("Bot operator(s)", ", ".join(botops))
-                password = self.prompt("Server password", hidden=True)
+                password = self.prompt("Server password (optional)", hidden=True)
+                youtube = self.prompt("YouTube API key (optional)", hidden=True)
                 chans = re.split(',? ', chans)
                 botop = re.split(',? ', botop)
-                self.display((name, nick, realname, ident, password), chans, botop)
+                self.display((name, nick, realname, ident, password, youtube), chans, botop)
                 verify = input('Is this configuration correct? [y/n]: ').lower()
             self.delete(name)
             cursor = self.db_conn.cursor()
@@ -262,13 +266,13 @@ class Configurator(object):
             cursor.execute('''DELETE FROM users WHERE config = ?''', (name,))
             self.db_conn.commit()
             cursor.close()
-            self.save_config((name, nick, realname, ident, chans, botop, password))
+            self.save_config((name, nick, realname, ident, chans, botop, password, youtube))
 
     def save_config(self, data):
         """Save changes to the configuration table."""
         cursor = self.db_conn.cursor()
-        cursor.execute('''INSERT INTO configs VALUES (?, ?, ?, ?, ?)''',
-                       (data[0], data[1], data[2], data[3], data[6],))
+        cursor.execute('''INSERT INTO configs VALUES (?, ?, ?, ?, ?, ?)''',
+                       (data[0], data[1], data[2], data[3], data[6], data[7],))
         self.db_conn.commit()
         cursor.close()
         if type(data[4]) is str:
