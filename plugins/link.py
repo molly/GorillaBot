@@ -132,7 +132,7 @@ def reddit(m, url):
 
     match = re.search(reddit_regex, url)
     if match:
-        m.bot.logger("Retrieving information from the Reddit API for {}.".format(url))
+        m.bot.logger.info("Retrieving information from the Reddit API for {}.".format(url))
         if match.group("user"):
             api_url = "http://www.reddit.com/user/{}/about.json"
             user = match.group("user")
