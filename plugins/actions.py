@@ -22,6 +22,18 @@ import re
 @command("hugs", "glomp")
 def hug(m):
     """Hugs the specified user or channel in general."""
+
+    #-     !hug [user ...]
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !hug
+    #- * GorillaBot distributes tackle-glomps evenly among the channel
+    #- < GorillaWarfare> !hug user
+    #- * GorillaBot tackles user
+    #- ```
+    #-
+    #- Hugs the user or the channel.
+
     if m.is_pm:
         _hug_back(m)
     else:

@@ -25,6 +25,29 @@ import re
 
 @command()
 def link(m, urls=None):
+    """Retrieve a description of the link."""
+
+    #-     !link URL
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !link http://molly.github.io/GorillaBot/
+    #- < GorillaBot> Link: GorillaBot
+    #- < GorillaWarfare> !link https://www.youtube.com/watch?v=aSarf4-REgk
+    #- < GorillaBot> Link: "Baby Gorilla Reunites With Mother" (01:43). Uploaded Mar 24,
+    #-               2014. 164347 views. 513 likes, 32 dislikes.
+    #- ```
+    #-
+    #- Provide information about the given link.
+    #-
+    #- In order to provide rich information about YouTube videos, you must provide a YouTube API
+    #-  key when configuring the bot. You can get an API key by registering a project in the [
+    #-  Google Developer Console](https://console.developers.google.com/). Without a key,
+    #-  the normal linking will be used.
+    #-
+    #- #### Settings
+    #- * `auto` - All links entered in the chat will be parsed, regardless of whether they're
+    #-  prefaced with `!link`.
+
     if not urls:
         match = re.findall(r'(https?://\S+)', m.body)
         if match:
@@ -48,6 +71,22 @@ def link(m, urls=None):
 @command("relevantxkcd")
 def xkcd(m):
     """Get an xkcd comic based on given arguments."""
+
+    #-     !xkcd [number|query]
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !xkcd batman acne
+    #- < GorillaBot> xkcd: Complexion: http://xkcd.com/700/
+    #- < GorillaWarfare> !xkcd 700
+    #- < GorillaBot> xkcd: Complexion: http://xkcd.com/700/
+    #- < GorillaWarfare> !xkcd
+    #- < GorillaBot> xkcd: Telescope Names: http://xkcd.com/1294/
+    #- ```
+    #-
+    #- Without any arguments, this provides a random xkcd comic. When a number is supplied,
+    #-  it tries to return the xkcd comic with that given number. When a query string is supplied,
+    #-  it tries to return the xkcd comic that most closely matches that query.
+
     if len(m.line) == 1:
         url = "http://c.xkcd.com/random/comic/"
         html = get_url(m, url)

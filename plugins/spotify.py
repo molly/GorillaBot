@@ -8,6 +8,20 @@ ENDPOINT = "https://api.spotify.com/v1/{0}s/{1}"
 @command()
 def spotify(m):
     """Retrieve information about a Spotify URI."""
+
+    #-     !spotify URI
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !spotify spotify:track:6NmXV4o6bmp704aPGyTVVG
+    #- < GorillaBot> "Bøn Fra Helvete (Live)" by Kaizers Orchestra
+    #- ```
+    #-
+    #- Provide information about the Spotify URI.
+    #-
+    #- #### Settings
+    #- * `auto` - All Spotify URIs in the chat will be parsed, regardless of whether they're
+    #-  prefaced with `!spotify`.
+
     spotify_uris = re.findall(SPOTIFY_URI_REGEX, m.body)
     for spotify_uri in spotify_uris:
         try:

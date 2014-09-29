@@ -21,6 +21,16 @@ from plugins.util import admin, command, humanize_list
 @command("admins", "botops", "oplist")
 def adminlist(m):
     """Provide a list of current bot admins."""
+
+    #-     !adminlist
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !adminlist
+    #- < GorillaBot> My bot admin is GorillaWarfare.
+    #- ```
+    #-
+    #- Say the current bot operators.
+
     cursor = m.bot.db_conn.cursor()
     cursor.execute('''SELECT nick FROM users WHERE botop = 1''')
     data = cursor.fetchall()
@@ -38,6 +48,17 @@ def adminlist(m):
 @command("admincommandlist")
 def admincommands(m):
     """Provide a list of admin-only commands."""
+
+    #-     !admincommands
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !admincommands
+    #- < GorillaBot> My available admin commands are join, part, quit, setcommand,
+    #-               and unset. See http://molly.github.io/GorillaBot for documentation.
+    #- ```
+    #-
+    #- Say the available admin-only commands. This does not display command aliases.
+
     commands = [key for key in m.bot.admin_commands.keys() if not m.bot.admin_commands[key][1]]
     commands.sort()
     if len(commands) == 0:
@@ -56,6 +77,18 @@ def admincommands(m):
 @command("commandlist")
 def commands(m):
     """Provide a list of commands available to all users."""
+
+    #-     !commands
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !commands
+    #- < GorillaBot> My available commands are admincommands, adminlist, commands, hug,
+    #-               link, spotify, and xkcd. See http://molly.github.io/GorillaBot
+    #-               for documentation.
+    #- ```
+    #-
+    #- Say the available all-user commands. This does not display command aliases.
+
     commands = [key for key in m.bot.commands.keys() if not m.bot.commands[key][1]]
     commands.sort()
     if len(commands) == 0:
@@ -74,6 +107,18 @@ def commands(m):
 @admin("set")
 def setcommand(m):
     """Adjust or view the settings on a command."""
+
+    #-     !set setting value [#channel]
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !set link auto
+    #- < GorillaBot> "link" set to "auto" in ##GorillaBot.
+    #- ```
+    #-
+    #- Change settings for a command. Allowed and default settings for a command are viewable in
+    #- the command's documentation. Settings can only be edited for channels the bot is joined
+    #- to, or has been joined to in the past.
+
     if len(m.line) > 4:
         m.bot.private_message(m.location,
                               'Too many arguments. Use "!set setting value [#channel]".')
@@ -129,7 +174,18 @@ def setcommand(m):
 
 @admin()
 def unset(m):
-    '''Unset a given setting.'''
+    """Unset a given setting."""
+
+    #-     !unset setting [#channel]
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !unset link
+    #- < GorillaBot> "link" unset for ##GorillaBot.
+    #- ```
+    #-
+    #- Removes the setting for a channel. This will revert to the default value. Settings can only
+    #- be edited for channels the bot is joined to, or has been joined to in the past.
+
     if len(m.line) != 2 and not (len(m.line) == 3 and m.line[2][0] == "#"):
         m.bot.private_message(m.location,
                               'Poorly-formatted command. Use "!unset setting [#channel]".')

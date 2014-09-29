@@ -21,6 +21,11 @@ from plugins.util import admin
 @admin()
 def join(m):
     """Join a channel."""
+
+    #-     !join #channel
+    #-
+    #- Joins the specified channel. Only joins one channel at a time.
+
     if len(m.line) == 1:
         m.bot.private_message(m.location, "Please specify a channel to join.")
     else:
@@ -34,6 +39,12 @@ def join(m):
 @admin("leave")
 def part(m):
     """Part from the specified channel."""
+
+    #-     !part [#channel] [message]
+    #-
+    #- Parts from the specified channel, or the current channel if unspecified. Only parts from
+    #- one channel at a time. If a message is included, this will be used as the part message.
+
     part_msg = ""
     if len(m.line) == 1:
         m.bot.send("PART " + m.location + " " + part_msg)
@@ -62,6 +73,11 @@ def part(m):
 @admin("shutdown")
 def quit(m):
     """Shut down the bot entirely."""
+
+    #-     !quit [message]
+    #-
+    #- Quits the bot from the network and shuts down.
+
     msg = " ".join(m.line[1:]) if len(m.line) > 1 else ""
     m.bot.send("QUIT :" + msg)
     m.bot.shutdown.set()
