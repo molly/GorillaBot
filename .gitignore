@@ -5,3 +5,4 @@ logs/
 __pycache__
 *.pkl
 db/*
+*/secrets.py
