@@ -14,9 +14,9 @@ nonfunctional._
 1. Run `python3 bot.py` from the source directory.
 2. Configure the bot when prompted. If you already have already configured the bot, you can use
 that configuration or create a new one.
-3. Once the bot has successfully connected, command the bot via IRC. There are also a number of
-admin commands available only to bot operators. These are outlined in the [documentation]
-(http://molly.github.io/GorillaBot/).
+3. Once the bot has successfully connected, command the bot via IRC. A number of commands are
+marked as admin-only, and are only available to bot operators. All commands are outlined in the 
+[documentation](http://molly.github.io/GorillaBot/).
 
 ## Documentation
 GorillaBot generates its own plugin [documentation](http://molly.github.io/GorillaBot/). If you
