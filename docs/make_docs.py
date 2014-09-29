@@ -84,14 +84,16 @@ def format_docs(admin, command):
 
 def write_docs(admin, command):
     with open('docs_template.md', 'r', encoding='utf-8') as f:
-        template = f.read()
+        md_template = f.read()
+    with open('docs_template.html', 'r', encoding='utf-8') as f:
+        html_template = f.read()
     headers = {'content-type': 'text/x-markdown',
                "User-Agent": "GorillaBot (https://github.com/molly/GorillaBot)"}
     resp = requests.post("https://api.github.com/markdown/raw",
-                         data = format(template.format(commands=command, admincommands=admin)),
+                         data = format(md_template.format(commands=command, admincommands=admin)),
                          headers=headers)
     with open('../index.html', 'w', encoding='utf-8') as outfile:
-        outfile.write(resp.text)
+        outfile.write(html_template.format(docs=resp.text))
 
 if __name__ == "__main__":
     get_files()
