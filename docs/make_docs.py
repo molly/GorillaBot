@@ -18,7 +18,7 @@
 from os import listdir
 from os.path import isfile, join
 import re
-import requests
+from urllib.request import Request, urlopen
 from secrets import *
 
 command_regex = re.compile(r'((?:@command|@admin)\(.*?\)\ndef.*?)(?=@command|@admin|def |\Z)',
@@ -95,11 +95,17 @@ def write_docs(admin, command):
         html_template = f.read()
     headers = {'content-type': 'text/x-markdown',
                "User-Agent": "GorillaBot (https://github.com/molly/GorillaBot)"}
-    resp = requests.post("https://api.github.com/markdown/raw",
-                         data = format(md_template.format(commands=command, admincommands=admin)),
-                         headers=headers)
-    with open('../index.html', 'w', encoding='utf-8') as outfile:
-        outfile.write(html_template.format(docs=resp.text))
+    req = Request("https://api.github.com/markdown/raw",
+                  data = bytes(format(md_template.format(commands=command, admincommands=admin)),
+                               encoding='utf-8'),
+                  headers=headers)
+    try:
+        resp = urlopen(req)
+    except Exception as e:
+        print(e)
+    else:
+        with open('../index.html', 'w', encoding='utf-8') as outfile:
+            outfile.write(html_template.format(docs=resp.read().decode('utf-8')))
 
 if __name__ == "__main__":
     get_commands()
