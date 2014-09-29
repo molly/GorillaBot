@@ -5,6 +5,7 @@ __Author:__ Molly White<br />
 __License:__ [MIT](http://opensource.org/licenses/MIT)<br/>
 __Status:__ Stable<br />
 __Version:__ 2.0
+__Python version:__ 3.4+
 
 ## Installation
 _Download code from the `master` branch. Code in the `development` branch is often incomplete and
@@ -16,3 +17,10 @@ that configuration or create a new one.
 3. Once the bot has successfully connected, command the bot via IRC. There are also a number of
 admin commands available only to bot operators. These are outlined in the [documentation]
 (http://molly.github.io/GorillaBot/).
+
+## Documentation
+GorillaBot generates its own plugin [documentation](http://molly.github.io/GorillaBot/). If you
+add a plugin, please document it by writing usage notes in comments beginning with `#-`. You can
+see an example in the
+[link command](https://github.com/molly/GorillaBot/blob/master/plugins/link.py#L27). Note that
+you do not need to specify if a command is admin-only or not; this is determined from the decorator.
