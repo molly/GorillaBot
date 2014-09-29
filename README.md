@@ -4,7 +4,7 @@ GorillaBot is an easily-extensible IRC bot written in Python.
 __Author:__ Molly White<br />
 __License:__ [MIT](http://opensource.org/licenses/MIT)<br/>
 __Status:__ Stable<br />
-__Version:__ 2.0
+__Version:__ 2.0<br />
 __Python version:__ 3.4+
 
 ## Installation
