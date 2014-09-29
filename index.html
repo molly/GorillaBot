@@ -1,42 +1,12 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
-
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-
-    <title>GorillaBot by molly</title>
-  </head>
-
-  <body>
-    <header>
-      <div class="inner">
-        <h1>GorillaBot</h1>
-        <h2>GorillaBot is an IRC bot written in Python.</h2>
-        <a href="https://github.com/molly/GorillaBot" class="button"><small>View project on</small>GitHub</a>
-      </div>
-    </header>
-
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <h1>
-<a name="gorillabot" class="anchor" href="#gorillabot"><span class="octicon octicon-link"></span></a>GorillaBot</h1>
+<h1>
+<a name="user-content-gorillabot" class="anchor" href="#gorillabot" aria-hidden="true"><span class="octicon octicon-link"></span></a>GorillaBot</h1>
 
 <p>GorillaBot is an IRC bot framework written in Python. The bot is initiated from the command line. Once it is connected, it receives its commands through IRC. Because I'm writing the framework mainly for use in a channel frequented by Wikipedia editors, there are a number of Wikipedia-specific commands.</p>
 
 <p><strong>Author:</strong> Molly White<br><strong>License:</strong> <a href="http://opensource.org/licenses/MIT">MIT</a><br><strong>Status:</strong> Unstable<br><strong>Version:</strong> 2.0</p>
 
 <h2>
-<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+<a name="user-content-installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
 
 <p><em>Download code from the <code>master</code> branch. Code in the <code>rewrite</code> branch is often incomplete and non-functional.</em></p>
 
@@ -45,7 +15,7 @@
 <li>Enter any information when prompted.</li>
 <li>Once the bot has successfully connected, command the bot from IRC. There are also a number of admin commands available to bot operators.</li>
 </ol><h1>
-<a name="commanding-the-bot" class="anchor" href="#commanding-the-bot"><span class="octicon octicon-link"></span></a>Commanding the bot</h1>
+<a name="user-content-commanding-the-bot" class="anchor" href="#commanding-the-bot" aria-hidden="true"><span class="octicon octicon-link"></span></a>Commanding the bot</h1>
 
 <p>The bot receives commands in one of three ways:</p>
 
@@ -59,15 +29,14 @@
 </ol><p>In the examples below, I use the <code>!command</code> syntax, but the other two would work equally well.</p>
 
 <h2>
-<a name="all-user-commands" class="anchor" href="#all-user-commands"><span class="octicon octicon-link"></span></a>All-user commands</h2>
-
-<p>These are the commands that are available to all users.</p>
+<a name="user-content-all-user-commands" class="anchor" href="#all-user-commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>All-user commands</h2>
 
 <h3>
-<a name="admincommands" class="anchor" href="#admincommands"><span class="octicon octicon-link"></span></a>admincommands</h3>
+<a name="user-content-admincommands" class="anchor" href="#admincommands" aria-hidden="true"><span class="octicon octicon-link"></span></a>admincommands</h3>
+
+<p>Aliases: admincommandlist</p>
 
 <pre><code>!admincommands
-!admincommandlist
 </code></pre>
 
 <div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!admincommands
@@ -78,7 +47,9 @@
 <p>Say the available admin-only commands. This does not display command aliases.</p>
 
 <h3>
-<a name="adminlist" class="anchor" href="#adminlist"><span class="octicon octicon-link"></span></a>adminlist</h3>
+<a name="user-content-adminlist" class="anchor" href="#adminlist" aria-hidden="true"><span class="octicon octicon-link"></span></a>adminlist</h3>
+
+<p>Aliases: admins, botops, oplist</p>
 
 <pre><code>!adminlist
 </code></pre>
@@ -90,10 +61,11 @@
 <p>Say the current bot operators.</p>
 
 <h3>
-<a name="commands" class="anchor" href="#commands"><span class="octicon octicon-link"></span></a>commands</h3>
+<a name="user-content-commands" class="anchor" href="#commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>commands</h3>
+
+<p>Aliases: commandlist</p>
 
 <pre><code>!commands
-!commandlist
 </code></pre>
 
 <div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!commands
@@ -105,7 +77,23 @@
 <p>Say the available all-user commands. This does not display command aliases.</p>
 
 <h3>
-<a name="link" class="anchor" href="#link"><span class="octicon octicon-link"></span></a>link</h3>
+<a name="user-content-hug" class="anchor" href="#hug" aria-hidden="true"><span class="octicon octicon-link"></span></a>hug</h3>
+
+<p>Aliases: hugs, glomp</p>
+
+<pre><code>!hug [user ...]
+</code></pre>
+
+<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!hug
+<span class="k">* </span><span class="gi">GorillaBot distributes tackle-glomps evenly among the channel</span>
+<span class="nt">&lt; GorillaWarfare&gt; </span>!hug user
+<span class="k">* </span><span class="gi">GorillaBot tackles user</span>
+</pre></div>
+
+<p>Hugs the user or the channel.</p>
+
+<h3>
+<a name="user-content-link" class="anchor" href="#link" aria-hidden="true"><span class="octicon octicon-link"></span></a>link</h3>
 
 <pre><code>!link URL
 </code></pre>
@@ -119,16 +107,20 @@
 
 <p>Provide information about the given link.</p>
 
-<p>In order to provide rich information about YouTube videos, you must provide a YouTube API key when configuring the bot. You can get an API key by registering a project in the <a href="https://console.developers.google.com/">Google Developer Console</a>. Without a key, the normal linking will be used.</p>
+<p>In order to provide rich information about YouTube videos, you must provide a YouTube API
+ key when configuring the bot. You can get an API key by registering a project in the <a href="https://console.developers.google.com/">
+ Google Developer Console</a>. Without a key,
+ the normal linking will be used.</p>
 
 <h4>
-<a name="settings" class="anchor" href="#settings"><span class="octicon octicon-link"></span></a>Settings</h4>
+<a name="user-content-settings" class="anchor" href="#settings" aria-hidden="true"><span class="octicon octicon-link"></span></a>Settings</h4>
 
 <ul>
 <li>
-<code>auto</code> - All links entered in the chat will be parsed, regardless of whether they're prefaced with <code>!link</code>.</li>
+<code>auto</code> - All links entered in the chat will be parsed, regardless of whether they're
+prefaced with <code>!link</code>.</li>
 </ul><h3>
-<a name="spotify" class="anchor" href="#spotify"><span class="octicon octicon-link"></span></a>spotify</h3>
+<a name="user-content-spotify" class="anchor" href="#spotify" aria-hidden="true"><span class="octicon octicon-link"></span></a>spotify</h3>
 
 <pre><code>!spotify URI
 </code></pre>
@@ -140,17 +132,18 @@
 <p>Provide information about the Spotify URI.</p>
 
 <h4>
-<a name="settings-1" class="anchor" href="#settings-1"><span class="octicon octicon-link"></span></a>Settings</h4>
+<a name="user-content-settings-1" class="anchor" href="#settings-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Settings</h4>
 
 <ul>
 <li>
-<code>auto</code> - All Spotify URIs in the chat will be parsed, regardless of whether they're prefaced with
-<code>!spotify</code>.</li>
+<code>auto</code> - All Spotify URIs in the chat will be parsed, regardless of whether they're
+prefaced with <code>!spotify</code>.</li>
 </ul><h3>
-<a name="xkcd" class="anchor" href="#xkcd"><span class="octicon octicon-link"></span></a>xkcd</h3>
+<a name="user-content-xkcd" class="anchor" href="#xkcd" aria-hidden="true"><span class="octicon octicon-link"></span></a>xkcd</h3>
+
+<p>Aliases: relevantxkcd</p>
 
 <pre><code>!xkcd [number|query]
-!relevantxkcd [number|query]
 </code></pre>
 
 <div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!xkcd batman acne
@@ -161,15 +154,15 @@
 <span class="nt">&lt; GorillaBot&gt; </span><span class="na">xkcd:</span> Telescope Names: http://xkcd.com/1294/
 </pre></div>
 
-<p>Without any arguments, this provides a random xkcd comic. When a number is supplied, it tries to return the xkcd comic with that given number. When a query string is supplied, it tries to return the xkcd comic that most closely matches that query.</p>
+<p>Without any arguments, this provides a random xkcd comic. When a number is supplied,
+ it tries to return the xkcd comic with that given number. When a query string is supplied,
+ it tries to return the xkcd comic that most closely matches that query.</p>
 
 <h2>
-<a name="admin-only-commands" class="anchor" href="#admin-only-commands"><span class="octicon octicon-link"></span></a>Admin-only commands</h2>
-
-<p>These commands are only available to bot operators.</p>
+<a name="user-content-admin-only-commands" class="anchor" href="#admin-only-commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>Admin-only commands</h2>
 
 <h3>
-<a name="join" class="anchor" href="#join"><span class="octicon octicon-link"></span></a>join</h3>
+<a name="user-content-join" class="anchor" href="#join" aria-hidden="true"><span class="octicon octicon-link"></span></a>join</h3>
 
 <pre><code>!join #channel
 </code></pre>
@@ -177,24 +170,30 @@
 <p>Joins the specified channel. Only joins one channel at a time.</p>
 
 <h3>
-<a name="part" class="anchor" href="#part"><span class="octicon octicon-link"></span></a>part</h3>
+<a name="user-content-part" class="anchor" href="#part" aria-hidden="true"><span class="octicon octicon-link"></span></a>part</h3>
+
+<p>Aliases: leave</p>
 
 <pre><code>!part [#channel] [message]
 </code></pre>
 
-<p>Parts from the specified channel, or the current channel if unspecified. Only parts from one channel at a time. If a message is included, this will be used as the part message.</p>
+<p>Parts from the specified channel, or the current channel if unspecified. Only parts from
+one channel at a time. If a message is included, this will be used as the part message.</p>
 
 <h3>
-<a name="quit" class="anchor" href="#quit"><span class="octicon octicon-link"></span></a>quit</h3>
+<a name="user-content-quit" class="anchor" href="#quit" aria-hidden="true"><span class="octicon octicon-link"></span></a>quit</h3>
+
+<p>Aliases: shutdown</p>
 
 <pre><code>!quit [message]
-!shutdown [message]
 </code></pre>
 
 <p>Quits the bot from the network and shuts down.</p>
 
 <h3>
-<a name="set" class="anchor" href="#set"><span class="octicon octicon-link"></span></a>set</h3>
+<a name="user-content-setcommand" class="anchor" href="#setcommand" aria-hidden="true"><span class="octicon octicon-link"></span></a>setcommand</h3>
+
+<p>Aliases: set</p>
 
 <pre><code>!set setting value [#channel]
 </code></pre>
@@ -203,10 +202,12 @@
 <span class="nt">&lt; GorillaBot&gt; </span>"link" set to "auto" in ##GorillaBot.
 </pre></div>
 
-<p>Change settings for a command. Allowed and default settings for a command are viewable in the command's documentation. Settings can only be edited for channels the bot is joined to, or has been joined to in the past.</p>
+<p>Change settings for a command. Allowed and default settings for a command are viewable in
+the command's documentation. Settings can only be edited for channels the bot is joined
+to, or has been joined to in the past.</p>
 
 <h3>
-<a name="unset" class="anchor" href="#unset"><span class="octicon octicon-link"></span></a>unset</h3>
+<a name="user-content-unset" class="anchor" href="#unset" aria-hidden="true"><span class="octicon octicon-link"></span></a>unset</h3>
 
 <pre><code>!unset setting [#channel]
 </code></pre>
@@ -215,26 +216,5 @@
 <span class="nt">&lt; GorillaBot&gt; </span>"link" unset for ##GorillaBot.
 </pre></div>
 
-<p>Removes the setting for a channel. This will revert to the default value. Settings can only be edited for channels the bot is joined to, or has been joined to in the past.</p>
-        </section>
-
-        <aside id="sidebar">
-          <a href="https://github.com/molly/GorillaBot/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/molly/GorillaBot/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
-
-          <p class="repo-owner"><a href="https://github.com/molly/GorillaBot"></a> is maintained by <a href="https://github.com/molly">molly</a>.</p>
-
-          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
-      </div>
-    </div>
-
-  
-  </body>
-</html>
+<p>Removes the setting for a channel. This will revert to the default value. Settings can only
+be edited for channels the bot is joined to, or has been joined to in the past.</p>
