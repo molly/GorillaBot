@@ -28,7 +28,8 @@ parse_regex = re.compile(r'@(?P<type>command|admin)\((?P<aliases>.*?)\)\ndef (?P
 command_name_regex = re.compile(r'def (?P<command>\w+)')
 whitespace_regex = re.compile(r' +#- ?')
 
-def get_files():
+def get_commands():
+    """Get the commands from all the plugin files."""
     files = [join('../plugins', f) for f in listdir('../plugins') if isfile(join('../plugins', f))]
     admin_command_list = {}
     command_list = {}
@@ -49,6 +50,7 @@ def get_files():
     format_docs(admin_command_list, command_list)
 
 def parse_command(command):
+    """Parse a command and its documentation."""
     m = re.match(parse_regex, command)
     if m:
         docs = parse_docs(m.group('docs'))
@@ -61,11 +63,13 @@ def parse_command(command):
     return None, None
 
 def parse_docs(docs):
+    """Remove unnecessary formatting from the documentation blocks."""
     docs = docs.strip('\n')
     docs = re.sub(whitespace_regex, '', docs)
     return docs
 
 def format_docs(admin, command):
+    """Format the docs into the markdown that we want."""
     admin_keys = sorted(list(admin.keys()))
     command_keys = sorted(list(command.keys()))
     admin_docs = ""
@@ -83,6 +87,8 @@ def format_docs(admin, command):
     write_docs(admin_docs, command_docs)
 
 def write_docs(admin, command):
+    """Insert the docs into the template, hit the Github API to parse markdown into HTML,
+    then write the HTML into the template."""
     with open('docs_template.md', 'r', encoding='utf-8') as f:
         md_template = f.read()
     with open('docs_template.html', 'r', encoding='utf-8') as f:
@@ -96,4 +102,4 @@ def write_docs(admin, command):
         outfile.write(html_template.format(docs=resp.text))
 
 if __name__ == "__main__":
-    get_files()
+    get_commands()
