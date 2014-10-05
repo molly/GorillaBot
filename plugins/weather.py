@@ -26,6 +26,7 @@ def weather(m):
     #- ```irc
     #- < GorillaWarfare> !weather boston
     #- < GorillaBot> Weather in Boston, MA, USA: Mostly cloudy until tomorrow morning.
+    #-               59˚F (15.0˚C). Humidity: 92%.
     #- ```
     #-
     #- Provide weather information for the given location.
@@ -49,7 +50,12 @@ def weather(m):
         resp = get_url(m, forecast_api.format(api_key, lat, long))
         blob = json.loads(resp)
         summary = blob['hourly']['summary']
-        weather = "Weather in {0}: {1}".format(addr, summary)
+        temp = round(blob['hourly']['data'][0]['temperature'])
+        humidity = round(blob['hourly']['data'][0]['humidity'] * 100)
+        print(temp)
+        weather = "Weather in {0}: {1} {2}˚F ({3}˚C). Humidity: {4}%."\
+            .format(addr, summary, str(temp), str((temp - 32)*5/9), str(humidity))
+        print(blob)
         m.bot.private_message(m.location, weather)
     else:
         m.bot.logger.info("No Forecast.io API key recorded.")
