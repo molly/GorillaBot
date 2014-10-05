@@ -22,3 +22,4 @@ import plugins.link
 import plugins.misc
 import plugins.util
 import plugins.spotify
+import plugins.weather

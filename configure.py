@@ -91,7 +91,8 @@ class Configurator(object):
                  realname TEXT NOT NULL,
                  ident TEXT NOT NULL,
                  password TEXT,
-                 youtube TEXT)''')
+                 youtube TEXT,
+                 forecast TEXT)''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS channels
               (chan_id INTEGER PRIMARY KEY,
                name TEXT NOT NULL,
@@ -156,11 +157,12 @@ class Configurator(object):
             botop = self.prompt("Bot operator(s)", '')
             password = self.prompt("Server password (optional)", hidden=True)
             youtube = self.prompt("YouTube API key (optional)", hidden=True)
+            forecast = self.prompt("Forecast.io API key (optional)", hidden=True)
             chans = re.split(',? ', chans)
             botop = re.split(',? ', botop)
-            self.display((name, nick, realname, ident, password, youtube), chans, botop)
+            self.display((name, nick, realname, ident, password, youtube, forecast), chans, botop)
             verify = input('Is this configuration correct? [y/n]: ').lower()
-        self.save_config((name, nick, realname, ident, chans, botop, password, youtube))
+        self.save_config((name, nick, realname, ident, chans, botop, password, youtube, forecast))
         return name
 
     def load_settings(self):
@@ -233,11 +235,12 @@ class Configurator(object):
         botops = ", ".join(botops)
         password = "[hidden]" if data[4] else "[none]"
         youtube = "[hidden]" if data[5] else "[none]"
+        forecast = "[hidden]" if data[6] else "[none]"
         print(
             "\n------------------------------\n Nickname: {0}\n Real name: {1}\n Identifier: {2}\n"
             " Channels: {3}\n Bot operator(s): {4}\n Server password: {5}\nYouTube API key: {6}\n"
-            "------------------------------\n".format(data[1], data[2], data[3], chans, botops,
-                                                      password, youtube))
+            "Forecast.io API key: {7}\n------------------------------\n"
+            .format(data[1], data[2], data[3], chans, botops, password, youtube, forecast))
 
     def verify(self, data, chans, botops):
         """Verify a configuration, and make changes if needed."""
@@ -256,9 +259,11 @@ class Configurator(object):
                 botop = self.prompt("Bot operator(s)", ", ".join(botops))
                 password = self.prompt("Server password (optional)", hidden=True)
                 youtube = self.prompt("YouTube API key (optional)", hidden=True)
+                forecast = self.prompt("Forecast.io API key (optional)", hidden=True)
                 chans = re.split(',? ', chans)
                 botop = re.split(',? ', botop)
-                self.display((name, nick, realname, ident, password, youtube), chans, botop)
+                self.display((name, nick, realname, ident, password, youtube, forecast), chans,
+                             botop)
                 verify = input('Is this configuration correct? [y/n]: ').lower()
             self.delete(name)
             cursor = self.db_conn.cursor()
@@ -266,13 +271,14 @@ class Configurator(object):
             cursor.execute('''DELETE FROM users WHERE config = ?''', (name,))
             self.db_conn.commit()
             cursor.close()
-            self.save_config((name, nick, realname, ident, chans, botop, password, youtube))
+            self.save_config((name, nick, realname, ident, chans, botop, password, youtube,
+                              forecast))
 
     def save_config(self, data):
         """Save changes to the configuration table."""
         cursor = self.db_conn.cursor()
-        cursor.execute('''INSERT INTO configs VALUES (?, ?, ?, ?, ?, ?)''',
-                       (data[0], data[1], data[2], data[3], data[6], data[7],))
+        cursor.execute('''INSERT INTO configs VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                       (data[0], data[1], data[2], data[3], data[6], data[7], data[8]))
         self.db_conn.commit()
         cursor.close()
         if type(data[4]) is str:

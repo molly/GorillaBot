@@ -76,7 +76,7 @@ class Bot(object):
         cursor.execute('''SELECT * FROM configs WHERE name = ?''', (self.configuration,))
         data = cursor.fetchone()
         cursor.close()
-        name, nick, realname, ident, password, youtube = data
+        name, nick, realname, ident, password, youtube, forecast = data
         try:
             self.logger.info('Initiating connection.')
             self.socket.connect(("chat.freenode.net", 6667))
