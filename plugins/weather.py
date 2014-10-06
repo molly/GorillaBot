@@ -16,7 +16,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import json
-from plugins.util import admin, command, get_url
+from plugins.util import command, get_url
+from urllib.parse import quote
 
 @command()
 def weather(m):
@@ -41,7 +42,7 @@ def weather(m):
         google_api = "http://maps.googleapis.com/maps/api/geocode/json?address={}"
         forecast_api = "https://api.forecast.io/forecast/{0}/{1},{2}?exclude=currently,minutely," \
                        "daily,alerts,flags"
-        loc = "+".join(m.line[1:])
+        loc = quote("+".join(m.line[1:]))
         resp = get_url(m, google_api.format(loc))
         blob = json.loads(resp)
         lat = blob['results'][0]['geometry']['location']['lat']
@@ -52,10 +53,8 @@ def weather(m):
         summary = blob['hourly']['summary']
         temp = round(blob['hourly']['data'][0]['temperature'])
         humidity = round(blob['hourly']['data'][0]['humidity'] * 100)
-        print(temp)
         weather = "Weather in {0}: {1} {2}˚F ({3}˚C). Humidity: {4}%."\
-            .format(addr, summary, str(temp), str((temp - 32)*5/9), str(humidity))
-        print(blob)
+            .format(addr, summary, str(temp), str(round((temp - 32)*5/9)), str(humidity))
         m.bot.private_message(m.location, weather)
     else:
         m.bot.logger.info("No Forecast.io API key recorded.")
