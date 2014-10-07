@@ -48,16 +48,21 @@ def weather(m):
             loc = quote("+".join(m.line[1:]))
             resp = get_url(m, google_api.format(loc))
             blob = json.loads(resp)
-            lat = blob['results'][0]['geometry']['location']['lat']
-            long = blob['results'][0]['geometry']['location']['lng']
-            addr = blob['results'][0]['formatted_address']
-            resp = get_url(m, forecast_api.format(api_key, lat, long))
-            blob = json.loads(resp)
-            summary = blob['hourly']['summary']
-            temp = round(blob['hourly']['data'][0]['temperature'])
-            humidity = round(blob['hourly']['data'][0]['humidity'] * 100)
-            weather = "Weather in {0}: {1} {2}˚F ({3}˚C). Humidity: {4}%."\
-                .format(addr, summary, str(temp), str(round((temp - 32)*5/9)), str(humidity))
-            m.bot.private_message(m.location, weather)
+            print(blob)
+            if not blob["results"]:
+                m.bot.private_message(m.location, "Could not find weather information for {}."
+                                      .format(" ".join(m.line[1:])))
+            else:
+                lat = blob['results'][0]['geometry']['location']['lat']
+                long = blob['results'][0]['geometry']['location']['lng']
+                addr = blob['results'][0]['formatted_address']
+                resp = get_url(m, forecast_api.format(api_key, lat, long))
+                blob = json.loads(resp)
+                summary = blob['hourly']['summary']
+                temp = round(blob['hourly']['data'][0]['temperature'])
+                humidity = round(blob['hourly']['data'][0]['humidity'] * 100)
+                weather = "Weather in {0}: {1} {2}˚F ({3}˚C). Humidity: {4}%."\
+                    .format(addr, summary, str(temp), str(round((temp - 32)*5/9)), str(humidity))
+                m.bot.private_message(m.location, weather)
     else:
         m.bot.logger.info("No Forecast.io API key recorded.")
