@@ -278,7 +278,7 @@ class Bot(object):
             sleep(1)
         try:
             message = re.sub(r'(\n|\r)', "", message)
-            self.socket.sendall(bytes((message + "\r\n"), "utf-8"))
+            self.socket.sendall(bytes((message[:510] + "\r\n"), "utf-8"))
         except socket.error:
             self.shutdown.set()
             self.logger.error("Message '" + message + "' failed to send. Shutting down.")
