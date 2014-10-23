@@ -34,10 +34,14 @@ def weather(m):
     #- < GorillaWarfare> !weather --now boston
     #- < GorillaBot> Weather in Boston, MA, USA: Light Rain and Breezy. 51˚F (10˚C). Feels like
     #-               51˚F (10˚C). Humidity: 96%. Wind speed: 25mph (40kph).
+    #- < GorillaWarfare> !weather --week boston
+    #- < GorillaBot> Weather in Boston, MA, USA: Light rain throughout the week, with temperatures
+    #-               bottoming out at 53°F on Friday. 51–55˚F (11–13˚C).
     #- ```
     #-
     #- Provide weather information for the given location. Defaults to giving weather information
-    #  about today, but will give more specific information if passed the `--now` parameter.
+    #- about today. Given the `--now` parameter, this will give the current weather. Given the
+    #- `--weekly` parameter, this will give the forecast for the week.
     #-
     #- In order to provide weather information, you must provide a Forecast.io API key when
     #-  configuring the bot. You can get an API key by registering an email address at
@@ -118,7 +122,7 @@ def format_weather(blob, loc):
 
 
 def format_weather_now(blob, loc):
-    """Format the weather nicely."""
+    """Format the current weather nicely."""
     w = {"loc": loc["addr"]}
     summary = blob["currently"]["summary"]
     summary = summary[0] + summary[1:].lower()
