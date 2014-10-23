@@ -24,15 +24,20 @@ from urllib.parse import quote
 def weather(m):
     """Get the weather for a specified location."""
 
-    #-     !weather location
+    #-     !weather [--now] location
     #-
     #- ```irc
     #- < GorillaWarfare> !weather boston
-    #- < GorillaBot> Weather in Boston, MA, USA: Mostly cloudy until tomorrow morning.
-    #-               59˚F (15.0˚C). Humidity: 92%.
+    #- < GorillaBot> Weather in Boston, MA, USA: Rain until tomorrow evening and breezy until
+    #-               tomorrow morning. 51˚F (10˚C). Feels like 51˚F (10˚C). Humidity: 95%. Wind
+    #-               speed: 23mph (38kph).
+    #- < GorillaWarfare> !weather --now boston
+    #- < GorillaBot> Weather in Boston, MA, USA: Light Rain and Breezy. 51˚F (10˚C). Feels like
+    #-               51˚F (10˚C). Humidity: 96%. Wind speed: 25mph (40kph).
     #- ```
     #-
-    #- Provide weather information for the given location.
+    #- Provide weather information for the given location. Defaults to giving weather information
+    #  about today, but will give more specific information if passed the `--now` parameter.
     #-
     #- In order to provide weather information, you must provide a Forecast.io API key when
     #-  configuring the bot. You can get an API key by registering an email address at
