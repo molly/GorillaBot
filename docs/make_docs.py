@@ -19,7 +19,6 @@ from os import listdir
 from os.path import isfile, join
 import re
 from urllib.request import Request, urlopen
-from secrets import *
 
 command_regex = re.compile(r'((?:@command|@admin)\(.*?\)\ndef.*?)(?=@command|@admin|def |\Z)',
                            re.DOTALL)
