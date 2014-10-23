@@ -60,8 +60,6 @@ def link(m, urls=None):
             message = youtube(m, url)
         elif "reddit.com" in url:
             message = reddit(m, url)
-        elif "i.imgur.com" in url:
-            message = imgur(m, url)
         else:
             message = generic(m, url)
         if message:
@@ -208,14 +206,6 @@ def reddit(m, url):
                 return "/r/{display_name}. {title}. {subscribers} subscribers." \
                        " {nsfw}".format(**blob)
     return generic(m, url)
-
-
-def imgur(m, url):
-    """Use Imgur ID to find the title of an image for a direct image link."""
-    match = re.search(r'i\.imgur\.com/(.+?)\.', url)
-    if match:
-        m.bot.logger.info("Retrieving imgur title for direct image link: {}.".format(url))
-        return generic(m, "http://imgur.com/" + match.group(1))
 
 
 def generic(m, url):
