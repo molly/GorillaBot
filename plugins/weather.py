@@ -24,7 +24,7 @@ from urllib.parse import quote
 def weather(m):
     """Get the weather for a specified location."""
 
-    #-     !weather [--now] location
+    #-     !weather [--now|--week] location
     #-
     #- ```irc
     #- < GorillaWarfare> !weather boston
@@ -52,11 +52,15 @@ def weather(m):
             if m.line[1] in ["--now", "-now", "-n"]:
                 loc = get_location(m, args=True)
                 blob = get_weather(m, loc, api_key)
-                msg = format_weather(blob, loc, "currently")
+                msg = format_weather_now(blob, loc)
+            elif m.line[1] in ["--week", "-week", "-w"]:
+                loc = get_location(m, args=True)
+                blob = get_weather(m, loc, api_key)
+                msg = format_weather_weekly(blob, loc)
             else:
                 loc = get_location(m)
                 blob = get_weather(m, loc, api_key)
-                msg = format_weather(blob, loc, "hourly")
+                msg = format_weather(blob, loc)
             m.bot.private_message(m.location, msg)
     else:
         m.bot.logger.info("No Forecast.io API key recorded.")
@@ -92,22 +96,36 @@ def get_weather(m, loc, api_key):
         return json.loads(resp)
 
 
-def format_weather(blob, loc, time):
+def format_weather(blob, loc):
     """Format the weather nicely."""
     w = {"loc": loc["addr"]}
-    if time == "currently":
-        summary = blob["currently"]["summary"]
-        summary = summary[0] + summary[1:].lower()
-        temp = blob["currently"]["temperature"]
-        app_temp = blob["currently"]["apparentTemperature"]
-        w["humidity"] = round(blob["currently"]["humidity"] * 100)
-        wind = blob["currently"]["windSpeed"]
-    else:
-        summary = blob[time]['summary']
-        temp = blob[time]['data'][0]['temperature']
-        app_temp = blob[time]['data'][0]["apparentTemperature"]
-        w["humidity"] = round(blob[time]['data'][0]['humidity'] * 100)
-        wind = blob[time]['data'][0]["windSpeed"]
+    w["summary"] = blob["hourly"]['summary']
+    temp = blob["hourly"]['data'][0]['temperature']
+    app_temp = blob["hourly"]['data'][0]["apparentTemperature"]
+    w["humidity"] = round(blob["hourly"]['data'][0]['humidity'] * 100)
+    wind = blob["hourly"]['data'][0]["windSpeed"]
+
+    w["temp_f"] = round(temp)
+    w["temp_c"] = round(to_celsius(temp))
+    w["app_temp_f"] = round(app_temp)
+    w["app_temp_c"] = round(to_celsius(app_temp))
+    w["wind_mph"] = round(wind)
+    w["wind_kph"] = round(wind*1.609)
+
+    return "Weather in {loc}: {summary} {temp_f}˚F ({temp_c}˚C). Feels like {app_temp_f}˚F " \
+           "({app_temp_c}˚C). Humidity: {humidity}%. Wind speed: {wind_mph}mph " \
+           "({wind_kph}kph).".format(**w)
+
+
+def format_weather_now(blob, loc):
+    """Format the weather nicely."""
+    w = {"loc": loc["addr"]}
+    summary = blob["currently"]["summary"]
+    summary = summary[0] + summary[1:].lower()
+    temp = blob["currently"]["temperature"]
+    app_temp = blob["currently"]["apparentTemperature"]
+    w["humidity"] = round(blob["currently"]["humidity"] * 100)
+    wind = blob["currently"]["windSpeed"]
 
     w["summary"] = summary + "." if summary[-1] != "." else summary
     w["temp_f"] = round(temp)
@@ -120,6 +138,22 @@ def format_weather(blob, loc, time):
     return "Weather in {loc}: {summary} {temp_f}˚F ({temp_c}˚C). Feels like {app_temp_f}˚F " \
            "({app_temp_c}˚C). Humidity: {humidity}%. Wind speed: {wind_mph}mph " \
            "({wind_kph}kph).".format(**w)
+
+
+def format_weather_weekly(blob, loc):
+    """Format the weekly weather nicely."""
+    w = {"loc": loc["addr"]}
+    w["summary"] = blob["daily"]["summary"]
+    min_temp = blob["daily"]["data"][0]["temperatureMin"]
+    max_temp = blob["daily"]["data"][0]["temperatureMax"]
+
+    w["min_temp_f"] = round(min_temp)
+    w["min_temp_c"] = round(to_celsius(min_temp))
+    w["max_temp_f"] = round(max_temp)
+    w["max_temp_c"] = round(to_celsius(max_temp))
+
+    return "Weather in {loc}: {summary} {min_temp_f}–{max_temp_f}˚F ({min_temp_c}–" \
+           "{max_temp_c}˚C).".format(**w)
 
 
 def to_celsius(temp):
