@@ -22,6 +22,27 @@ from bs4 import BeautifulSoup
 @command("b", "qdb")
 def bash(m):
     """Return a quote from bash.org."""
+
+    #-     !bash [number]
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !bash
+    #- < GorillaBot> --- #64 (859) http://bash.org?64 ----------------------------------------------
+    #- < GorillaBot> <Ash> Win2k! ^_^
+    #- < GorillaBot> *** Ash Quit (Read error: 73 (Connection reset by peer))
+    #- < GorillaBot> -------------------------------------------------------------------------------
+    #- < GorillaWarfare> !bash 400459
+    #- < GorillaBot> --- #400459 (13378) http://bash.org?400459 ------------------------------------
+    #- < GorillaBot> <Sonium> someone speak python here?
+    #- < GorillaBot> <lucky> HHHHHSSSSSHSSS
+    #- < GorillaBot> <lucky> SSSSS
+    #- < GorillaBot> <Sonium> the programming language
+    #- < GorillaBot> -------------------------------------------------------------------------------
+    #-
+    #- Post a quote from bash.org. If given a quote number, it will try to post it. Otherwise it
+    #- will post a random quote. If the quote is too long, it will direct the user to the URL.
+    #- Please note that there is no filtering here, so some of the quotes may be inappropriate.
+
     if len(m.line) > 1 and m.line[1].isnumeric():
         bash_specific(m, m.line[1])
     else:
