@@ -31,16 +31,16 @@ def bash(m):
 def bash_rand(m):
     """Get a random quote from bash.org"""
     resp = get_url(m, "http://bash.org?random")
-    if resp:
-        soup = BeautifulSoup(resp)
-        raw = soup.find(class_="qt")
+    soup = BeautifulSoup(resp)
+    raw = soup.find(class_="qt")
+    if raw:
         meta = soup.find(class_="quote")
         while True:
             if not raw:
                 bash_rand(m)
                 return
             lines = raw.get_text().splitlines()
-            if len(lines) < 5:
+            if len(lines) <= 5:
                 break
             raw = raw.find_next(class_="qt")
             meta = soup.find_next(class_="quote")
@@ -52,12 +52,12 @@ def bash_rand(m):
 def bash_specific(m, number):
     """Get a specific quote from bash.org."""
     resp = get_url(m, "http://bash.org?" + number)
-    if resp:
-        soup = BeautifulSoup(resp)
-        raw = soup.find(class_="qt")
+    soup = BeautifulSoup(resp)
+    raw = soup.find(class_="qt")
+    if raw:
         meta = soup.find(class_="quote")
         lines = raw.get_text().splitlines()
-        if len(lines) and not m.is_pm:
+        if len(lines) > 5 and not m.is_pm:
             m.bot.private_message(m.location, "This quote is too long to post publicly, "
                                               "but you can view it at http://bash.org?"
                                               "{}.".format(number))
