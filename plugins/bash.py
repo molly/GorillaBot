@@ -69,11 +69,18 @@ def bash_specific(m, number):
 
 def format_quote(m, raw, meta, number=None):
     """Format the quote with some metadata."""
-    score = meta.font.string
-    score_str = "\x0304{}\x03".format(score) if "-" in score else "\x0303{}\x03".format(score)
-    url = "http://bash.org?" + (number if number else meta.b.string.strip("#"))
-    meta_str = "--- {} ({}) {} ".format(meta.b.string, score_str, url)
-    m.bot.private_message(m.location, meta_str.ljust(80, '-'))
-    for line in raw:
-        m.bot.private_message(m.location, line)
-    m.bot.private_message(m.location, "-" * 80)
+    try:
+        score = meta.font.string
+        score_str = "\x0304{}\x03".format(score) if "-" in score else "\x0303{}\x03".format(score)
+        url = "http://bash.org?" + (number if number else meta.b.string.strip("#"))
+        meta_str = "--- {} ({}) {} ".format(meta.b.string, score_str, url)
+    except AttributeError as e:
+        if number:
+            m.bot.private_message(m.location, "Could not find bash quote.")
+        else:
+            bash_rand(m)
+    else:
+        m.bot.private_message(m.location, meta_str.ljust(83, '-'))
+        for line in raw:
+            m.bot.private_message(m.location, line)
+        m.bot.private_message(m.location, "-" * 80)
