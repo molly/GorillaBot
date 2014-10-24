@@ -21,6 +21,16 @@ from random import choice
 @command("8ball", "8-ball")
 def eightball(m):
     """Returns 8-ball advice."""
+
+    #-     !8ball [question]
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !8ball
+    #- < GorillaBot> Most likely.
+    #- ```
+    #-
+    #- Returns a magic 8 ball response.
+
     with open(m.bot.base_path + '/plugins/responses/8ball.txt', 'r') as replies:
         lines = replies.read().splitlines()
         m.bot.private_message(m.location, choice(lines))
