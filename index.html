@@ -98,20 +98,57 @@
 <p>Say the current bot operators.</p>
 
 <h3>
-<a name="user-content-commands" class="anchor" href="#commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>commands</h3>
+<a name="user-content-bash" class="anchor" href="#bash" aria-hidden="true"><span class="octicon octicon-link"></span></a>bash</h3>
 
-<p>Aliases: commandlist</p>
+<p>Aliases: b, qdb</p>
 
-<pre><code>!commands
+<pre><code>!bash [number]
 </code></pre>
 
-<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!commands
+<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!bash
+<span class="nt">&lt; GorillaBot&gt; </span>--- #64 (859) http://bash.org?64 ----------------------------------------------
+<span class="nt">&lt; GorillaBot&gt; </span>&lt;Ash&gt; Win2k! ^_^
+<span class="nt">&lt; GorillaBot&gt; </span>*** Ash Quit (Read error: 73 (Connection reset by peer))
+<span class="nt">&lt; GorillaBot&gt; </span>-------------------------------------------------------------------------------
+<span class="nt">&lt; GorillaWarfare&gt; </span>!bash 400459
+<span class="nt">&lt; GorillaBot&gt; </span>--- #400459 (13378) http://bash.org?400459 ------------------------------------
+<span class="nt">&lt; GorillaBot&gt; </span>&lt;Sonium&gt; someone speak python here?
+<span class="nt">&lt; GorillaBot&gt; </span>&lt;lucky&gt; HHHHHSSSSSHSSS
+<span class="nt">&lt; GorillaBot&gt; </span>&lt;lucky&gt; SSSSS
+<span class="nt">&lt; GorillaBot&gt; </span>&lt;Sonium&gt; the programming language
+<span class="nt">&lt; GorillaBot&gt; </span>-------------------------------------------------------------------------------
+
+Post a quote from bash.org. If given a quote number, it will try to post it. Otherwise it
+will post a random quote. If the quote is too long, it will direct the user to the URL.
+Please note that there is no filtering here, so some of the quotes may be inappropriate.
+
+### commands
+Aliases: commandlist
+
+    !commands
+
+```irc
+<span class="nt">&lt; GorillaWarfare&gt; </span>!commands
 <span class="nt">&lt; GorillaBot&gt; </span>My available commands are admincommands, adminlist, commands, hug,
               link, spotify, and xkcd. See http://molly.github.io/GorillaBot
               for documentation.
 </pre></div>
 
 <p>Say the available all-user commands. This does not display command aliases.</p>
+
+<h3>
+<a name="user-content-eightball" class="anchor" href="#eightball" aria-hidden="true"><span class="octicon octicon-link"></span></a>eightball</h3>
+
+<p>Aliases: 8ball, 8-ball</p>
+
+<pre><code>!8ball [question]
+</code></pre>
+
+<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!8ball
+<span class="nt">&lt; GorillaBot&gt; </span>Most likely.
+</pre></div>
+
+<p>Returns a magic 8 ball response.</p>
 
 <h3>
 <a name="user-content-hug" class="anchor" href="#hug" aria-hidden="true"><span class="octicon octicon-link"></span></a>hug</h3>
