@@ -38,6 +38,7 @@ def bash(m):
     #- < GorillaBot> <lucky> SSSSS
     #- < GorillaBot> <Sonium> the programming language
     #- < GorillaBot> -------------------------------------------------------------------------------
+    #- ```
     #-
     #- Post a quote from bash.org. If given a quote number, it will try to post it. Otherwise it
     #- will post a random quote. If the quote is too long, it will direct the user to the URL.
