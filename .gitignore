@@ -6,3 +6,6 @@ __pycache__
 *.pkl
 db/*
 */secrets.py
+*.zip
+MANIFEST
+dist/*
