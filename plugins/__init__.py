@@ -16,6 +16,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import plugins.actions
+import plugins.bash
 import plugins.connection
 import plugins.eightball
 import plugins.freenode
