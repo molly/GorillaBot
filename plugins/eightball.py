@@ -15,12 +15,12 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import plugins.actions
-import plugins.connection
-import plugins.eightball
-import plugins.freenode
-import plugins.link
-import plugins.misc
-import plugins.util
-import plugins.spotify
-import plugins.weather
+from plugins.util import command
+from random import choice
+
+@command("8ball", "8-ball")
+def eightball(m):
+    """Returns 8-ball advice."""
+    with open(m.bot.base_path + '/plugins/responses/8ball.txt', 'r') as replies:
+        lines = replies.read().splitlines()
+        m.bot.private_message(m.location, choice(lines))
