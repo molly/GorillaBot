@@ -11,6 +11,11 @@ __Python version:__ 3.4+
 _Download code from the `master` branch. Code in the `development` branch is often incomplete and
 nonfunctional._
 
+The bot is available on [PyPI](https://pypi.python.org/pypi/gorillabot), so it can be installed 
+with `pip install gorillabot` or `easy_install gorillabot`.
+
+Alternatively, install the bot from source:
+
 1. Run `python3 bot.py` from the source directory.
 2. Configure the bot when prompted. If you already have already configured the bot, you can use
 that configuration or create a new one.
