@@ -57,10 +57,11 @@ class Executor(object):
                             (self.bot.configuration,))
                         data = cursor.fetchone()
                         cursor.close()
-                        if msg.sender != data[0] + "!" + data[1] + "@" + data[2]:
+                        if any(x is None for x in data) or \
+                                        self.bot.parse_hostmask(msg.sender) != data[2]:
                             self.bot.private_message(msg.location,
                                                      "Please ask a bot operator to perform this"
-                                                     "action for you.")
+                                                     " action for you.")
                             continue
                     if msg.needs_own_thread:
                         # Begin a new thread if necessary
