@@ -68,13 +68,13 @@ def flirt(m):
     #-     !flirt [user ...]
     #-
     #- ```irc
-    #- < GorillaWarfare> !hug
-    #- * GorillaBot distributes tackle-glomps evenly among the channel
-    #- < GorillaWarfare> !hug user
-    #- * GorillaBot tackles user
+    #- < GorillaWarfare> !flirt
+    #- < GorillaBot> I'm a fermata... hold me.
+    #- < GorillaWarfare> !flirt user
+    #- < GorillaBot> user: If you were a booger I'd rearrange the alphabet so you fell from heaven!
     #- ```
     #-
-    #- Hugs the user or the channel.
+    #- Flirts at the user or the channel.
 
     match = re.match(
         r':!(?:\w+) ?(\w+)?(?: and | |, )?((?!and)\w+)?(?:,? and |, | )?((?!and)\w+)?', m.body)
