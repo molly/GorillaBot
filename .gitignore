@@ -4,8 +4,9 @@ logs/
 .idea/
 __pycache__
 *.pkl
-db/*
+gorillabot/db/*
 */secrets.py
+*.html
 *.zip
 MANIFEST
 dist/*
