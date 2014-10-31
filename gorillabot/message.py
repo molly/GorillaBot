@@ -69,27 +69,33 @@ class Command(Message):
             self.trigger = eval(self.bot.commands[self.command][0])
             self.args.append(self)
         else:
-            m = re.findall(r'(https?://\S+)', self.body)
-            if m:
-                self.needs_own_thread = True
-                self.trigger = plugins.link.link
-                self.args.append(self)
-                self.args.append(m)
-                return
-            m = re.findall(r'spotify:', self.body)
-            if m:
-                self.needs_own_thread = True
-                self.trigger = plugins.spotify.spotify
-                self.args.append(self)
-                return
-            if "alfredbot" in self.body.lower():
-                self.trigger = plugins.batman.alfred
-                self.args.append(self)
-                return
-            if "batman" in self.body.lower():
-                self.trigger = plugins.batman.batman
-                self.args.append(self)
-                return
+            auto_link = self.is_pm or self.bot.get_setting('link', self.location) == 'auto'
+            auto_spotify = self.is_pm or self.bot.get_setting('spotify', self.location) == 'auto'
+            batman = self.bot.get_setting('batman', self.location) == 'on'
+            if auto_link:
+                m = re.findall(r'(https?://\S+)', self.body)
+                if m:
+                    self.needs_own_thread = True
+                    self.trigger = plugins.link.link
+                    self.args.append(self)
+                    self.args.append(m)
+                    return
+            if auto_spotify:
+                m = re.findall(r'spotify:', self.body)
+                if m:
+                    self.needs_own_thread = True
+                    self.trigger = plugins.spotify.spotify
+                    self.args.append(self)
+                    return
+            if batman:
+                if "alfredbot" in self.body.lower():
+                    self.trigger = plugins.batman.alfred
+                    self.args.append(self)
+                    return
+                if "batman" in self.body.lower():
+                    self.trigger = plugins.batman.batman
+                    self.args.append(self)
+                    return
 
 class Notice(Message):
     """Represent a notice received from the server or another user."""
