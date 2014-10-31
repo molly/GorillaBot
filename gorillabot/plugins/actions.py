@@ -60,3 +60,38 @@ def _get_hug(m):
         lines = hugs.read().splitlines()
         verb = choice(lines)
         return verb
+
+@command("pickupline", "flirts")
+def flirt(m):
+    """Flirts with the specified user or channel in general."""
+
+    #-     !flirt [user ...]
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !hug
+    #- * GorillaBot distributes tackle-glomps evenly among the channel
+    #- < GorillaWarfare> !hug user
+    #- * GorillaBot tackles user
+    #- ```
+    #-
+    #- Hugs the user or the channel.
+
+    match = re.match(
+        r':!(?:\w+) ?(\w+)?(?: and | |, )?((?!and)\w+)?(?:,? and |, | )?((?!and)\w+)?', m.body)
+    users = [x for x in match.groups() if x] if match else []
+    if users == []:
+        m.bot.private_message(m.location, _get_flirt(m))
+    else:
+        bot_nick = m.bot.get_config('nick')
+        for user in users:
+            if user.lower() == bot_nick.lower():
+                users.remove(user)
+                users.append(m.bot.parse_hostmask(m.sender)["nick"])
+        if users != []:
+            m.bot.private_message(m.location, humanize_list(users) + ": " + _get_flirt(m))
+
+def _get_flirt(m):
+    with open(m.bot.base_path + '/plugins/responses/flirt.txt', 'r') as flirts:
+        lines = flirts.read().splitlines()
+        verb = choice(lines)
+        return verb
