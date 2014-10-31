@@ -52,7 +52,7 @@ def bash(m):
 
 def bash_rand(m):
     """Get a random quote from bash.org"""
-    resp = get_url(m, "http://bash.org?random")
+    resp = get_url(m, "http://bash.org?random1")
     soup = BeautifulSoup(resp)
     raw = soup.find(class_="qt")
     if raw:
