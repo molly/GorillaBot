@@ -17,6 +17,7 @@
 
 import plugins.actions
 import plugins.bash
+import plugins.batman
 import plugins.connection
 import plugins.eightball
 import plugins.freenode

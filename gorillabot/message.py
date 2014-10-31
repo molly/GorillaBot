@@ -82,7 +82,14 @@ class Command(Message):
                 self.trigger = plugins.spotify.spotify
                 self.args.append(self)
                 return
-
+            if "alfredbot" in self.body.lower():
+                self.trigger = plugins.batman.alfred
+                self.args.append(self)
+                return
+            if "batman" in self.body.lower():
+                self.trigger = plugins.batman.batman
+                self.args.append(self)
+                return
 
 class Notice(Message):
     """Represent a notice received from the server or another user."""
@@ -203,10 +210,11 @@ class Privmsg(Message):
         return "Privmsg from {0} in {1}: {2}".format(self.sender, self.location, self.body)
 
     def set_trigger(self):
-        link_setting = 'auto' if self.is_pm else self.bot.get_setting('link', self.location)
-        spotify_setting = 'auto' if self.is_pm else self.bot.get_setting('spotify', self.location)
+        auto_link = self.is_pm or self.bot.get_setting('link', self.location) == 'auto'
+        auto_spotify = self.is_pm or self.bot.get_setting('spotify', self.location) == 'auto'
+        batman = self.bot.get_setting('batman', self.location) == 'on'
         # TODO: This needs to be done better :S
-        if link_setting == "auto":
+        if auto_link:
             m = re.findall(r'(https?://\S+)', self.body)
             if m:
                 self.needs_own_thread = True
@@ -214,10 +222,19 @@ class Privmsg(Message):
                 self.args.append(self)
                 self.args.append(m)
                 return
-        if spotify_setting == "auto":
+        if auto_spotify:
             m = re.findall(r'spotify:', self.body)
             if m:
                 self.needs_own_thread = True
                 self.trigger = plugins.spotify.spotify
+                self.args.append(self)
+                return
+        if batman:
+            if "alfredbot" in self.body.lower():
+                self.trigger = plugins.batman.alfred
+                self.args.append(self)
+                return
+            if "batman" in self.body.lower():
+                self.trigger = plugins.batman.batman
                 self.args.append(self)
                 return

@@ -1,1 +1,35 @@
-__author__ = 'mwhite'
+# Copyright (c) 2013-2014 Molly White
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+# and associated documentation files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or
+# substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+# BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+# DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+from random import choice, random
+
+def alfred(m):
+    """Respond with a line from alfred.txt every 1 in 10 times "AlfredBot" is mentioned."""
+    if random() < 0.1:
+        m.bot.private_message(m.location, _get_line(m, "alfred.txt"))
+
+def batman(m):
+    """Respond with a line from alfred.txt every 1 in 10 times "batman" is mentioned."""
+    if random() < 0.1:
+        m.bot.private_message(m.location, _get_line(m, "batman.txt"))
+
+def _get_line(m, file):
+    """Get a random line from the given file."""
+    with open(m.bot.base_path + '/plugins/responses/' + file, 'r') as resps:
+        lines = resps.read().splitlines()
+        verb = choice(lines)
+        return verb
