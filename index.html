@@ -33,7 +33,10 @@
 
 <p>GorillaBot is an IRC bot framework written in Python. The bot is initiated from the command line. Once it is connected, it receives its commands through IRC. Because I'm writing the framework mainly for use in a channel frequented by Wikipedia editors, there are a number of Wikipedia-specific commands.</p>
 
-<p><strong>Author:</strong> Molly White<br><strong>License:</strong> <a href="http://opensource.org/licenses/MIT">MIT</a><br><strong>Status:</strong> Unstable<br><strong>Version:</strong> 2.0</p>
+<p><strong>Author:</strong> Molly White<br>
+<strong>License:</strong> <a href="http://opensource.org/licenses/MIT">MIT</a><br>
+<strong>Status:</strong> Unstable<br>
+<strong>Version:</strong> 2.0</p>
 
 <h2>
 <a name="user-content-installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
@@ -44,7 +47,9 @@
 <li>Run <code>python3 bot.py</code> from the source directory. This will step you through configuring the bot. If you already have already configured the bot, you can use that configuration or create a new one.</li>
 <li>Enter any information when prompted.</li>
 <li>Once the bot has successfully connected, command the bot from IRC. There are also a number of admin commands available to bot operators.</li>
-</ol><h1>
+</ol>
+
+<h1>
 <a name="user-content-commanding-the-bot" class="anchor" href="#commanding-the-bot" aria-hidden="true"><span class="octicon octicon-link"></span></a>Commanding the bot</h1>
 
 <p>The bot receives commands in one of three ways:</p>
@@ -56,7 +61,9 @@
 </li>
 <li>Receiving a command in a private message: <code>/msg GorillaBot command</code>
 </li>
-</ol><p>In the examples below, I use the <code>!command</code> syntax, but the other two would work equally well.</p>
+</ol>
+
+<p>In the examples below, I use the <code>!command</code> syntax, but the other two would work equally well.</p>
 
 <h2>
 <a name="user-content-all-user-commands" class="anchor" href="#all-user-commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>All-user commands</h2>
@@ -91,6 +98,32 @@
 <p>Say the current bot operators.</p>
 
 <h3>
+<a name="user-content-bash" class="anchor" href="#bash" aria-hidden="true"><span class="octicon octicon-link"></span></a>bash</h3>
+
+<p>Aliases: b, qdb</p>
+
+<pre><code>!bash [number]
+</code></pre>
+
+<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!bash
+<span class="nt">&lt; GorillaBot&gt; </span>--- #64 (859) http://bash.org?64 ----------------------------------------------
+<span class="nt">&lt; GorillaBot&gt; </span>&lt;Ash&gt; Win2k! ^_^
+<span class="nt">&lt; GorillaBot&gt; </span>*** Ash Quit (Read error: 73 (Connection reset by peer))
+<span class="nt">&lt; GorillaBot&gt; </span>-------------------------------------------------------------------------------
+<span class="nt">&lt; GorillaWarfare&gt; </span>!bash 400459
+<span class="nt">&lt; GorillaBot&gt; </span>--- #400459 (13378) http://bash.org?400459 ------------------------------------
+<span class="nt">&lt; GorillaBot&gt; </span>&lt;Sonium&gt; someone speak python here?
+<span class="nt">&lt; GorillaBot&gt; </span>&lt;lucky&gt; HHHHHSSSSSHSSS
+<span class="nt">&lt; GorillaBot&gt; </span>&lt;lucky&gt; SSSSS
+<span class="nt">&lt; GorillaBot&gt; </span>&lt;Sonium&gt; the programming language
+<span class="nt">&lt; GorillaBot&gt; </span>-------------------------------------------------------------------------------
+</pre></div>
+
+<p>Post a quote from bash.org. If given a quote number, it will try to post it. Otherwise it
+will post a random quote. If the quote is too long, it will direct the user to the URL.
+Please note that there is no filtering here, so some of the quotes may be inappropriate.</p>
+
+<h3>
 <a name="user-content-commands" class="anchor" href="#commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>commands</h3>
 
 <p>Aliases: commandlist</p>
@@ -105,6 +138,36 @@
 </pre></div>
 
 <p>Say the available all-user commands. This does not display command aliases.</p>
+
+<h3>
+<a name="user-content-eightball" class="anchor" href="#eightball" aria-hidden="true"><span class="octicon octicon-link"></span></a>eightball</h3>
+
+<p>Aliases: 8ball, 8-ball</p>
+
+<pre><code>!8ball [question]
+</code></pre>
+
+<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!8ball
+<span class="nt">&lt; GorillaBot&gt; </span>Most likely.
+</pre></div>
+
+<p>Returns a magic 8 ball response.</p>
+
+<h3>
+<a name="user-content-flirt" class="anchor" href="#flirt" aria-hidden="true"><span class="octicon octicon-link"></span></a>flirt</h3>
+
+<p>Aliases: pickupline, flirts</p>
+
+<pre><code>!flirt [user ...]
+</code></pre>
+
+<div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!flirt
+<span class="nt">&lt; GorillaBot&gt; </span>I'm a fermata... hold me.
+<span class="nt">&lt; GorillaWarfare&gt; </span>!flirt user
+<span class="nt">&lt; GorillaBot&gt; </span><span class="na">user:</span> If you were a booger I'd rearrange the alphabet so you fell from heaven!
+</pre></div>
+
+<p>Flirts at the user or the channel.</p>
 
 <h3>
 <a name="user-content-hug" class="anchor" href="#hug" aria-hidden="true"><span class="octicon octicon-link"></span></a>hug</h3>
@@ -149,7 +212,9 @@
 <li>
 <code>auto</code> - All links entered in the chat will be parsed, regardless of whether they're
 prefaced with <code>!link</code>.</li>
-</ul><h3>
+</ul>
+
+<h3>
 <a name="user-content-spotify" class="anchor" href="#spotify" aria-hidden="true"><span class="octicon octicon-link"></span></a>spotify</h3>
 
 <pre><code>!spotify URI
@@ -168,18 +233,29 @@ prefaced with <code>!link</code>.</li>
 <li>
 <code>auto</code> - All Spotify URIs in the chat will be parsed, regardless of whether they're
 prefaced with <code>!spotify</code>.</li>
-</ul><h3>
+</ul>
+
+<h3>
 <a name="user-content-weather" class="anchor" href="#weather" aria-hidden="true"><span class="octicon octicon-link"></span></a>weather</h3>
 
-<pre><code>!weather location
+<pre><code>!weather [--now|--week] location
 </code></pre>
 
 <div class="highlight highlight-irc"><pre><span class="nt">&lt; GorillaWarfare&gt; </span>!weather boston
-<span class="nt">&lt; GorillaBot&gt; </span>Weather in Boston, MA, USA: Mostly cloudy until tomorrow morning.
-              59˚F (15.0˚C). Humidity: 92%.
+<span class="nt">&lt; GorillaBot&gt; </span>Weather in Boston, MA, USA: Rain until tomorrow evening and breezy until
+              tomorrow morning. 51˚F (10˚C). Feels like 51˚F (10˚C). Humidity: 95%. Wind
+              speed: 23mph (38kph).
+<span class="nt">&lt; GorillaWarfare&gt; </span>!weather --now boston
+<span class="nt">&lt; GorillaBot&gt; </span>Weather in Boston, MA, USA: Light Rain and Breezy. 51˚F (10˚C). Feels like
+              51˚F (10˚C). Humidity: 96%. Wind speed: 25mph (40kph).
+<span class="nt">&lt; GorillaWarfare&gt; </span>!weather --week boston
+<span class="nt">&lt; GorillaBot&gt; </span>Weather in Boston, MA, USA: Light rain throughout the week, with temperatures
+              bottoming out at 53°F on Friday. 51–55˚F (11–13˚C).
 </pre></div>
 
-<p>Provide weather information for the given location.</p>
+<p>Provide weather information for the given location. Defaults to giving weather information
+about today. Given the <code>--now</code> parameter, this will give the current weather. Given the
+<code>--weekly</code> parameter, this will give the forecast for the week.</p>
 
 <p>In order to provide weather information, you must provide a Forecast.io API key when
  configuring the bot. You can get an API key by registering an email address at
@@ -265,6 +341,7 @@ to, or has been joined to in the past.</p>
 
 <p>Removes the setting for a channel. This will revert to the default value. Settings can only
 be edited for channels the bot is joined to, or has been joined to in the past.</p>
+
         </section>
       </div>
     </div>
