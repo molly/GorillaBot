@@ -17,15 +17,18 @@
 
 from random import choice, random
 
+
 def alfred(m):
-    """Respond with a line from alfred.txt every 1 in 10 times "AlfredBot" is mentioned."""
-    if random() < 0.1:
+    """Respond with a line from alfred.txt every 1 in 5 times "AlfredBot" is mentioned."""
+    if random() < 0.2:
         m.bot.private_message(m.location, _get_line(m, "alfred.txt"))
 
+
 def batman(m):
-    """Respond with a line from alfred.txt every 1 in 10 times "batman" is mentioned."""
-    if random() < 0.1:
+    """Respond with a line from batman.txt every 1 in 5 times "batman" is mentioned."""
+    if random() < 0.2:
         m.bot.private_message(m.location, _get_line(m, "batman.txt"))
+
 
 def _get_line(m, file):
     """Get a random line from the given file."""
