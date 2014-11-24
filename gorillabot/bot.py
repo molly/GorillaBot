@@ -158,6 +158,7 @@ class Bot(object):
             os.makedirs(self.base_path + "/db")
         self.db_conn = sqlite3.connect(self.base_path + '/db/GorillaBot.db',
                                        check_same_thread=False)
+        self.db_conn.execute('''PRAGMA foreign_keys = ON''')
         self.admin_commands, self.commands = self.load_commands()
         self.setup_logging()
         print('\n  ."`".'
