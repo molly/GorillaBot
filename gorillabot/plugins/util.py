@@ -93,6 +93,8 @@ def get_admin(m):
                             cursor = m.bot.db_conn.cursor()
                             cursor.execute('''UPDATE users SET user=?, host=? WHERE user_id=?''',
                                            (line[1], line[2], op[0]))
+                            m.bot.logger.info("Adding {0} {1} to bot ops under {2}"
+                                              .format(line[1], line[2], op[0]))
                             m.bot.db_conn.commit()
                             cursor.close()
                         elif msg.number == '318':
@@ -115,6 +117,7 @@ def get_admin(m):
                                 cursor.close()
                         elif msg.number == '401':
                             # No such user
+                            m.bot.logger.info("No user {0} logged in.".format(op[0]))
                             break
                     ignored_messages.append(msg)
     m.bot.response_lock.release()
