@@ -144,7 +144,7 @@ class Bot(object):
         """Retrieve the given setting from the database."""
         chan_id = self.get_chan_id(chan)
         if chan_id is None:
-            raise LookupError("{} doesn't exist in channels table.".format(chan))
+            return False
         cursor = self.db_conn.cursor()
         cursor.execute('''SELECT value FROM settings WHERE chan_id = ? AND setting = ?''',
                        (chan_id, setting))
