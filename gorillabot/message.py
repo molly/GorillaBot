@@ -53,8 +53,9 @@ class Command(Message):
         if self.location == nick:
             self.location = self.bot.parse_hostmask(self.sender)['nick']
             self.is_pm = True
-        self.command = self.line[0].strip("!:")
-        self.set_trigger()
+        if self.line:
+            self.command = self.line[0].strip("!:")
+            self.set_trigger()
 
     def __str__(self):
         return "Command message from {0} in {1}: {2}".format(self.sender, self.location, self.body)
