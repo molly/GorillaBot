@@ -19,6 +19,7 @@ from plugins.util import command, humanize_list
 from random import choice
 import re
 
+
 @command("hugs", "glomp")
 def hug(m):
     """Hugs the specified user or channel in general."""
@@ -51,15 +52,18 @@ def hug(m):
             if users != []:
                 m.bot.action(m.location, "{0} {1}".format(_get_hug(m), humanize_list(users)))
 
+
 def _hug_back(m):
     sender_nick = m.bot.parse_hostmask(m.sender)['nick']
     m.bot.action(m.location, "{0} {1} back".format(_get_hug(m), sender_nick))
+
 
 def _get_hug(m):
     with open(m.bot.base_path + '/plugins/responses/hugs.txt', 'r') as hugs:
         lines = hugs.read().splitlines()
         verb = choice(lines)
         return verb
+
 
 @command("pickupline", "flirts")
 def flirt(m):
@@ -76,8 +80,8 @@ def flirt(m):
     #-
     #- Flirts at the user or the channel.
 
-    match = re.match(
-        r':!(?:\w+) ?(\w+)?(?: and | |, )?((?!and)\w+)?(?:,? and |, | )?((?!and)\w+)?', m.body)
+    match = re.match(r':!(?:\w+) ?(\w+)?(?: and | |, )?((?!and)\w+)?(?:,? and |, | )?((?!and)\w+)?',
+                     m.body)
     users = [x for x in match.groups() if x] if match else []
     if users == []:
         m.bot.private_message(m.location, _get_flirt(m))
@@ -89,6 +93,7 @@ def flirt(m):
                 users.append(m.bot.parse_hostmask(m.sender)["nick"])
         if users != []:
             m.bot.private_message(m.location, humanize_list(users) + ": " + _get_flirt(m))
+
 
 def _get_flirt(m):
     with open(m.bot.base_path + '/plugins/responses/flirt.txt', 'r') as flirts:

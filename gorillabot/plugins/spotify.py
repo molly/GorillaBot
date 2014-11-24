@@ -5,6 +5,7 @@ import re
 SPOTIFY_URI_REGEX = r"(?<=spotify:)(?:track|album|artist):[a-zA-Z0-9]{22}"
 ENDPOINT = "https://api.spotify.com/v1/{0}s/{1}"
 
+
 @command()
 def spotify(m):
     """Retrieve information about a Spotify URI."""
@@ -33,10 +34,12 @@ def spotify(m):
             if req:
                 blob = json.loads(req)
                 if type == "track" or type == "album":
-                    m.bot.private_message(m.location, '"{0}" by {1}'
-                                          .format(blob["name"], blob["artists"][0]["name"]))
+                    m.bot.private_message(m.location, '"{0}" by {1}'.format(blob["name"],
+                                                                            blob["artists"][0][
+                                                                                "name"]))
                 else:
                     m.bot.private_message(m.location, blob["name"])
+
 
 def _parse_spotify_uri(s):
     """Parse the type and ID from a Spotify URI."""

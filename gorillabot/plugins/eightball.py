@@ -18,6 +18,7 @@
 from plugins.util import command
 from random import choice
 
+
 @command("8ball", "8-ball")
 def eightball(m):
     """Returns 8-ball advice."""

@@ -94,8 +94,9 @@ def get_admin(m):
                             cursor = m.bot.db_conn.cursor()
                             cursor.execute('''UPDATE users SET user=?, host=? WHERE user_id=?''',
                                            (line[1], line[2], op[0]))
-                            m.bot.logger.info("Adding {0} {1} to bot ops under {2}"
-                                              .format(line[1], line[2], op[0]))
+                            m.bot.logger.info(
+                                "Adding {0} {1} to bot ops under {2}".format(line[1], line[2],
+                                                                             op[0]))
                             m.bot.db_conn.commit()
                             cursor.close()
                         elif msg.number == '318':
@@ -125,6 +126,7 @@ def get_admin(m):
     for msg in ignored_messages:
         m.bot.message_q.put(msg)
 
+
 def get_url(m, url, title=False):
     """Request a given URL, handling any errors. If 'title' is True, this will only return the
     first 1000 bytes of the page in an effort to not load too much more than is necessary."""
@@ -142,6 +144,7 @@ def get_url(m, url, title=False):
             return None
         else:
             return bytes
+
 
 def humanize_list(l):
     if len(l) == 1:

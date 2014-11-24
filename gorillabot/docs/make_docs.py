@@ -27,6 +27,7 @@ parse_regex = re.compile(r'@(?P<type>command|admin)\((?P<aliases>.*?)\)\ndef (?P
 command_name_regex = re.compile(r'def (?P<command>\w+)')
 whitespace_regex = re.compile(r' +#- ?')
 
+
 def get_commands():
     """Get the commands from all the plugin files."""
     files = [join('../plugins', f) for f in listdir('../plugins') if isfile(join('../plugins', f))]
@@ -48,24 +49,27 @@ def get_commands():
                         command_list[docs["command"]] = docs
     format_docs(admin_command_list, command_list)
 
+
 def parse_command(command):
     """Parse a command and its documentation."""
     m = re.match(parse_regex, command)
     if m:
         docs = parse_docs(m.group('docs'))
-        return m.group('type'),{"command": m.group('command'), "aliases": m.group(
-            "aliases").replace('"', ''), "docs": docs}
+        return m.group('type'), {"command": m.group('command'),
+                                 "aliases": m.group("aliases").replace('"', ''), "docs": docs}
     else:
         m = re.search(command_name_regex, command)
         if m:
             print("No documentation found for {}.".format(m.group('command')))
     return None, None
 
+
 def parse_docs(docs):
     """Remove unnecessary formatting from the documentation blocks."""
     docs = docs.strip('\n')
     docs = re.sub(whitespace_regex, '', docs)
     return docs
+
 
 def format_docs(admin, command):
     """Format the docs into the markdown that we want."""
@@ -85,6 +89,7 @@ def format_docs(admin, command):
             command_docs += "### {command}\n\n{docs}\n\n".format(**command[key])
     write_docs(admin_docs, command_docs)
 
+
 def write_docs(admin, command):
     """Insert the docs into the template, hit the Github API to parse markdown into HTML,
     then write the HTML into the template."""
@@ -95,9 +100,8 @@ def write_docs(admin, command):
     headers = {'content-type': 'text/x-markdown',
                "User-Agent": "GorillaBot (https://github.com/molly/GorillaBot)"}
     req = Request("https://api.github.com/markdown/raw",
-                  data = bytes(format(md_template.format(commands=command, admincommands=admin)),
-                               encoding='utf-8'),
-                  headers=headers)
+                  data=bytes(format(md_template.format(commands=command, admincommands=admin)),
+                             encoding='utf-8'), headers=headers)
     try:
         resp = urlopen(req)
     except Exception as e:
@@ -105,6 +109,7 @@ def write_docs(admin, command):
     else:
         with open('../index.html', 'w', encoding='utf-8') as outfile:
             outfile.write(html_template.format(docs=resp.read().decode('utf-8')))
+
 
 if __name__ == "__main__":
     get_commands()

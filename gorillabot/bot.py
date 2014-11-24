@@ -55,7 +55,7 @@ class Bot(object):
 
     def action(self, target, message):
         """Perform an action to target on the server."""
-        self.private_message(target,  "\x01ACTION " + message + "\x01")
+        self.private_message(target, "\x01ACTION " + message + "\x01")
 
     def caffeinate(self):
         """Make sure the connection stays open."""
@@ -109,8 +109,8 @@ class Bot(object):
                 message = Operation(self, *line)
             elif line[1] == "PRIVMSG":
                 nick = self.get_config("nick")
-                if (length >= 3 and line[2] == nick) or \
-                    (length >= 4 and (line[3].startswith(":!") or line[3].startswith(":" + nick))):
+                if (length >= 3 and line[2] == nick) or (length >= 4 and (
+                    line[3].startswith(":!") or line[3].startswith(":" + nick))):
                     message = Command(self, *line)
                 else:
                     message = Privmsg(self, *line)

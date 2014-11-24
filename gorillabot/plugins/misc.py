@@ -45,6 +45,7 @@ def adminlist(m):
         nick = m.bot.get_config("nick")
         m.bot.private_message(m.location, "{0} has no master. {0} is a free bot.".format(nick))
 
+
 @command("admincommandlist")
 def admincommands(m):
     """Provide a list of admin-only commands."""
@@ -69,10 +70,11 @@ def admincommands(m):
                                           "http://molly.github.io/GorillaBot for "
                                           "documentation.".format(commands[0]))
     else:
-        m.bot.private_message(m.location,
-                              "My available admin commands are {0}. See "
-                              "http://molly.github.io/GorillaBot for documentation."
-                              .format(humanize_list(commands)))
+        m.bot.private_message(m.location, "My available admin commands are {0}. See "
+                                          "http://molly.github.io/GorillaBot for "
+                                          "documentation.".format(
+            humanize_list(commands)))
+
 
 @command("commandlist")
 def commands(m):
@@ -99,10 +101,11 @@ def commands(m):
                                           "http://molly.github.io/GorillaBot for "
                                           "documentation.".format(commands[0]))
     else:
-        m.bot.private_message(m.location,
-                              "My available commands are {0}. See "
-                              "http://molly.github.io/GorillaBot for documentation."
-                              .format(humanize_list(commands)))
+        m.bot.private_message(m.location, "My available commands are {0}. See "
+                                          "http://molly.github.io/GorillaBot for "
+                                          "documentation.".format(
+            humanize_list(commands)))
+
 
 @admin("set")
 def setcommand(m):

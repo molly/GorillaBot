@@ -70,6 +70,7 @@ def part(m):
     m.bot.db_conn.commit()
     cursor.close()
 
+
 @admin("shutdown")
 def quit(m):
     """Shut down the bot entirely."""

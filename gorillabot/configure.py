@@ -57,10 +57,9 @@ class Configurator(object):
                 print("Existing configurations:")
                 for row in data:
                     print('\t' + row[0])
-                print(
-                    "\n[0] Load configuration\n[1] Create new configuration\n[2] View "
-                    "configuration\n"
-                    "[3] Remove configuration\n[4] Exit")
+                print("\n[0] Load configuration\n[1] Create new configuration\n[2] View "
+                      "configuration\n"
+                      "[3] Remove configuration\n[4] Exit")
                 ans = input("")
                 if ans == "0":
                     return self.load_settings()
@@ -239,8 +238,10 @@ class Configurator(object):
         print(
             "\n------------------------------\n Nickname: {0}\n Real name: {1}\n Identifier: {2}\n"
             " Channels: {3}\n Bot operator(s): {4}\n Server password: {5}\nYouTube API key: {6}\n"
-            "Forecast.io API key: {7}\n------------------------------\n"
-            .format(data[1], data[2], data[3], chans, botops, password, youtube, forecast))
+            "Forecast.io API key: {7}\n------------------------------\n".format(data[1], data[2],
+                                                                                data[3], chans,
+                                                                                botops, password,
+                                                                                youtube, forecast))
 
     def verify(self, data, chans, botops):
         """Verify a configuration, and make changes if needed."""
@@ -271,8 +272,8 @@ class Configurator(object):
             cursor.execute('''DELETE FROM users WHERE config = ?''', (name,))
             self.db_conn.commit()
             cursor.close()
-            self.save_config((name, nick, realname, ident, chans, botop, password, youtube,
-                              forecast))
+            self.save_config(
+                (name, nick, realname, ident, chans, botop, password, youtube, forecast))
 
     def save_config(self, data):
         """Save changes to the configuration table."""

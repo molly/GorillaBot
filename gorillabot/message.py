@@ -98,6 +98,7 @@ class Command(Message):
                     self.args.append(self)
                     return
 
+
 class Notice(Message):
     """Represent a notice received from the server or another user."""
 

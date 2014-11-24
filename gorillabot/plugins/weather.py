@@ -82,8 +82,8 @@ def get_location(m, args=False):
         resp = get_url(m, google_api.format("+".join(m.line[1:])))
     blob = json.loads(resp)
     if not blob["results"]:
-        m.bot.private_message(m.location, "Could not find weather information for {}."
-                              .format(" ".join(m.line[1:])))
+        m.bot.private_message(m.location, "Could not find weather information for {}.".format(
+            " ".join(m.line[1:])))
     else:
         loc["lat"] = blob['results'][0]['geometry']['location']['lat']
         loc["long"] = blob['results'][0]['geometry']['location']['lng']
@@ -114,7 +114,7 @@ def format_weather(blob, loc):
     w["app_temp_f"] = round(app_temp)
     w["app_temp_c"] = round(to_celsius(app_temp))
     w["wind_mph"] = round(wind)
-    w["wind_kph"] = round(wind*1.609)
+    w["wind_kph"] = round(wind * 1.609)
 
     return "Weather in {loc}: {summary} {temp_f}˚F ({temp_c}˚C). Feels like {app_temp_f}˚F " \
            "({app_temp_c}˚C). Humidity: {humidity}%. Wind speed: {wind_mph}mph " \
@@ -137,7 +137,7 @@ def format_weather_now(blob, loc):
     w["app_temp_f"] = round(app_temp)
     w["app_temp_c"] = round(to_celsius(app_temp))
     w["wind_mph"] = round(wind)
-    w["wind_kph"] = round(wind*1.609)
+    w["wind_kph"] = round(wind * 1.609)
 
     return "Weather in {loc}: {summary} {temp_f}˚F ({temp_c}˚C). Feels like {app_temp_f}˚F " \
            "({app_temp_c}˚C). Humidity: {humidity}%. Wind speed: {wind_mph}mph " \
@@ -162,4 +162,4 @@ def format_weather_weekly(blob, loc):
 
 def to_celsius(temp):
     """Convert Fahrenheit to Celsius."""
-    return (temp-32)*5/9
+    return (temp - 32) * 5 / 9

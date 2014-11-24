@@ -104,8 +104,9 @@ def xkcd(m):
             message = "Sorry, I'm broken. Tell GorillaWarfare to fix me."
     else:
         query = " ".join(m.line[1:])
-        url = 'https://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=site:xkcd.com%20{0}'\
-              .format(quote(query))
+        url = 'https://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=site:xkcd.com%20{' \
+              '0}'.format(
+            quote(query))
         html = get_url(m, url)
         message = xkcd_google(html)
     m.bot.private_message(m.location, message)
@@ -123,10 +124,10 @@ def youtube(m, url):
         match = re.search(r'youtu(?:be.com/watch\?v=|\.be/)(.+?)(?:\?|&|\Z)', url)
         if match:
             video_id = match.group(1)
-            m.bot.logger.info("Retrieving information from the YouTube API for {}.". format(url))
+            m.bot.logger.info("Retrieving information from the YouTube API for {}.".format(url))
             api_url = "https://www.googleapis.com/youtube/v3/videos?id={id}" \
                       "&key={key}&part=snippet,contentDetails,statistics"
-            resp = get_url(m, api_url.format(id = video_id, key = api_key))
+            resp = get_url(m, api_url.format(id=video_id, key=api_key))
             if resp:
                 # Load JSON
                 blob = json.loads(resp)["items"][0]
@@ -147,14 +148,11 @@ def youtube(m, url):
 
                 # Format and return message
                 return "\"{title}\" ({duration}). Uploaded {date}. {views} views. {likes} likes, " \
-                       "{dislikes} dislikes.".format(
-                    title = blob["snippet"]["title"],
-                    duration = pretty_dur,
-                    date = pretty_time,
-                    views = blob["statistics"]["viewCount"],
-                    likes = blob["statistics"]["likeCount"],
-                    dislikes = blob["statistics"]["dislikeCount"]
-                )
+                       "{dislikes} dislikes.".format(title=blob["snippet"]["title"],
+                                                     duration=pretty_dur, date=pretty_time,
+                                                     views=blob["statistics"]["viewCount"],
+                                                     likes=blob["statistics"]["likeCount"],
+                                                     dislikes=blob["statistics"]["dislikeCount"])
     # If there's no API key stored, or the URL is poorly formatted, fall back to generic linking
     return generic(m, url)
 
@@ -187,12 +185,8 @@ def reddit(m, url):
                 parent_blob = json.loads(parent_resp)["data"]["children"][0]["data"]
                 parent_blob["nsfw"] = " \x0304[NSFW]\x03" if parent_blob["over_18"] else ""
                 return "Comment by {user} on \"{title}\"{nsfw} in /r/{sub}. {up}↑.".format(
-                    user = blob["author"],
-                    title = parent_blob["title"],
-                    nsfw = parent_blob["nsfw"],
-                    sub = blob["subreddit"],
-                    up = blob["ups"]
-                )
+                    user=blob["author"], title=parent_blob["title"], nsfw=parent_blob["nsfw"],
+                    sub=blob["subreddit"], up=blob["ups"])
             elif id:
                 resp = get_url(m, api_url.format("t3_" + id))
                 blob = json.loads(resp)["data"]["children"][0]["data"]
