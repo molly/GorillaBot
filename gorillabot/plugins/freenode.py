@@ -45,6 +45,11 @@ def identify(m):
             elif 'You are now identified' in msg.body:
                 logger.info('You have successfully identified.')
                 identified = True
+                cursor = m.bot.db_conn.cursor()
+                cursor.execute('''UPDATE configs SET password = ? WHERE name = ?''',
+                               (password, m.bot.configuration))
+                m.bot.db_conn.commit()
+                cursor.close()
                 break
             else:
                 ignored_messages.append(msg)
