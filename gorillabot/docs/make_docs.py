@@ -34,7 +34,7 @@ def get_commands():
     admin_command_list = {}
     command_list = {}
     for file in files:
-        with open(file, 'r', encoding='utf-8') as f:
+        with open(file, 'r', encoding='utf-8', errors='replace') as f:
             try:
                 data = f.read()
             except UnicodeDecodeError as e:
