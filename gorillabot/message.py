@@ -224,11 +224,13 @@ class Privmsg(Message):
         # TODO: This needs to be done better :S
         if auto_link:
             m = re.findall(r'(https?://\S+)', self.body)
-            if m:
+            wikilinks = re.findall(r'\[{2}(.*?)\]{2}', self.body)
+            if m or wikilinks:
                 self.needs_own_thread = True
                 self.trigger = plugins.link.link
                 self.args.append(self)
                 self.args.append(m)
+                self.args.append(wikilinks)
                 return
         if auto_spotify:
             m = re.findall(r'spotify:', self.body)

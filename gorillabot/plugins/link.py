@@ -24,8 +24,9 @@ import re
 
 
 @command()
-def link(m, urls=None):
-    """Retrieve a description of the link."""
+def link(m, urls=None, wikilinks=None):
+    """Retrieve a description of the link, or provide a link to the English Wikipedia article if
+    formatted as a wikilink."""
 
     #-     !link URL
     #-
@@ -35,9 +36,12 @@ def link(m, urls=None):
     #- < GorillaWarfare> !link https://www.youtube.com/watch?v=aSarf4-REgk
     #- < GorillaBot> Link: "Baby Gorilla Reunites With Mother" (01:43). Uploaded Mar 24,
     #-               2014. 164347 views. 513 likes, 32 dislikes.
+    #- < GorillaWarfare> !link [[Gorilla]]
+    #- < GorillaBot> https://en.wikipedia.org/wiki/Gorilla
     #- ```
     #-
-    #- Provide information about the given link.
+    #- Provide information about the given link, or provide a link to the English Wikipedia article
+    #- if formatted as a wikilink.
     #-
     #- In order to provide rich information about YouTube videos, you must provide a YouTube API
     #-  key when configuring the bot. You can get an API key by registering a project in the [
@@ -45,14 +49,13 @@ def link(m, urls=None):
     #-  the normal linking will be used.
     #-
     #- #### Settings
-    #- * `auto` - All links entered in the chat will be parsed, regardless of whether they're
-    #-  prefaced with `!link`.
+    #- * `auto` - All links and wikilinks entered in the chat will be parsed, regardless of whether
+    #-   they're prefaced with `!link`.
 
-    if not urls:
-        match = re.findall(r'(https?://\S+)', m.body)
-        if match:
-            urls = match
-        else:
+    if not (urls or wikilinks):
+        urls = re.findall(r'(https?://\S+)', m.body)
+        wikilinks = re.findall(r'\[{2}(.*?)\]{2}', m.body)
+        if not (urls or wikilinks):
             m.bot.private_message(m.location, "Please provide a link.")
             return
     for url in urls:
@@ -64,6 +67,11 @@ def link(m, urls=None):
             message = generic(m, url)
         if message:
             m.bot.private_message(m.location, "Link: " + clean(message))
+    for wikilink in wikilinks:
+        safe = wikilink.replace(" ", "_")
+        if safe[-1] == ")":
+            safe = safe[:-1] + "%29"
+        m.bot.private_message(m.location, "https://en.wikipedia.org/wiki/" + safe)
 
 
 @command("relevantxkcd")
@@ -105,8 +113,7 @@ def xkcd(m):
     else:
         query = " ".join(m.line[1:])
         url = 'https://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=site:xkcd.com%20{' \
-              '0}'.format(
-            quote(query))
+              '0}'.format(quote(query))
         html = get_url(m, url)
         message = xkcd_google(html)
     m.bot.private_message(m.location, message)
