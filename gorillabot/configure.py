@@ -25,14 +25,17 @@ import re
 class Configurator(object):
     """Handles the configuration settings in the database."""
 
-    def __init__(self, db_conn):
+    def __init__(self):
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.file_path = os.path.abspath(os.path.join(self.base_path, "..", "config.json"))
         self.logger = logging.getLogger("GorillaBot")
 
     def configure(self):
         """Provide the user with prompts to interact with the configuration of the bot."""
+        # Reset values from last time the bot was run
+        self.reset()
 
+        # Configure
         ans = ''
         while ans not in ["0", "1", "2", "3", "4"]:
             data = self.get_settings()
@@ -69,6 +72,14 @@ class Configurator(object):
                     return False
                 ans = ''
 
+    def reset(self):
+        """Set all "joined" values to false for channels."""
+        settings = self.get_settings()
+        for config in settings.keys():
+            for chan in settings[config]["chans"].keys():
+                settings[config]["chans"][chan]["joined"] = False
+        self.save_config(settings)
+
     def get_settings(self):
         """Retrieve existing configurations, or create the config file if it does not exist."""
         try:
@@ -97,7 +108,6 @@ class Configurator(object):
         existing = self.get_settings()
         verify = False
         while not verify:
-            print(verify)
             print('\n')
             name = ""
             while name == "":
@@ -109,11 +119,14 @@ class Configurator(object):
             settings[name]["nick"] = self.prompt("Nick", "GorillaBot")
             settings[name]["realname"] = self.prompt("Ident", "GorillaBot")
             settings[name]["ident"] = self.prompt("Realname", "GorillaBot")
-            settings[name]["chans"] = re.split(',? ', self.prompt("Channel(s)"))
+            chans = re.split(',? ', self.prompt("Channel(s)"))
             settings[name]["botops"] = re.split(',? ', self.prompt("Bot operator(s)", ''))
             settings[name]["password"] = self.prompt("Server password (optional)", hidden=True)
             settings[name]["youtube"] = self.prompt("YouTube API key (optional)", hidden=True)
             settings[name]["forecast"] = self.prompt("Forecast.io API key (optional)", hidden=True)
+            settings[name]["chans"] = {}
+            for chan in chans:
+                settings[name]["chans"][chan] = {"joined": False}
             verify = self.verify(settings, name)
         new_settings = self.get_settings()
         new_settings.update(settings)
@@ -144,7 +157,7 @@ class Configurator(object):
                 if name not in settings.keys():
                     print("No configuration named {}.".format(name))
                     name = ""
-        chans = ", ".join(settings[name]["chans"])
+        chans = ", ".join(settings[name]["chans"].keys())
         botops = ", ".join(settings[name]["botops"])
         password = "[hidden]" if settings[name]["password"] else "[none]"
         youtube = "[hidden]" if settings[name]["youtube"] else "[none]"

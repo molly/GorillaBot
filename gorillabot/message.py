@@ -47,7 +47,7 @@ class Command(Message):
         self.line = args[4:]
         self.admin = False
         super(Command, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
-        nick = self.bot.get_config('nick')
+        nick = self.bot.configuration["nick"]
         if self.line[0].strip("!:") == nick:
             self.line = self.line[1:]
         if self.location == nick:
@@ -166,7 +166,7 @@ class Operation(Message):
     def set_trigger(self):
         if self.type == "MODE":
             lowerbody = self.body.lower()
-            nick = self.bot.get_config("nick")
+            nick = self.bot.configuration["nick"]
             lowernick = nick.lower()
             if "+o {0}".format(lowernick) == lowerbody:
                 self.logger.info("Opped in {0}.".format(self.location))
@@ -208,7 +208,7 @@ class Privmsg(Message):
 
     def __init__(self, *args):
         super(Privmsg, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
-        if self.location == self.bot.get_config('nick'):
+        if self.location == self.bot.configuration["nick"]:
             self.location = self.bot.parse_hostmask(self.sender)['nick']
             self.is_pm = True
         self.urls = None

@@ -42,7 +42,7 @@ def adminlist(m):
         else:
             m.bot.private_message(m.location, "My bot admins are " + humanize_list(ops))
     else:
-        nick = m.bot.get_config("nick")
+        nick = m.bot.configuration["nick"]
         m.bot.private_message(m.location, "{0} has no master. {0} is a free bot.".format(nick))
 
 

@@ -19,6 +19,7 @@
 
 from configure import Configurator
 from executor import Executor
+import json
 import logging
 from logging import handlers
 from message import *
@@ -27,7 +28,6 @@ import pickle
 import queue
 import re
 import socket
-import sqlite3
 import threading
 from time import sleep, strftime, time
 
@@ -37,9 +37,11 @@ class Bot(object):
 
     def __init__(self):
         self.base_path = os.path.dirname(os.path.abspath(__file__))
+        self.config_path = os.path.abspath(os.path.join(self.base_path, "..", "config.json"))
         self.log_path = self.base_path + '/logs'
 
         self.configuration = None
+        self.configuration_name = None
         self.last_message_sent = time()
         self.last_ping_sent = time()
         self.last_received = None
@@ -72,11 +74,6 @@ class Bot(object):
         self.logger.debug('Thread created.')
         self.socket = socket.socket()
         self.socket.settimeout(5)
-        cursor = self.db_conn.cursor()
-        cursor.execute('''SELECT * FROM configs WHERE name = ?''', (self.configuration,))
-        data = cursor.fetchone()
-        cursor.close()
-        name, nick, realname, ident, password, youtube, forecast = data
         try:
             self.logger.info('Initiating connection.')
             self.socket.connect(("chat.freenode.net", 6667))
@@ -84,10 +81,11 @@ class Bot(object):
             self.logger.error("Unable to connect to IRC server. Check your Internet connection.")
             self.shutdown.set()
         else:
-            if password:
-                self.send("PASS {0}".format(password), hide=True)
-            self.send("NICK {0}".format(nick))
-            self.send("USER {0} 0 * :{1}".format(ident, realname))
+            if self.configuration["password"]:
+                self.send("PASS {0}".format(self.configuration["password"]), hide=True)
+            self.send("NICK {0}".format(self.configuration["nick"]))
+            self.send("USER {0} 0 * :{1}".format(self.configuration["ident"],
+                                                 self.configuration["realname"]))
             self.private_message("NickServ", "ACC")
             self.loop()
 
@@ -108,7 +106,7 @@ class Bot(object):
             elif line[1] in ["MODE", "JOIN", "PART"]:
                 message = Operation(self, *line)
             elif line[1] == "PRIVMSG":
-                nick = self.get_config("nick")
+                nick = self.bot.configuration["nick"]
                 if (length >= 3 and line[2] == nick) or (length >= 4 and (
                     line[3].startswith(":!") or line[3].startswith(":" + nick))):
                     message = Command(self, *line)
@@ -119,46 +117,13 @@ class Bot(object):
         else:
             print(line)
 
-    def get_chan_id(self, channel):
-        '''Get the chan_id for the given channel.'''
-        cursor = self.db_conn.cursor()
-        cursor.execute('''SELECT chan_id FROM channels WHERE name = ? and config = ?''',
-                       (channel, self.configuration))
-        data = cursor.fetchone()
-        cursor.close()
-        if data is None:
-            return data
-        else:
-            return data[0]
-
-    def get_config(self, config):
-        """Retrieve the given configuration setting from the database."""
-        cursor = self.db_conn.cursor()
-        query = '''SELECT %s FROM configs WHERE name = ?''' % config
-        cursor.execute(query, (self.configuration,))
-        value = cursor.fetchone()
-        cursor.close()
-        return value[0] if value else None
-
-    def get_setting(self, setting, chan):
-        """Retrieve the given setting from the database."""
-        chan_id = self.get_chan_id(chan)
-        if chan_id is None:
-            return False
-        cursor = self.db_conn.cursor()
-        cursor.execute('''SELECT value FROM settings WHERE chan_id = ? AND setting = ?''',
-                       (chan_id, setting))
-        data = cursor.fetchone()
-        cursor.close()
-        return data[0] if data else None
+    def get_configuration(self):
+        with open(self.config_path, 'r') as f:
+            blob = json.load(f)
+        return blob[self.configuration_name]
 
     def initialize(self):
         """Initialize the bot. Parse command-line options, configure, and set up logging."""
-        if not os.path.isdir(self.base_path + "/db"):
-            os.makedirs(self.base_path + "/db")
-        self.db_conn = sqlite3.connect(self.base_path + '/db/GorillaBot.db',
-                                       check_same_thread=False)
-        self.db_conn.execute('''PRAGMA foreign_keys = ON''')
         self.admin_commands, self.commands = self.load_commands()
         self.setup_logging()
         print('\n  ."`".'
@@ -167,47 +132,27 @@ class Bot(object):
               '|__) /  \  |  \x1b[0m\n|   "   | \x1b[32m  \__| \__/ |  \ | |__ '
               '|__ |  | |__) \__/  |  \x1b[0m \n \(\_/)/\n')
         try:
-            self.configuration = Configurator(self.db_conn).configure()
+            self.configuration_name = Configurator().configure()
+            self.configuration = self.get_configuration()
         except KeyboardInterrupt:
             self.logger.info("Caught KeyboardInterrupt. Shutting down.")
-        if self.configuration:
-            self.start()
-        else:
-            return
+        self.start()
 
     def join(self, chans=None):
         """Join the given channel, list of channels, or if no channel is specified, join any
-        channels
-        that exist in the config but are not already joined."""
+        channels that exist in the config but are not already joined."""
         if chans is None:
-            cursor = self.db_conn.cursor()
-            cursor.execute('''SELECT name, joined FROM channels WHERE config = ?''',
-                           (self.configuration,))
-            data = cursor.fetchall()
-            cursor.close()
-            for row in data:
-                if row[1] == 0:
-                    self.logger.info("Joining {0}.".format(row[0]))
-                    self.send('JOIN ' + row[0])
-                    cursor = self.db_conn.cursor()
-                    cursor.execute(
-                        '''UPDATE channels SET joined = 1 WHERE name = ? AND config = ?''',
-                        (row[0], self.configuration))
-                    self.db_conn.commit()
-                    cursor.close()
+            for chan in self.configuration["chans"].keys():
+                if not self.configuration["chans"][chan]["joined"]:
+                    self.logger.info("Joining {0}.".format(chan))
+                    self.send('JOIN ' + chan)
+                    self.configuration["chans"][chan]["joined"] = True
         else:
-            if type(chans) is str:
-                chans = [chans]
             for chan in chans:
                 self.logger.info("Joining {0}.".format(chan))
                 self.send('JOIN ' + chan)
-                cursor = self.db_conn.cursor()
-                cursor.execute('''UPDATE channels SET joined = 1 WHERE name = ?''', (chan,))
-                if cursor.rowcount < 1:
-                    cursor.execute('''INSERT INTO channels VALUES (NULL, ?, 1, ?)''',
-                                   (chan, self.configuration))
-                self.db_conn.commit()
-                cursor.close()
+                self.configuration["chans"][chan]["joined"] = True
+        self.update_configuration()
 
     def load_commands(self):
         try:
@@ -334,6 +279,15 @@ class Bot(object):
             self.shutdown.set()
             self.db_conn.close()
 
+    def update_configuration(self, updated_configuration):
+        """Update the full configuration blob with the new settings, then write it to the file.
+        Also updates the stored self.configuration dict."""
+        with open(self.config_path, 'r') as f:
+            blob = json.load(f)
+        full_config = blob.update(updated_configuration)
+        with open(self.config_path, "w") as f:
+            json.dump(full_config, f, indent=4)
+        self.configuration = updated_configuration
 
 if __name__ == "__main__":
     bot = Bot()

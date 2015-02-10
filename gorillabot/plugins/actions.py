@@ -44,7 +44,7 @@ def hug(m):
         if users == []:
             m.bot.action(m.location, "distributes {0} evenly among the channel".format(_get_hug(m)))
         else:
-            bot_nick = m.bot.get_config('nick')
+            bot_nick = m.bot.configuration["nick"]
             for user in users:
                 if user.lower() == bot_nick.lower():
                     _hug_back(m)
@@ -86,7 +86,7 @@ def flirt(m):
     if users == []:
         m.bot.private_message(m.location, _get_flirt(m))
     else:
-        bot_nick = m.bot.get_config('nick')
+        bot_nick = m.bot.configuration["nick"]
         for user in users:
             if user.lower() == bot_nick.lower():
                 users.remove(user)

@@ -47,7 +47,7 @@ def weather(m):
     #-  configuring the bot. You can get an API key by registering an email address at
     #-  http://developer.forecast.io/.
 
-    api_key = m.bot.get_config('forecast')
+    api_key = m.bot.configuration["forecast"]
     if api_key:
         if len(m.line) <= 1:
             m.bot.private_message(m.location, "Please format this command as !weather ["
