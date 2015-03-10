@@ -76,7 +76,7 @@ def admincommands(m):
             humanize_list(commands)))
 
 
-@command("commandlist")
+@command("commandlist", "help")
 def commands(m):
     """Provide a list of commands available to all users."""
 
