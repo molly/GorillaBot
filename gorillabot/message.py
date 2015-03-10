@@ -82,7 +82,7 @@ class Command(Message):
                     self.args.append(m)
                     return
             if auto_spotify:
-                m = re.findall(r'spotify:', self.body)
+                m = re.findall(r'spotify(?::|\.com)', self.body)
                 if m:
                     self.needs_own_thread = True
                     self.trigger = plugins.spotify.spotify
@@ -233,7 +233,7 @@ class Privmsg(Message):
                 self.args.append(wikilinks)
                 return
         if auto_spotify:
-            m = re.findall(r'spotify:', self.body)
+            m = re.findall(r'spotify(?::|\.com)', self.body)
             if m:
                 self.needs_own_thread = True
                 self.trigger = plugins.spotify.spotify
