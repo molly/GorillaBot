@@ -53,16 +53,19 @@ def weather(m):
             m.bot.private_message(m.location, "Please format this command as !weather ["
                                               "args] location")
         else:
-            if m.line[1] in ["--now", "-now", "-n"]:
-                loc = get_location(m, args=True)
+            print(m.line)
+            if any(s in m.line for s in ["--now", "-now", "-n"]):
+                line = [word for word in m.line[1:] if word not in ["--now", "-now", "-n"]]
+                loc = get_location(m, line)
                 blob = get_weather(m, loc, api_key)
                 msg = format_weather_now(blob, loc)
-            elif m.line[1] in ["--week", "-week", "-w"]:
-                loc = get_location(m, args=True)
+            elif any(s in m.line for s in ["--week", "-week", "-w"]):
+                line = [word for word in m.line[1:] if word not in ["--week", "-week", "-w"]]
+                loc = get_location(m, line)
                 blob = get_weather(m, loc, api_key)
                 msg = format_weather_weekly(blob, loc)
             else:
-                loc = get_location(m)
+                loc = get_location(m, m.line[1:])
                 blob = get_weather(m, loc, api_key)
                 msg = format_weather(blob, loc)
             m.bot.private_message(m.location, msg)
@@ -70,20 +73,15 @@ def weather(m):
         m.bot.logger.info("No Forecast.io API key recorded.")
 
 
-def get_location(m, args=False):
+def get_location(m, line):
     """Get the latitude, longitude, and well-formatted name of the given location."""
     google_api = "http://maps.googleapis.com/maps/api/geocode/json?address={}"
     loc = {}
-    if args:
-        loc["name"] = " ".join(m.line[2:])
-        resp = get_url(m, google_api.format("+".join(m.line[2:])))
-    else:
-        loc["name"] = " ".join(m.line[1:])
-        resp = get_url(m, google_api.format("+".join(m.line[1:])))
+    loc["name"] = " ".join(line)
+    resp = get_url(m, google_api.format("+".join(line)))
     blob = json.loads(resp)
     if not blob["results"]:
-        m.bot.private_message(m.location, "Could not find weather information for {}.".format(
-            " ".join(m.line[1:])))
+        m.bot.private_message(m.location, "Could not find weather information for {}.".format(" ".join(line)))
     else:
         loc["lat"] = blob['results'][0]['geometry']['location']['lat']
         loc["long"] = blob['results'][0]['geometry']['location']['lng']
