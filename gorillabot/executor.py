@@ -47,7 +47,6 @@ class Executor(object):
                 # Wait for other process to release the lock
                 sleep(5)
             else:
-                print(msg)
                 # If this message has a trigger, execute the function
                 if msg.trigger:
                     if type(msg) is message.Command and msg.admin:

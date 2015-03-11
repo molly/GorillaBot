@@ -53,7 +53,6 @@ def weather(m):
             m.bot.private_message(m.location, "Please format this command as !weather ["
                                               "args] location")
         else:
-            print(m.line)
             if any(s in m.line for s in ["--now", "-now", "-n"]):
                 line = [word for word in m.line[1:] if word not in ["--now", "-now", "-n"]]
                 loc = get_location(m, line)

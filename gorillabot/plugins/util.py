@@ -87,7 +87,6 @@ def get_admin(m):
                     break
                 else:
                     if type(msg) is message.Numeric:
-                        print(msg)
                         if msg.number == '311':
                             # User info
                             line = msg.body.split()
