@@ -247,6 +247,7 @@ class Bot(object):
                 for line in list_of_lines:
                     line = line.strip().split()
                     if line != "":
+                        print(line)
                         self.dispatch(line)
             self.caffeinate()
         self.socket.close()
