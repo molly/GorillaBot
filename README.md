@@ -8,8 +8,8 @@ __Version:__ 2.0<br />
 __Python version:__ 3.4+
 
 ## Installation
-_Download code from the `master` branch. Code in the `development` branch is often incomplete and
-nonfunctional._
+_Download code from the `master` branch. Code in the `development` or other branches is often
+incomplete and nonfunctional._
 
 The bot is available on [PyPI](https://pypi.python.org/pypi/gorillabot), so it can be installed 
 with `pip install gorillabot` or `easy_install gorillabot`.
