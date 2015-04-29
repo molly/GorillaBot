@@ -70,11 +70,17 @@ def attention(m):
         if isinstance(msg, message.Numeric):
             if msg.number == '353':
                 nicks = msg.body.split()
-                nicks = nicks[2:]
-                nicks[0] = nicks[0][1:]
                 print(nicks)
+                nicks = nicks[3:]
+                sender = m.bot.parse_hostmask(m.sender)["nick"]
+                nicks.remove(sender)
+                m.bot.private_message(m.location, "{0}: {1} wants your attention"
+                                      .format(", ".join(nicks), sender))
                 break
         ignored_messages.append(msg)
+    for msg in ignored_messages:
+        m.bot.message_q.put(msg)
+    m.bot.response_lock.release()
 
 
 
