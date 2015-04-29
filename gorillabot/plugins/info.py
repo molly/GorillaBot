@@ -70,7 +70,6 @@ def attention(m):
         if isinstance(msg, message.Numeric):
             if msg.number == '353':
                 nicks = msg.body.split()
-                print(nicks)
                 nicks = nicks[3:]
                 sender = m.bot.parse_hostmask(m.sender)["nick"]
                 nicks.remove(sender)
