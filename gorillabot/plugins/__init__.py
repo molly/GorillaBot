@@ -21,6 +21,7 @@ import plugins.batman
 import plugins.connection
 import plugins.eightball
 import plugins.freenode
+import plugins.info
 import plugins.link
 import plugins.misc
 import plugins.util
