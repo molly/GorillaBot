@@ -78,6 +78,9 @@ class Configurator(object):
         for config in settings.keys():
             for chan in settings[config]["chans"].keys():
                 settings[config]["chans"][chan]["joined"] = False
+            for op in settings[config]["botops"]:
+                del op["user"]
+                del op["host"]
         self.save_config(settings)
 
     def get_settings(self):
