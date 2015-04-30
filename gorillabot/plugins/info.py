@@ -73,8 +73,11 @@ def attention(m):
                 nicks = nicks[2:]
                 nicks[0] = nicks[0][1:]
                 sender = m.bot.parse_hostmask(m.sender)["nick"]
-                nicks.remove(sender)
-                nicks.remove(m.bot.get_config("nick"))
+                try:
+                    nicks.remove(sender)
+                    nicks.remove(m.bot.get_config("nick"))
+                except ValueError:
+                    pass
                 m.bot.private_message(m.location, "{0}: {1} wants your attention"
                                       .format(", ".join(nicks), sender))
                 break
