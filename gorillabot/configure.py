@@ -79,8 +79,12 @@ class Configurator(object):
             for chan in settings[config]["chans"].keys():
                 settings[config]["chans"][chan]["joined"] = False
             for op in settings[config]["botops"]:
-                del op["user"]
-                del op["host"]
+                try:
+                    del op["user"]
+                    del op["host"]
+                except KeyError:
+                    # No user or host data was saved. Not a problem.
+                    pass
         self.save_config(settings)
 
     def get_settings(self):
