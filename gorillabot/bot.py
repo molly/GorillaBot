@@ -38,7 +38,7 @@ class Bot(object):
     def __init__(self):
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.config_path = os.path.abspath(os.path.join(self.base_path, "..", "config.json"))
-        self.log_path = self.base_path + '/logs'
+        self.log_path = os.path.abspath(os.path.join(self.base_path, 'logs'))
 
         self.configuration = None
         self.configuration_name = None
