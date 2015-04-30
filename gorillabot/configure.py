@@ -120,13 +120,16 @@ class Configurator(object):
             settings[name]["realname"] = self.prompt("Ident", "GorillaBot")
             settings[name]["ident"] = self.prompt("Realname", "GorillaBot")
             chans = re.split(',? ', self.prompt("Channel(s)"))
-            settings[name]["botops"] = re.split(',? ', self.prompt("Bot operator(s)", ''))
+            botops = re.split(',? ', self.prompt("Bot operator(s)", ''))
             settings[name]["password"] = self.prompt("Server password (optional)", hidden=True)
             settings[name]["youtube"] = self.prompt("YouTube API key (optional)", hidden=True)
             settings[name]["forecast"] = self.prompt("Forecast.io API key (optional)", hidden=True)
             settings[name]["chans"] = {}
+            settings[name]["botops"] = []
             for chan in chans:
                 settings[name]["chans"][chan] = {"joined": False}
+            for op in botops:
+                settings[name]["botops"].append({"nick": op})
             verify = self.verify(settings, name)
         new_settings = self.get_settings()
         new_settings.update(settings)
@@ -158,7 +161,7 @@ class Configurator(object):
                     print("No configuration named {}.".format(name))
                     name = ""
         chans = ", ".join(settings[name]["chans"].keys())
-        botops = ", ".join(settings[name]["botops"])
+        botops = ", ".join([el["nick"] for el in settings[name]["botops"]])
         password = "[hidden]" if settings[name]["password"] else "[none]"
         youtube = "[hidden]" if settings[name]["youtube"] else "[none]"
         forecast = "[hidden]" if settings[name]["forecast"] else "[none]"

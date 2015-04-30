@@ -152,7 +152,7 @@ class Bot(object):
                 self.logger.info("Joining {0}.".format(chan))
                 self.send('JOIN ' + chan)
                 self.configuration["chans"][chan]["joined"] = True
-        self.update_configuration()
+        self.update_configuration(self.configuration)
 
     def load_commands(self):
         try:
@@ -277,17 +277,20 @@ class Bot(object):
         except KeyboardInterrupt:
             self.logger.info("Caught KeyboardInterrupt. Shutting down.")
             self.shutdown.set()
-            self.db_conn.close()
 
     def update_configuration(self, updated_configuration):
         """Update the full configuration blob with the new settings, then write it to the file.
         Also updates the stored self.configuration dict."""
         with open(self.config_path, 'r') as f:
             blob = json.load(f)
-        full_config = blob.update(updated_configuration)
+        updated_configuration = {self.configuration_name: updated_configuration}
+        if blob:
+            blob.update(updated_configuration)
+        else:
+            blob = updated_configuration
         with open(self.config_path, "w") as f:
-            json.dump(full_config, f, indent=4)
-        self.configuration = updated_configuration
+            json.dump(blob, f, indent=4)
+        self.configuration = blob
 
 if __name__ == "__main__":
     bot = Bot()
