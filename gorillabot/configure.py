@@ -127,9 +127,11 @@ class Configurator(object):
             settings[name]["chans"] = {}
             settings[name]["botops"] = []
             for chan in chans:
-                settings[name]["chans"][chan] = {"joined": False}
+                if chan:
+                    settings[name]["chans"][chan] = {"joined": False}
             for op in botops:
-                settings[name]["botops"].append({"nick": op})
+                if op:
+                    settings[name]["botops"].append({"nick": op})
             verify = self.verify(settings, name)
         new_settings = self.get_settings()
         new_settings.update(settings)

@@ -142,11 +142,13 @@ class Bot(object):
         """Join the given channel, list of channels, or if no channel is specified, join any
         channels that exist in the config but are not already joined."""
         if chans is None:
-            for chan in self.configuration["chans"].keys():
-                if not self.configuration["chans"][chan]["joined"]:
-                    self.logger.info("Joining {0}.".format(chan))
-                    self.send('JOIN ' + chan)
-                    self.configuration["chans"][chan]["joined"] = True
+            chans = self.configuration["chans"]
+            if chans:
+                for chan in chans.keys():
+                    if not chans[chan]["joined"]:
+                        self.logger.info("Joining {0}.".format(chan))
+                        self.send('JOIN ' + chan)
+                        self.configuration["chans"][chan]["joined"] = True
         else:
             for chan in chans:
                 self.logger.info("Joining {0}.".format(chan))
@@ -290,7 +292,7 @@ class Bot(object):
             blob = updated_configuration
         with open(self.config_path, "w") as f:
             json.dump(blob, f, indent=4)
-        self.configuration = blob
+        self.configuration = blob[self.configuration_name]
 
 if __name__ == "__main__":
     bot = Bot()
