@@ -17,7 +17,7 @@
 
 import logging
 import message
-from plugins.util import command, get_admin
+from plugins.util import command
 from queue import Empty
 
 

@@ -70,9 +70,13 @@ def command(*args):
 def get_admin(m, nick=None):
     """Get the hostnames for the bot admins. If nick is supplied, add that user as an admin."""
     botops = m.bot.configuration["botops"]
+    if nick:
+        ops = [nick]
+    else:
+        ops = botops.keys()
     m.bot.response_lock.acquire()
     ignored_messages = []
-    for op in botops.keys():
+    for op in ops:
         m.bot.send("WHOIS " + op)
         while True:
             try:
@@ -94,7 +98,7 @@ def get_admin(m, nick=None):
                         break
                     elif msg.number == '401':
                         # No such user
-                        m.bot.logger.info("No user {0} logged in.".format(op["nick"]))
+                        m.bot.logger.info("No user {0} logged in.".format(op))
                         break
                 ignored_messages.append(msg)
     m.bot.response_lock.release()

@@ -17,6 +17,7 @@
 
 import logging
 import message
+from plugins.util import get_admin
 import queue
 import threading
 from time import sleep
@@ -59,9 +60,11 @@ class Executor(object):
                             if op_info["host"] == mask["host"]:
                                 is_admin = True
                                 break
-                            elif op_info["nick"] == mask["nick"]:
-                                # TODO: Check to see if a new op has joined
-                                pass
+                            elif op == mask["nick"]:
+                                # User is on the list of ops, but wasn't joined when the bot entered
+                                get_admin(msg, op)
+                                is_admin = True
+                                break
                         if not is_admin:
                             self.bot.private_message(msg.location, "Please ask a bot operator to "
                                                                    "perform this action for you.")
