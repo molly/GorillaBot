@@ -61,7 +61,7 @@ def setcommand(m):
             m.bot.private_message(m.location, "Nothing has been set for {0}.".format(chan))
         else:
             m.bot.private_message(m.location, (" ".join(
-                map(lambda setting: ('"{0}" is set to "{1}".'.format(setting[0], setting[1])),
+                map(lambda s: ('"{0}" is set to "{1}".'.format(s[0], s[1])),
                     iter(settings.items())))))
     elif len(m.line) == 2:
         # Query value of a setting in a channel
