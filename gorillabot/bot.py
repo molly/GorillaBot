@@ -194,6 +194,7 @@ class Bot(object):
                     if line != "":
                         self.dispatch(line)
             self.caffeinate()
+        self.send("QUIT :Shut down from command line.")
         self.socket.close()
 
     def parse_hostmask(self, nick):
