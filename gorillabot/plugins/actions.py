@@ -15,7 +15,7 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from plugins.util import command, humanize_list
+from plugins.util import command, get_line, humanize_list
 from random import choice
 import re
 
@@ -42,7 +42,8 @@ def hug(m):
             r':!(?:\w+) ?(\w+)?(?: and | |, )?((?!and)\w+)?(?:,? and |, | )?((?!and)\w+)?', m.body)
         users = [x for x in match.groups() if x] if match else []
         if users == []:
-            m.bot.action(m.location, "distributes {0} evenly among the channel".format(_get_hug(m)))
+            m.bot.action(m.location, "distributes {0} evenly among the channel"
+                         .format(get_line(m, "hugs.txt")))
         else:
             bot_nick = m.bot.configuration["nick"]
             for user in users:
@@ -50,19 +51,14 @@ def hug(m):
                     _hug_back(m)
                     users.remove(user)
             if users != []:
-                m.bot.action(m.location, "{0} {1}".format(_get_hug(m), humanize_list(users)))
+                m.bot.action(m.location, "{0} {1}".format(get_line(m, "hugs.txt"),
+                                                          humanize_list(users)))
 
 
 def _hug_back(m):
+    """Helper function to return a hug."""
     sender_nick = m.bot.parse_hostmask(m.sender)['nick']
-    m.bot.action(m.location, "{0} {1} back".format(_get_hug(m), sender_nick))
-
-
-def _get_hug(m):
-    with open(m.bot.base_path + '/plugins/responses/hugs.txt', 'r') as hugs:
-        lines = hugs.read().splitlines()
-        verb = choice(lines)
-        return verb
+    m.bot.action(m.location, "{0} {1} back".format(get_line(m, "hugs.txt"), sender_nick))
 
 
 @command("pickupline", "flirts")
@@ -84,7 +80,7 @@ def flirt(m):
                      m.body)
     users = [x for x in match.groups() if x] if match else []
     if users == []:
-        m.bot.private_message(m.location, _get_flirt(m))
+        m.bot.private_message(m.location, get_line(m, "flirt.txt"))
     else:
         bot_nick = m.bot.configuration["nick"]
         for user in users:
@@ -92,11 +88,5 @@ def flirt(m):
                 users.remove(user)
                 users.append(m.bot.parse_hostmask(m.sender)["nick"])
         if users != []:
-            m.bot.private_message(m.location, humanize_list(users) + ": " + _get_flirt(m))
-
-
-def _get_flirt(m):
-    with open(m.bot.base_path + '/plugins/responses/flirt.txt', 'r') as flirts:
-        lines = flirts.read().splitlines()
-        verb = choice(lines)
-        return verb
+            m.bot.private_message(m.location, humanize_list(users) + ": " +
+                                  get_line(m, "flirt.txt"))

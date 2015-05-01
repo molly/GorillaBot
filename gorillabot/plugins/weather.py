@@ -82,7 +82,8 @@ def get_location(m, line):
     resp = get_url(m, google_api.format("+".join(line)))
     blob = json.loads(resp)
     if not blob["results"]:
-        m.bot.private_message(m.location, "Could not find weather information for {}.".format(" ".join(line)))
+        m.bot.private_message(m.location, "Could not find weather information for {}."
+                              .format(" ".join(line)))
     else:
         loc["lat"] = blob['results'][0]['geometry']['location']['lat']
         loc["long"] = blob['results'][0]['geometry']['location']['lng']
@@ -101,7 +102,7 @@ def get_weather(m, loc, api_key):
 
 def format_weather(blob, loc):
     """Format the weather nicely."""
-    w = {"loc": loc["addr"]}
+    w = dict(loc=loc["addr"])
     w["summary"] = blob["hourly"]['summary']
     temp = blob["hourly"]['data'][0]['temperature']
     app_temp = blob["hourly"]['data'][0]["apparentTemperature"]

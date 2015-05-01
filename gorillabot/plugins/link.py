@@ -248,4 +248,3 @@ def xkcd_google(html):
         return "Could not retrieve xkcd using this query."
     else:
         return results[0]['titleNoFormatting'] + ': ' + results[0]['unescapedUrl']
-    

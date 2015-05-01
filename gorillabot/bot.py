@@ -220,6 +220,7 @@ class Bot(object):
         self.update_configuration(self.configuration)
 
     def load_commands(self):
+        """Load commands from the pickle files if they exist."""
         try:
             with open(self.base_path + '/plugins/commands.pkl', 'rb') as admin_file:
                 admin_commands = pickle.load(admin_file)

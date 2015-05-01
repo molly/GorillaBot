@@ -16,6 +16,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from urllib.request import Request, urlopen, URLError
+from random import choice
 import os
 import pickle
 
@@ -64,6 +65,14 @@ def command(*args):
     return decorator
 
 
+def get_line(m, file):
+    """Get a random line from the given file."""
+    with open(m.bot.base_path + '/plugins/responses/' + file, 'r') as resps:
+        lines = resps.read().splitlines()
+        l = choice(lines)
+        return l
+
+
 def get_url(m, url, title=False):
     """Request a given URL, handling any errors. If 'title' is True, this will only return the
     first 1000 bytes of the page in an effort to not load too much more than is necessary."""
@@ -84,6 +93,7 @@ def get_url(m, url, title=False):
 
 
 def humanize_list(l):
+    """Return a human-readable list."""
     if len(l) == 1:
         return l[0]
     elif len(l) == 2:

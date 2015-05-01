@@ -188,6 +188,7 @@ class Privmsg(Message):
         return "Privmsg from {0} in {1}: {2}".format(self.sender, self.location, self.body)
 
     def set_trigger(self):
+        """Set the trigger function if this message warrants a response."""
         auto_link = self.is_pm or self.bot.get_setting('link', self.location) == 'auto'
         auto_spotify = self.is_pm or self.bot.get_setting('spotify', self.location) == 'auto'
         batman = self.bot.get_setting('batman', self.location) == 'on'

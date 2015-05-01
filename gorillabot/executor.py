@@ -32,6 +32,7 @@ class Executor(object):
         self.shutdown = shutdown
 
     def loop(self):
+        """Execution loop"""
         self.logger.debug("Thread created.")
         while not self.shutdown.is_set():
             # Block until a message exists in the queue
