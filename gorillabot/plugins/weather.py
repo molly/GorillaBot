@@ -70,6 +70,8 @@ def weather(m):
             m.bot.private_message(m.location, msg)
     else:
         m.bot.logger.info("No Forecast.io API key recorded.")
+        m.bot.private_message(m.location, "Ask a bot administrator to add a Forecast.io API key so "
+                                          "you can use this command.")
 
 
 def get_location(m, line):

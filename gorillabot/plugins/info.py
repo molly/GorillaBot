@@ -102,6 +102,7 @@ def attention(m):
                                               " you.")
             return
     elif attention_setting != 'on':
+        m.bot.private_message(m.location, "Command not enabled.")
         return
 
     # Okay, we're authorized to do this.
@@ -123,7 +124,7 @@ def attention(m):
                 sender = m.bot.parse_hostmask(m.sender)["nick"]
                 try:
                     nicks.remove(sender)
-                    nicks.remove(m.bot.get_config("nick"))
+                    nicks.remove(m.bot.configuration["nick"])
                 except ValueError:
                     pass
                 m.bot.private_message(m.location, "{0}: {1} wants your attention"

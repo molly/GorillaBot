@@ -157,9 +157,19 @@ class Bot(object):
         self.update_configuration(self.configuration)
 
     def get_configuration(self):
+        """Get the configuration dict for the active configuration."""
         with open(self.config_path, 'r') as f:
             blob = json.load(f)
         return blob[self.configuration_name]
+
+    def get_setting(self, setting, chan):
+        """Get the value of the given setting for the given channel."""
+        if chan not in self.configuration["chans"]:
+            self.logger.warning("Tried to get settings for nonexistant channel {}.".format(chan))
+            return None
+        if setting not in self.configuration["chans"][chan]["settings"]:
+            return None
+        return self.configuration["chans"][chan]["settings"][setting]
 
     def initialize(self):
         """Initialize the bot. Parse command-line options, configure, and set up logging."""
