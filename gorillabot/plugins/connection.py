@@ -31,8 +31,8 @@ def join(m):
     else:
         chan = m.line[1]
         if chan[0] != "#":
-            chan = "#" + chan
-        m.bot.join(chan)
+            m.bot.private_message(m.location, "Not a valid channel name.")
+        m.bot.join([chan])
         m.bot.logger.info("Joining " + chan)
 
 

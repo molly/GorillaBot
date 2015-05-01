@@ -103,8 +103,6 @@ class Bot(object):
                 message = Numeric(self, *line)
             elif line[1] == "NOTICE":
                 message = Notice(self, *line)
-            elif line[1] in ["MODE", "JOIN", "PART"]:
-                message = Operation(self, *line)
             elif line[1] == "PRIVMSG":
                 nick = self.configuration["nick"]
                 if (length >= 3 and line[2] == nick) or (length >= 4 and (
@@ -153,7 +151,7 @@ class Bot(object):
             for chan in chans:
                 self.logger.info("Joining {0}.".format(chan))
                 self.send('JOIN ' + chan)
-                self.configuration["chans"][chan]["joined"] = True
+                self.configuration["chans"].update({chan: {"joined": True}})
         self.update_configuration(self.configuration)
 
     def load_commands(self):

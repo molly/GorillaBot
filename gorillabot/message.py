@@ -149,35 +149,6 @@ class Numeric(Message):
             self.logger.info(self.body)
 
 
-class Operation(Message):
-    """Represent a channel operation (JOIN, KICK, etc.)"""
-
-    def __init__(self, *args):
-        self.type = args[2]
-        if len(args) < 5:
-            super(Operation, self).__init__(args[0], args[3], args[1], None)
-        else:
-            super(Operation, self).__init__(args[0], args[3], args[1], " ".join(args[4:]))
-        self.set_trigger()
-
-    def __str__(self):
-        return "{0} from {1} in {2}: {3}".format(self.type, self.sender, self.location, self.body)
-
-    def set_trigger(self):
-        if self.type == "MODE":
-            lowerbody = self.body.lower()
-            nick = self.bot.configuration["nick"]
-            lowernick = nick.lower()
-            if "+o {0}".format(lowernick) == lowerbody:
-                self.logger.info("Opped in {0}.".format(self.location))
-                if self.location not in self.bot.opped_channels:
-                    self.bot.opped_channels.append(self.location)
-            elif "-o {0}".format(lowernick) == lowerbody:
-                self.logger.info("De-opped in {0}.".format(self.location))
-                if self.location in self.bot.opped_channels:
-                    self.bot.opped_channels.remove(self.location)
-
-
 class Ping(Message):
     """Represent a ping from the server."""
 
