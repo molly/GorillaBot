@@ -17,8 +17,62 @@
 
 import logging
 import message
-from plugins.util import command
+from plugins.util import admin, command, humanize_list
 from queue import Empty
+
+
+@command("admincommandlist")
+def admincommands(m):
+    """Provide a list of admin-only commands."""
+
+    #-     !admincommands
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !admincommands
+    #- < GorillaBot> My available admin commands are join, part, quit, setcommand,
+    #-               and unset. See http://molly.github.io/GorillaBot for documentation.
+    #- ```
+    #-
+    #- Say the available admin-only commands. This does not display command aliases.
+
+    commands = [key for key in m.bot.admin_commands.keys() if not m.bot.admin_commands[key][1]]
+    commands.sort()
+    if len(commands) == 0:
+        m.bot.private_message(m.location, "I have no available admin commands. See "
+                                          "http://molly.github.io/GorillaBot for documentation.")
+    elif len(commands) == 1:
+        m.bot.private_message(m.location, "My available admin command is {0}. See "
+                                          "http://molly.github.io/GorillaBot for "
+                                          "documentation.".format(commands[0]))
+    else:
+        m.bot.private_message(m.location, "My available admin commands are {0}. See "
+                                          "http://molly.github.io/GorillaBot for "
+                                          "documentation.".format(
+            humanize_list(commands)))
+
+
+@command("admins", "botops", "oplist")
+def adminlist(m):
+    """Provide a list of current bot admins."""
+
+    #-     !adminlist
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !adminlist
+    #- < GorillaBot> My bot admin is GorillaWarfare.
+    #- ```
+    #-
+    #- Say the current bot operators.
+
+    ops = list(m.bot.configuration["botops"].keys())
+    if ops:
+        if len(ops) == 1:
+            m.bot.private_message(m.location, "My bot admin is " + ops[0] + ".")
+        else:
+            m.bot.private_message(m.location, "My bot admins are " + humanize_list(ops))
+    else:
+        nick = m.bot.configuration["nick"]
+        m.bot.private_message(m.location, "{0} has no master. {0} is a free bot.".format(nick))
 
 
 @command("pingall", "highlightall")
@@ -81,4 +135,32 @@ def attention(m):
     m.bot.response_lock.release()
 
 
+@command("commandlist", "help")
+def commands(m):
+    """Provide a list of commands available to all users."""
 
+    #-     !commands
+    #-
+    #- ```irc
+    #- < GorillaWarfare> !commands
+    #- < GorillaBot> My available commands are admincommands, adminlist, commands, hug,
+    #-               link, spotify, and xkcd. See http://molly.github.io/GorillaBot
+    #-               for documentation.
+    #- ```
+    #-
+    #- Say the available all-user commands. This does not display command aliases.
+
+    commands = [key for key in m.bot.commands.keys() if not m.bot.commands[key][1]]
+    commands.sort()
+    if len(commands) == 0:
+        m.bot.private_message(m.location, "I have no available commands. See "
+                                          "http://molly.github.io/GorillaBot for documentation.")
+    elif len(commands) == 1:
+        m.bot.private_message(m.location, "My available command is {0}. See "
+                                          "http://molly.github.io/GorillaBot for "
+                                          "documentation.".format(commands[0]))
+    else:
+        m.bot.private_message(m.location, "My available commands are {0}. See "
+                                          "http://molly.github.io/GorillaBot for "
+                                          "documentation.".format(
+            humanize_list(commands)))

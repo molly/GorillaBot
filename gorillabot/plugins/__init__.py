@@ -23,7 +23,7 @@ import plugins.eightball
 import plugins.freenode
 import plugins.info
 import plugins.link
-import plugins.misc
-import plugins.util
+import plugins.settings
 import plugins.spotify
+import plugins.util
 import plugins.weather
