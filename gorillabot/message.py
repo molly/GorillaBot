@@ -140,8 +140,7 @@ class Numeric(Message):
     def set_trigger(self):
         """Set the trigger function if this message warrants a response."""
         if self.number == "376":
-            self.trigger = plugins.util.get_admin
-            self.args.append(self)
+            self.trigger = self.bot.get_admin
         elif self.number == "396":
             self.trigger = self.bot.join
         elif self.number in ["403"]:

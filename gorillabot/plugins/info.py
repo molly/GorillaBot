@@ -43,13 +43,7 @@ def attention(m):
     logger = logging.getLogger("GorillaBot")
     attention_setting = m.bot.get_setting('attention', m.location)
     if attention_setting == 'admin':
-        cursor = m.bot.db_conn.cursor()
-        cursor.execute(
-            '''SELECT nick, user, host FROM users WHERE botop = 1 AND config = ?''',
-            (m.bot.configuration,))
-        data = cursor.fetchone()
-        cursor.close()
-        if m.bot.parse_hostmask(m.sender)["host"] != data[2]:
+        if not m.bot.is_admin(m.sender):
             m.bot.private_message(m.location, "Please ask a bot operator to perform this action for"
                                               " you.")
             return

@@ -16,11 +16,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from urllib.request import Request, urlopen, URLError
-import message
 import os
 import pickle
-import re
-import queue
 
 
 def admin(*args):
@@ -65,47 +62,6 @@ def command(*args):
         return func
 
     return decorator
-
-
-def get_admin(m, nick=None):
-    """Get the hostnames for the bot admins. If nick is supplied, add that user as an admin."""
-    botops = m.bot.configuration["botops"]
-    if nick:
-        ops = [nick]
-    else:
-        ops = botops.keys()
-    m.bot.response_lock.acquire()
-    ignored_messages = []
-    for op in ops:
-        m.bot.send("WHOIS " + op)
-        while True:
-            try:
-                msg = m.bot.message_q.get(True, 120)
-            except queue.Empty:
-                m.bot.logger.error("No response while getting admins. Shutting down.")
-                m.bot.shutdown.set()
-                break
-            else:
-                if type(msg) is message.Numeric:
-                    if msg.number == '311':
-                        # User info
-                        line = msg.body.split()
-                        botops.update({op: {"user": line[1], "host": line[2]}})
-                        m.bot.logger.info(
-                            "Adding {0} {1} to bot ops".format(line[1], line[2],))
-                    elif msg.number == '318':
-                        # End of WHOIS
-                        break
-                    elif msg.number == '401':
-                        # No such user
-                        m.bot.logger.info("No user {0} logged in.".format(op))
-                        break
-                ignored_messages.append(msg)
-    m.bot.response_lock.release()
-    for msg in ignored_messages:
-        m.bot.message_q.put(msg)
-    m.bot.configuration["botops"] = botops
-    m.bot.update_configuration(m.bot.configuration)
 
 
 def get_url(m, url, title=False):

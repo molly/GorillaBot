@@ -115,6 +115,47 @@ class Bot(object):
         else:
             print(line)
 
+    def get_admin(self, nick=None):
+        """Get the hostnames for the bot admins. If nick is supplied, add that user as an admin."""
+        botops = self.configuration["botops"]
+        if nick:
+            ops = [nick]
+        else:
+            ops = botops.keys()
+        self.response_lock.acquire()
+        ignored_messages = []
+        for op in ops:
+            self.send("WHOIS " + op)
+            while True:
+                try:
+                    msg = self.message_q.get(True, 120)
+                except queue.Empty:
+                    self.logger.error("No response while getting admins. Shutting down.")
+                    self.shutdown.set()
+                    break
+                else:
+                    if type(msg) is Numeric:
+                        if msg.number == '311':
+                            # User info
+                            line = msg.body.split()
+                            botops.update({op: {"user": line[1], "host": line[2]}})
+                            self.logger.info(
+                                "Adding {0} {1} to bot ops".format(line[1], line[2],))
+                            break
+                        elif msg.number == '318':
+                            # End of WHOIS
+                            break
+                        elif msg.number == '401':
+                            # No such user
+                            self.logger.info("No user {0} logged in.".format(op))
+                            break
+                    ignored_messages.append(msg)
+        self.response_lock.release()
+        for msg in ignored_messages:
+            self.message_q.put(msg)
+        self.configuration["botops"] = botops
+        self.update_configuration(self.configuration)
+
     def get_configuration(self):
         with open(self.config_path, 'r') as f:
             blob = json.load(f)
@@ -135,6 +176,20 @@ class Bot(object):
         except KeyboardInterrupt:
             self.logger.info("Caught KeyboardInterrupt. Shutting down.")
         self.start()
+
+    def is_admin(self, user):
+        """Check if user is a bot admin."""
+        botops = self.configuration["botops"].keys()
+        mask = self.parse_hostmask(user)
+        for op in botops:
+            op_info = self.configuration["botops"][op]
+            if op_info["host"] == mask["host"]:
+                return True
+            elif op == mask["nick"]:
+                # User is on the list of ops, but wasn't joined when the bot entered
+                self.get_admin(op)
+                return True
+        return False
 
     def join(self, chans=None):
         """Join the given channel, list of channels, or if no channel is specified, join any
