@@ -65,7 +65,7 @@ def setcommand(m):
                     iter(settings.items())))))
     elif len(m.line) == 2:
         # Query value of a setting in a channel
-        if not (settings or m.line[1] in settings):
+        if not settings or m.line[1] not in settings:
             m.bot.private_message(m.location,
                                   '"{0}" has not been set for {1}.'.format(m.line[1], chan))
         else:
@@ -101,19 +101,15 @@ def unset(m):
                               'Poorly-formatted command. Use "!unset setting [#channel]".')
         return
     chan = m.location if len(m.line) == 2 else m.line[2]
-    chan_id = m.bot.get_chan_id(chan)
-    if chan_id is None:
+    if chan not in m.bot.configuration["chans"]:
         m.bot.private_message(m.location,
                               "Cannot unset setting for {0}. Do I know about the channel?".format(
                                   chan))
         return
-    cursor = m.bot.db_conn.cursor()
-    cursor.execute('''DELETE FROM settings WHERE setting = ? AND chan_id = ?''',
-                   (m.line[1], chan_id))
-    m.bot.db_conn.commit()
-    cursor.close()
-    if cursor.rowcount == 1:
-        m.bot.private_message(m.location, '"{0}" unset for {1}.'.format(m.line[1], chan))
-    else:
-        m.bot.logger.info("Couldn't unset {0} for {1}.".format(m.line[1], chan))
-        m.bot.private_message(m.location, "Cannot unset {0} for {1}.".format(m.line[1], chan))
+    try:
+        del m.bot.configuration["chans"][chan]["settings"][m.line[1]]
+        m.bot.update_configuration(m.bot.configuration)
+    except KeyError:
+        # Doesn't matter if the value wasn't set to begin with
+        pass
+    m.bot.private_message(m.location, '"{0}" unset for {1}.'.format(m.line[1], chan))
