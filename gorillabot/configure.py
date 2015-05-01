@@ -79,12 +79,7 @@ class Configurator(object):
             for chan in settings[config]["chans"].keys():
                 settings[config]["chans"][chan]["joined"] = False
             for op in settings[config]["botops"]:
-                try:
-                    del op["user"]
-                    del op["host"]
-                except KeyError:
-                    # No user or host data was saved. Not a problem.
-                    pass
+                settings[config]["chans"][op] = {"user": "", "host": ""}
         self.save_config(settings)
 
     def get_settings(self):
@@ -132,13 +127,13 @@ class Configurator(object):
             settings[name]["youtube"] = self.prompt("YouTube API key (optional)", hidden=True)
             settings[name]["forecast"] = self.prompt("Forecast.io API key (optional)", hidden=True)
             settings[name]["chans"] = {}
-            settings[name]["botops"] = []
+            settings[name]["botops"] = {}
             for chan in chans:
                 if chan:
                     settings[name]["chans"][chan] = {"joined": False}
             for op in botops:
                 if op:
-                    settings[name]["botops"].append({"nick": op})
+                    settings[name]["botops"][op] = {"user": "", "host": ""}
             verify = self.verify(settings, name)
         new_settings = self.get_settings()
         new_settings.update(settings)
@@ -170,7 +165,7 @@ class Configurator(object):
                     print("No configuration named {}.".format(name))
                     name = ""
         chans = ", ".join(settings[name]["chans"].keys())
-        botops = ", ".join([el["nick"] for el in settings[name]["botops"]])
+        botops = ", ".join(settings[name]["botops"].keys())
         password = "[hidden]" if settings[name]["password"] else "[none]"
         youtube = "[hidden]" if settings[name]["youtube"] else "[none]"
         forecast = "[hidden]" if settings[name]["forecast"] else "[none]"

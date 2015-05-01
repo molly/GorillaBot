@@ -67,14 +67,13 @@ def command(*args):
     return decorator
 
 
-def get_admin(m):
-    """Get the hostnames for the bot admins."""
+def get_admin(m, nick=None):
+    """Get the hostnames for the bot admins. If nick is supplied, add that user as an admin."""
     botops = m.bot.configuration["botops"]
-    updated_botops = []
     m.bot.response_lock.acquire()
     ignored_messages = []
-    for op in botops:
-        m.bot.send("WHOIS " + op["nick"])
+    for op in botops.keys():
+        m.bot.send("WHOIS " + op)
         while True:
             try:
                 msg = m.bot.message_q.get(True, 120)
@@ -87,8 +86,7 @@ def get_admin(m):
                     if msg.number == '311':
                         # User info
                         line = msg.body.split()
-                        updated_botops.append({"nick": op["nick"], "user": line[1],
-                                               "host": line[2]})
+                        botops.update({op: {"user": line[1], "host": line[2]}})
                         m.bot.logger.info(
                             "Adding {0} {1} to bot ops".format(line[1], line[2],))
                     elif msg.number == '318':
@@ -97,13 +95,12 @@ def get_admin(m):
                     elif msg.number == '401':
                         # No such user
                         m.bot.logger.info("No user {0} logged in.".format(op["nick"]))
-                        updated_botops.append({"nick": op["nick"], "user": "", "host": ""})
                         break
                 ignored_messages.append(msg)
     m.bot.response_lock.release()
     for msg in ignored_messages:
         m.bot.message_q.put(msg)
-    m.bot.configuration["botops"] = updated_botops
+    m.bot.configuration["botops"] = botops
     m.bot.update_configuration(m.bot.configuration)
 
 

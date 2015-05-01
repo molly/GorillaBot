@@ -51,13 +51,18 @@ class Executor(object):
                 if msg.trigger:
                     if type(msg) is message.Command and msg.admin:
                         # Check if the sender is a bot admin
-                        cursor = self.bot.db_conn.cursor()
-                        cursor.execute(
-                            '''SELECT nick, user, host FROM users WHERE botop = 1 AND config = ?''',
-                            (self.bot.configuration,))
-                        data = cursor.fetchone()
-                        cursor.close()
-                        if self.bot.parse_hostmask(msg.sender)["host"] != data[2]:
+                        botops = self.bot.configuration["botops"].keys()
+                        mask = self.bot.parse_hostmask(msg.sender)
+                        is_admin = False
+                        for op in botops:
+                            op_info = self.bot.configuration["botops"][op]
+                            if op_info["host"] == mask["host"]:
+                                is_admin = True
+                                break
+                            elif op_info["nick"] == mask["nick"]:
+                                # TODO: Check to see if a new op has joined
+                                pass
+                        if not is_admin:
                             self.bot.private_message(msg.location, "Please ask a bot operator to "
                                                                    "perform this action for you.")
                             continue
