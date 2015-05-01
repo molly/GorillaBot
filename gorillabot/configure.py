@@ -130,7 +130,7 @@ class Configurator(object):
             settings[name]["botops"] = {}
             for chan in chans:
                 if chan:
-                    settings[name]["chans"][chan] = {"joined": False}
+                    settings[name]["chans"][chan] = {"joined": False, "settings": {}}
             for op in botops:
                 if op:
                     settings[name]["botops"][op] = {"user": "", "host": ""}
