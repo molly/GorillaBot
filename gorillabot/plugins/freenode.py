@@ -22,6 +22,7 @@ from queue import Empty
 
 
 def identify(m):
+    """Passes along Nickserv's password request and asks user to identify."""
     logger = logging.getLogger("GorillaBot")
     m.bot.response_lock.acquire()
     identified = False
@@ -45,11 +46,8 @@ def identify(m):
             elif 'You are now identified' in msg.body:
                 logger.info('You have successfully identified.')
                 identified = True
-                cursor = m.bot.db_conn.cursor()
-                cursor.execute('''UPDATE configs SET password = ? WHERE name = ?''',
-                               (password, m.bot.configuration))
-                m.bot.db_conn.commit()
-                cursor.close()
+                m.bot.configuration["password"] = password
+                m.bot.update_configuration(m.bot.configuration)
                 break
             else:
                 ignored_messages.append(msg)

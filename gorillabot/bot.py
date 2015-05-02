@@ -19,6 +19,7 @@
 
 from configure import Configurator
 from executor import Executor
+import json
 import logging
 from logging import handlers
 from message import *
@@ -27,7 +28,6 @@ import pickle
 import queue
 import re
 import socket
-import sqlite3
 import threading
 from time import sleep, strftime, time
 
@@ -37,9 +37,11 @@ class Bot(object):
 
     def __init__(self):
         self.base_path = os.path.dirname(os.path.abspath(__file__))
-        self.log_path = self.base_path + '/logs'
+        self.config_path = os.path.abspath(os.path.join(self.base_path, "..", "config.json"))
+        self.log_path = os.path.abspath(os.path.join(self.base_path, 'logs'))
 
         self.configuration = None
+        self.configuration_name = None
         self.last_message_sent = time()
         self.last_ping_sent = time()
         self.last_received = None
@@ -72,11 +74,6 @@ class Bot(object):
         self.logger.debug('Thread created.')
         self.socket = socket.socket()
         self.socket.settimeout(5)
-        cursor = self.db_conn.cursor()
-        cursor.execute('''SELECT * FROM configs WHERE name = ?''', (self.configuration,))
-        data = cursor.fetchone()
-        cursor.close()
-        name, nick, realname, ident, password, youtube, forecast = data
         try:
             self.logger.info('Initiating connection.')
             self.socket.connect(("chat.freenode.net", 6667))
@@ -84,10 +81,11 @@ class Bot(object):
             self.logger.error("Unable to connect to IRC server. Check your Internet connection.")
             self.shutdown.set()
         else:
-            if password:
-                self.send("PASS {0}".format(password), hide=True)
-            self.send("NICK {0}".format(nick))
-            self.send("USER {0} 0 * :{1}".format(ident, realname))
+            if self.configuration["password"]:
+                self.send("PASS {0}".format(self.configuration["password"]), hide=True)
+            self.send("NICK {0}".format(self.configuration["nick"]))
+            self.send("USER {0} 0 * :{1}".format(self.configuration["ident"],
+                                                 self.configuration["realname"]))
             self.private_message("NickServ", "ACC")
             self.loop()
 
@@ -95,7 +93,7 @@ class Bot(object):
         """Inspect this line and determine if further processing is necessary."""
         length = len(line)
         message = None
-        if length <= 2:
+        if 2 >= length >= 1:
             if line[0] == "PING":
                 message = Ping(self, *line)
         if length >= 2:
@@ -105,10 +103,8 @@ class Bot(object):
                 message = Numeric(self, *line)
             elif line[1] == "NOTICE":
                 message = Notice(self, *line)
-            elif line[1] in ["MODE", "JOIN", "PART"]:
-                message = Operation(self, *line)
             elif line[1] == "PRIVMSG":
-                nick = self.get_config("nick")
+                nick = self.configuration["nick"]
                 if (length >= 3 and line[2] == nick) or (length >= 4 and (
                     line[3].startswith(":!") or line[3].startswith(":" + nick))):
                     message = Command(self, *line)
@@ -119,46 +115,64 @@ class Bot(object):
         else:
             print(line)
 
-    def get_chan_id(self, channel):
-        '''Get the chan_id for the given channel.'''
-        cursor = self.db_conn.cursor()
-        cursor.execute('''SELECT chan_id FROM channels WHERE name = ? and config = ?''',
-                       (channel, self.configuration))
-        data = cursor.fetchone()
-        cursor.close()
-        if data is None:
-            return data
+    def get_admin(self, nick=None):
+        """Get the hostnames for the bot admins. If nick is supplied, add that user as an admin."""
+        botops = self.configuration["botops"]
+        if nick:
+            ops = [nick]
         else:
-            return data[0]
+            ops = botops.keys()
+        self.response_lock.acquire()
+        ignored_messages = []
+        for op in ops:
+            self.send("WHOIS " + op)
+            while True:
+                try:
+                    msg = self.message_q.get(True, 120)
+                except queue.Empty:
+                    self.logger.error("No response while getting admins. Shutting down.")
+                    self.shutdown.set()
+                    break
+                else:
+                    if type(msg) is Numeric:
+                        if msg.number == '311':
+                            # User info
+                            line = msg.body.split()
+                            botops.update({op: {"user": line[1], "host": line[2]}})
+                            self.logger.info(
+                                "Adding {0} {1} to bot ops".format(line[1], line[2],))
+                            break
+                        elif msg.number == '318':
+                            # End of WHOIS
+                            break
+                        elif msg.number == '401':
+                            # No such user
+                            self.logger.info("No user {0} logged in.".format(op))
+                            break
+                    ignored_messages.append(msg)
+        self.response_lock.release()
+        for msg in ignored_messages:
+            self.message_q.put(msg)
+        self.configuration["botops"] = botops
+        self.update_configuration(self.configuration)
 
-    def get_config(self, config):
-        """Retrieve the given configuration setting from the database."""
-        cursor = self.db_conn.cursor()
-        query = '''SELECT %s FROM configs WHERE name = ?''' % config
-        cursor.execute(query, (self.configuration,))
-        value = cursor.fetchone()
-        cursor.close()
-        return value[0] if value else None
+    def get_configuration(self):
+        """Get the configuration dict for the active configuration."""
+        with open(self.config_path, 'r') as f:
+            blob = json.load(f)
+        return blob[self.configuration_name]
 
     def get_setting(self, setting, chan):
-        """Retrieve the given setting from the database."""
-        chan_id = self.get_chan_id(chan)
-        if chan_id is None:
-            return False
-        cursor = self.db_conn.cursor()
-        cursor.execute('''SELECT value FROM settings WHERE chan_id = ? AND setting = ?''',
-                       (chan_id, setting))
-        data = cursor.fetchone()
-        cursor.close()
-        return data[0] if data else None
+        """Get the value of the given setting for the given channel."""
+        if chan not in self.configuration["chans"]:
+            self.logger.warning("Tried to get settings for nonexistant channel {}.".format(chan))
+            return None
+        if setting not in self.configuration["chans"][chan]["settings"]:
+            return None
+        return self.configuration["chans"][chan]["settings"][setting]
 
     def initialize(self):
         """Initialize the bot. Parse command-line options, configure, and set up logging."""
-        if not os.path.isdir(self.base_path + "/db"):
-            os.makedirs(self.base_path + "/db")
-        self.db_conn = sqlite3.connect(self.base_path + '/db/GorillaBot.db',
-                                       check_same_thread=False)
-        self.db_conn.execute('''PRAGMA foreign_keys = ON''')
         self.admin_commands, self.commands = self.load_commands()
         self.setup_logging()
         print('\n  ."`".'
@@ -167,49 +181,46 @@ class Bot(object):
               '|__) /  \  |  \x1b[0m\n|   "   | \x1b[32m  \__| \__/ |  \ | |__ '
               '|__ |  | |__) \__/  |  \x1b[0m \n \(\_/)/\n')
         try:
-            self.configuration = Configurator(self.db_conn).configure()
+            self.configuration_name = Configurator().configure()
+            self.configuration = self.get_configuration()
         except KeyboardInterrupt:
             self.logger.info("Caught KeyboardInterrupt. Shutting down.")
-        if self.configuration:
-            self.start()
-        else:
-            return
+        self.start()
+
+    def is_admin(self, user):
+        """Check if user is a bot admin."""
+        botops = self.configuration["botops"].keys()
+        mask = self.parse_hostmask(user)
+        for op in botops:
+            op_info = self.configuration["botops"][op]
+            if op_info["host"] == mask["host"]:
+                return True
+            elif op == mask["nick"]:
+                # User is on the list of ops, but wasn't joined when the bot entered
+                self.get_admin(op)
+                return True
+        return False
 
     def join(self, chans=None):
         """Join the given channel, list of channels, or if no channel is specified, join any
-        channels
-        that exist in the config but are not already joined."""
+        channels that exist in the config but are not already joined."""
         if chans is None:
-            cursor = self.db_conn.cursor()
-            cursor.execute('''SELECT name, joined FROM channels WHERE config = ?''',
-                           (self.configuration,))
-            data = cursor.fetchall()
-            cursor.close()
-            for row in data:
-                if row[1] == 0:
-                    self.logger.info("Joining {0}.".format(row[0]))
-                    self.send('JOIN ' + row[0])
-                    cursor = self.db_conn.cursor()
-                    cursor.execute(
-                        '''UPDATE channels SET joined = 1 WHERE name = ? AND config = ?''',
-                        (row[0], self.configuration))
-                    self.db_conn.commit()
-                    cursor.close()
+            chans = self.configuration["chans"]
+            if chans:
+                for chan in chans.keys():
+                    if not chans[chan]["joined"]:
+                        self.logger.info("Joining {0}.".format(chan))
+                        self.send('JOIN ' + chan)
+                        self.configuration["chans"][chan]["joined"] = True
         else:
-            if type(chans) is str:
-                chans = [chans]
             for chan in chans:
                 self.logger.info("Joining {0}.".format(chan))
                 self.send('JOIN ' + chan)
-                cursor = self.db_conn.cursor()
-                cursor.execute('''UPDATE channels SET joined = 1 WHERE name = ?''', (chan,))
-                if cursor.rowcount < 1:
-                    cursor.execute('''INSERT INTO channels VALUES (NULL, ?, 1, ?)''',
-                                   (chan, self.configuration))
-                self.db_conn.commit()
-                cursor.close()
+                self.configuration["chans"].update({chan: {"joined": True}})
+        self.update_configuration(self.configuration)
 
     def load_commands(self):
+        """Load commands from the pickle files if they exist."""
         try:
             with open(self.base_path + '/plugins/commands.pkl', 'rb') as admin_file:
                 admin_commands = pickle.load(admin_file)
@@ -249,6 +260,7 @@ class Bot(object):
                     if line != "":
                         self.dispatch(line)
             self.caffeinate()
+        self.send("QUIT :Shut down from command line.")
         self.socket.close()
 
     def parse_hostmask(self, nick):
@@ -332,8 +344,20 @@ class Bot(object):
         except KeyboardInterrupt:
             self.logger.info("Caught KeyboardInterrupt. Shutting down.")
             self.shutdown.set()
-            self.db_conn.close()
 
+    def update_configuration(self, updated_configuration):
+        """Update the full configuration blob with the new settings, then write it to the file.
+        Also updates the stored self.configuration dict."""
+        with open(self.config_path, 'r') as f:
+            blob = json.load(f)
+        updated_configuration = {self.configuration_name: updated_configuration}
+        if blob:
+            blob.update(updated_configuration)
+        else:
+            blob = updated_configuration
+        with open(self.config_path, "w") as f:
+            json.dump(blob, f, indent=4)
+        self.configuration = blob[self.configuration_name]
 
 if __name__ == "__main__":
     bot = Bot()

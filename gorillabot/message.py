@@ -47,7 +47,7 @@ class Command(Message):
         self.line = args[4:]
         self.admin = False
         super(Command, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
-        nick = self.bot.get_config('nick')
+        nick = self.bot.configuration["nick"]
         if self.line[0].strip("!:") == nick:
             self.line = self.line[1:]
         if self.location == nick:
@@ -140,42 +140,12 @@ class Numeric(Message):
     def set_trigger(self):
         """Set the trigger function if this message warrants a response."""
         if self.number == "376":
-            self.trigger = plugins.util.get_admin
-            self.args.append(self)
+            self.trigger = self.bot.get_admin
         elif self.number == "396":
             self.trigger = self.bot.join
         elif self.number in ["403"]:
             # Pass the message along
             self.logger.info(self.body)
-
-
-class Operation(Message):
-    """Represent a channel operation (JOIN, KICK, etc.)"""
-
-    def __init__(self, *args):
-        self.type = args[2]
-        if len(args) < 5:
-            super(Operation, self).__init__(args[0], args[3], args[1], None)
-        else:
-            super(Operation, self).__init__(args[0], args[3], args[1], " ".join(args[4:]))
-        self.set_trigger()
-
-    def __str__(self):
-        return "{0} from {1} in {2}: {3}".format(self.type, self.sender, self.location, self.body)
-
-    def set_trigger(self):
-        if self.type == "MODE":
-            lowerbody = self.body.lower()
-            nick = self.bot.get_config("nick")
-            lowernick = nick.lower()
-            if "+o {0}".format(lowernick) == lowerbody:
-                self.logger.info("Opped in {0}.".format(self.location))
-                if self.location not in self.bot.opped_channels:
-                    self.bot.opped_channels.append(self.location)
-            elif "-o {0}".format(lowernick) == lowerbody:
-                self.logger.info("De-opped in {0}.".format(self.location))
-                if self.location in self.bot.opped_channels:
-                    self.bot.opped_channels.remove(self.location)
 
 
 class Ping(Message):
@@ -208,7 +178,7 @@ class Privmsg(Message):
 
     def __init__(self, *args):
         super(Privmsg, self).__init__(args[0], args[3], args[1][1:], " ".join(args[4:]))
-        if self.location == self.bot.get_config('nick'):
+        if self.location == self.bot.configuration["nick"]:
             self.location = self.bot.parse_hostmask(self.sender)['nick']
             self.is_pm = True
         self.urls = None
@@ -218,6 +188,7 @@ class Privmsg(Message):
         return "Privmsg from {0} in {1}: {2}".format(self.sender, self.location, self.body)
 
     def set_trigger(self):
+        """Set the trigger function if this message warrants a response."""
         auto_link = self.is_pm or self.bot.get_setting('link', self.location) == 'auto'
         auto_spotify = self.is_pm or self.bot.get_setting('spotify', self.location) == 'auto'
         batman = self.bot.get_setting('batman', self.location) == 'on'

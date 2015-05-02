@@ -15,24 +15,17 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from random import choice, random
+from random import random
+from plugins.util import get_line
 
 
 def alfred(m):
     """Respond with a line from alfred.txt every 1 in 5 times "AlfredBot" is mentioned."""
     if random() < 0.2:
-        m.bot.private_message(m.location, _get_line(m, "alfred.txt"))
+        m.bot.private_message(m.location, get_line(m, "alfred.txt"))
 
 
 def batman(m):
     """Respond with a line from batman.txt every 1 in 5 times "batman" is mentioned."""
     if random() < 0.2:
-        m.bot.private_message(m.location, _get_line(m, "batman.txt"))
-
-
-def _get_line(m, file):
-    """Get a random line from the given file."""
-    with open(m.bot.base_path + '/plugins/responses/' + file, 'r') as resps:
-        lines = resps.read().splitlines()
-        verb = choice(lines)
-        return verb
+        m.bot.private_message(m.location, get_line(m, "batman.txt"))

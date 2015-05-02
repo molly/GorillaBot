@@ -4,7 +4,7 @@ setup(
   packages = ['gorillabot'],
   package_data = {'gorillabot': ['plugins/*.py']},
   scripts = ['gorillabot/docs/make_docs.py'],
-  version = '2.0',
+  version = '3.0',
   description = 'An easily-extensible IRC bot.',
   license = 'MIT',
   author = 'Molly White',

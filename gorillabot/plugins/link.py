@@ -126,7 +126,7 @@ def clean(title):
 
 def youtube(m, url):
     """Retrieve information about the YouTube video."""
-    api_key = m.bot.get_config('youtube')
+    api_key = m.bot.configuration["youtube"]
     if api_key:
         match = re.search(r'youtu(?:be.com/watch\?v=|\.be/)(.+?)(?:\?|&|\Z)', url)
         if match:
@@ -248,4 +248,3 @@ def xkcd_google(html):
         return "Could not retrieve xkcd using this query."
     else:
         return results[0]['titleNoFormatting'] + ': ' + results[0]['unescapedUrl']
-    

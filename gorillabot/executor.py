@@ -32,6 +32,7 @@ class Executor(object):
         self.shutdown = shutdown
 
     def loop(self):
+        """Execution loop"""
         self.logger.debug("Thread created.")
         while not self.shutdown.is_set():
             # Block until a message exists in the queue
@@ -51,13 +52,7 @@ class Executor(object):
                 if msg.trigger:
                     if type(msg) is message.Command and msg.admin:
                         # Check if the sender is a bot admin
-                        cursor = self.bot.db_conn.cursor()
-                        cursor.execute(
-                            '''SELECT nick, user, host FROM users WHERE botop = 1 AND config = ?''',
-                            (self.bot.configuration,))
-                        data = cursor.fetchone()
-                        cursor.close()
-                        if self.bot.parse_hostmask(msg.sender)["host"] != data[2]:
+                        if not self.bot.is_admin(msg.sender):
                             self.bot.private_message(msg.location, "Please ask a bot operator to "
                                                                    "perform this action for you.")
                             continue

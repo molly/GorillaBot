@@ -15,8 +15,7 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from plugins.util import command
-from random import choice
+from plugins.util import command, get_line
 
 
 @command("8ball", "8-ball")
@@ -32,6 +31,4 @@ def eightball(m):
     #-
     #- Returns a magic 8 ball response.
 
-    with open(m.bot.base_path + '/plugins/responses/8ball.txt', 'r') as replies:
-        lines = replies.read().splitlines()
-        m.bot.private_message(m.location, choice(lines))
+    m.bot.private_message(m.location, get_line(m, "8ball.txt"))

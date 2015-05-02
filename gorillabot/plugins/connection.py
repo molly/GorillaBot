@@ -31,8 +31,8 @@ def join(m):
     else:
         chan = m.line[1]
         if chan[0] != "#":
-            chan = "#" + chan
-        m.bot.join(chan)
+            m.bot.private_message(m.location, "Not a valid channel name.")
+        m.bot.join([chan])
         m.bot.logger.info("Joining " + chan)
 
 
@@ -47,28 +47,31 @@ def part(m):
 
     part_msg = ""
     if len(m.line) == 1:
-        m.bot.send("PART " + m.location + " " + part_msg)
-        m.bot.logger.info("Parting from #" + m.location)
-        cursor = m.bot.db_conn.cursor()
-        cursor.execute('''DELETE FROM channels WHERE name = ? AND config = ?''',
-                       (m.location, m.bot.configuration))
-        m.bot.db_conn.commit()
-        cursor.close()
+        m.bot.send("PART " + m.location + " :" + part_msg)
+        m.bot.logger.info("Parting from " + m.location)
+        try:
+            del m.bot.configuration["chans"][m.location]
+        except KeyError:
+            m.bot.logger("Wasn't joined to " + m.location)
+        else:
+            m.bot.update_configuration(m.bot.configuration)
         return
     channel = ""
     if len(m.line) > 2:
         part_msg = " ".join(m.line[2:])
     if m.line[1][0] != "#":
-        channel = "#" + m.line[1]
+        m.bot.private_message(m.location, "Not a valid channel name.")
+        return
     else:
         channel = m.line[1]
     m.bot.send("PART " + channel + " :" + part_msg)
     m.bot.logger.info("Parting from " + channel + ".")
-    cursor = m.bot.db_conn.cursor()
-    cursor.execute('''DELETE FROM channels WHERE name = ? AND config = ?''',
-                   (channel, m.bot.configuration))
-    m.bot.db_conn.commit()
-    cursor.close()
+    try:
+        del m.bot.configuration["chans"][m.location]
+    except KeyError:
+        m.bot.logger.info("Wasn't joined to " + m.location)
+    else:
+        m.bot.update_configuration(m.bot.configuration)
 
 
 @admin("shutdown")
