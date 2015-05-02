@@ -84,7 +84,7 @@ def attention(m):
     #-
     #- ```irc
     #- < GorillaWarfare> !attention
-    #- < GorillaBot> GorillaWarfare wants your attention! user, user1, user2
+    #- < GorillaBot> user1, user2, user3: GorillaWarfare wants your attention
     #- ```
     #-
     #- Ping all of the users in the channel.
