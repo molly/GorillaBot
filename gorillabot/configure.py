@@ -109,6 +109,8 @@ class Configurator(object):
         """Create a new configuration."""
         existing = self.get_settings()
         verify = False
+        with open("./plugins/plugins.json") as plugin_file:
+            plugin_list = json.load(plugin_file)
         while not verify:
             print('\n')
             name = ""
@@ -121,9 +123,10 @@ class Configurator(object):
             settings[name]["nick"] = self.prompt("Nick", "GorillaBot")
             settings[name]["realname"] = self.prompt("Ident", "GorillaBot")
             settings[name]["ident"] = self.prompt("Realname", "GorillaBot")
+            settings[name]["password"] = self.prompt("Server password (optional)", hidden=True)
             chans = re.split(',? ', self.prompt("Channel(s)"))
             botops = re.split(',? ', self.prompt("Bot operator(s)", ''))
-            settings[name]["password"] = self.prompt("Server password (optional)", hidden=True)
+            plugins = re.split(',? ', self.prompt("Plugins", ''))
             settings[name]["youtube"] = self.prompt("YouTube API key (optional)", hidden=True)
             settings[name]["forecast"] = self.prompt("Forecast.io API key (optional)", hidden=True)
             settings[name]["chans"] = {}
@@ -134,6 +137,13 @@ class Configurator(object):
             for op in botops:
                 if op:
                     settings[name]["botops"][op] = {"user": "", "host": ""}
+            settings[name]["plugins"] = []
+            for plugin in plugins:
+                if plugin:
+                    if plugin in plugin_list:
+                        settings[name]["plugins"].append(plugin)
+                    else:
+                        print(plugin + " not being included. Not one of: " + ", ".join(plugin_list))
             verify = self.verify(settings, name)
         new_settings = self.get_settings()
         new_settings.update(settings)
@@ -166,15 +176,16 @@ class Configurator(object):
                     name = ""
         chans = ", ".join(settings[name]["chans"].keys())
         botops = ", ".join(settings[name]["botops"].keys())
+        plugins = ", ".join(settings[name]["plugins"])
         password = "[hidden]" if settings[name]["password"] else "[none]"
         youtube = "[hidden]" if settings[name]["youtube"] else "[none]"
         forecast = "[hidden]" if settings[name]["forecast"] else "[none]"
         print(
             "\n------------------------------\n Nickname: {0}\n Real name: {1}\n Identifier: {2}\n"
-            " Channels: {3}\n Bot operator(s): {4}\n Server password: {5}\n YouTube API key: {6}\n"
-            " Forecast.io API key: {7}\n------------------------------\n"
+            " Channels: {3}\n Bot operator(s): {4}\n Server password: {5}\n Plugins: {6}\n YouTube API key: {7}\n"
+            " Forecast.io API key: {8}\n------------------------------\n"
             .format(settings[name]["nick"], settings[name]["realname"], settings[name]["ident"],
-                    chans, botops, password, youtube, forecast))
+                    chans, botops, password, plugins, youtube, forecast))
         return name
 
     def verify(self, settings, name):
