@@ -275,6 +275,7 @@ class Bot(object):
         """Send a ping to the server."""
         self.logger.debug("Pinging chat.freenode.net.")
         self.send("PING chat.freenode.net")
+        self.last_ping_sent = time()
 
     def pong(self, server):
         """Respond to a ping from the server."""
