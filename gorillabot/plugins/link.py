@@ -147,11 +147,14 @@ def youtube(m, url):
                 # Parse video duration
                 dur_match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(\d+)S',
                                      blob["contentDetails"]["duration"])
-                hr, min, sec = dur_match.groups()
-                if hr:
-                    pretty_dur = ":".join([hr, "00" if min is None else min.zfill(2), sec.zfill(2)])
+                if dur_match:
+                    hr, min, sec = dur_match.groups()
+                    if hr:
+                        pretty_dur = ":".join([hr, "00" if min is None else min.zfill(2), sec.zfill(2)])
+                    else:
+                        pretty_dur = ":".join(["00" if min is None else min.zfill(2), sec.zfill(2)])
                 else:
-                    pretty_dur = ":".join(["00" if min is None else min.zfill(2), sec.zfill(2)])
+                    pretty_dur = ""
 
                 # Format and return message
                 return "\"{title}\" ({duration}). Uploaded {date}. {views} views. {likes} likes, " \

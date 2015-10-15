@@ -216,7 +216,7 @@ class Bot(object):
             for chan in chans:
                 self.logger.info("Joining {0}.".format(chan))
                 self.send('JOIN ' + chan)
-                self.configuration["chans"].update({chan: {"joined": True}})
+                self.configuration["chans"].update({chan: {"joined": True, "settings": {}}})
         self.update_configuration(self.configuration)
 
     def load_commands(self):
