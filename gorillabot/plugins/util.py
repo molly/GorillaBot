@@ -84,12 +84,15 @@ def get_url(m, url, title=False):
         return None
     else:
         try:
-            bytes = html.read(5000 if title else -1).decode('utf-8')
+            if title:
+                data = html.read(5000).decode('utf-8')
+            else:
+                data = html.read().decode('utf-8')
         except UnicodeDecodeError as e:
             m.bot.logger.info("{0}: {1}".format(url, e.reason))
             return None
         else:
-            return bytes
+            return data
 
 
 def humanize_list(l):
