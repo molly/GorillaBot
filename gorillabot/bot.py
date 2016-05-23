@@ -16,6 +16,7 @@
 # NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+import sys
 
 from configure import Configurator
 from executor import Executor
@@ -52,8 +53,8 @@ class Bot(object):
         self.message_q = queue.Queue()
         self.executor = Executor(self, self.message_q, self.shutdown)
         self.header = {"User-Agent": "GorillaBot (https://github.com/molly/GorillaBot)"}
-
-        self.initialize()
+        configurator = Configurator()
+        self.initialize(configurator)
 
     def action(self, target, message):
         """Perform an action to target on the server."""
@@ -179,7 +180,7 @@ class Bot(object):
             return None
         return self.configuration["chans"][chan]["settings"][setting]
 
-    def initialize(self):
+    def initialize(self, configurator):
         """Initialize the bot. Parse command-line options, configure, and set up logging."""
         self.admin_commands, self.commands = self.load_commands()
         self.setup_logging()
@@ -189,7 +190,9 @@ class Bot(object):
               '|__) /  \  |  \x1b[0m\n|   "   | \x1b[32m  \__| \__/ |  \ | |__ '
               '|__ |  | |__) \__/  |  \x1b[0m \n \(\_/)/\n')
         try:
-            self.configuration_name = Configurator().configure()
+            self.configuration_name = configurator.configure()
+            if not self.configuration_name:
+                sys.exit()
             self.configuration = self.get_configuration()
         except KeyboardInterrupt:
             self.logger.info("Caught KeyboardInterrupt. Shutting down.")

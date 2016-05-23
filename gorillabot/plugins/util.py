@@ -83,6 +83,7 @@ def get_url(m, url, title=False, get_fn = None):
         html = get_fn(request)
     except URLError as e:
         m.bot.logger.info("{0}: {1}".format(url, e.reason))
+        html.close()
         return None
     else:
         try:
@@ -92,8 +93,10 @@ def get_url(m, url, title=False, get_fn = None):
                 data = html.read().decode('utf-8')
         except UnicodeDecodeError as e:
             m.bot.logger.info("{0}: {1}".format(url, e.reason))
+            html.close()
             return None
         else:
+            html.close()
             return data
 
 
