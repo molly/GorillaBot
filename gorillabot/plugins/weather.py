@@ -41,11 +41,12 @@ def weather(m):
     #-
     #- Provide weather information for the given location. Defaults to giving weather information
     #- about today. Given the `--now` parameter, this will give the current weather. Given the
-    #- `--weekly` parameter, this will give the forecast for the week.
+    #- `--weekly` parameter, this will give the forecast for the week. Powered by Dark Sky.
+    #- https://darksky.net/poweredby/.
     #-
     #- In order to provide weather information, you must provide a Forecast.io API key when
     #-  configuring the bot. You can get an API key by registering an email address at
-    #-  http://developer.forecast.io/.
+    #-  https://darksky.net/dev/.
 
     api_key = m.bot.configuration["forecast"]
     if api_key:
@@ -95,7 +96,7 @@ def get_weather(m, loc, api_key):
     """Make the API call to get the weather."""
     if loc:
         m.bot.logger.info("Finding weather for {}.".format(loc["name"]))
-        forecast_api = "https://api.forecast.io/forecast/{0}/{1},{2}?exclude=flags"
+        forecast_api = "https://api.darksky.net/forecast/{0}/{1},{2}?exclude=flags"
         resp = get_url(m, forecast_api.format(api_key, loc["lat"], loc["long"]))
         return json.loads(resp)
 
