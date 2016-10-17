@@ -73,23 +73,28 @@ def get_line(m, file):
         return l
 
 
-def get_url(m, url, title=False):
+def get_url(m, url, title=False, get_fn = None):
     """Request a given URL, handling any errors. If 'title' is True, this will only return the
-    first 1000 bytes of the page in an effort to not load too much more than is necessary."""
+    first 5000 bytes of the page in an effort to not load too much more than is necessary."""
+    if not get_fn:
+        get_fn = urlopen
     request = Request(url, headers=m.bot.header)
     try:
-        html = urlopen(request)
+        html = get_fn(request)
     except URLError as e:
         m.bot.logger.info("{0}: {1}".format(url, e.reason))
         return None
     else:
         try:
-            bytes = html.read(5000 if title else -1).decode('utf-8')
+            if title:
+                data = html.read(5000).decode('utf-8')
+            else:
+                data = html.read().decode('utf-8')
         except UnicodeDecodeError as e:
             m.bot.logger.info("{0}: {1}".format(url, e.reason))
             return None
         else:
-            return bytes
+            return data
 
 
 def humanize_list(l):
