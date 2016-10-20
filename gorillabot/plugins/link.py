@@ -71,6 +71,9 @@ def link(m, urls=None, wikilinks=None):
         safe = wikilink.replace(" ", "_")
         if safe[-1] == ")":
             safe = safe[:-1] + "%29"
+        has_text = re.search("\\|", wikilink)
+        if has_text:
+            safe = re.sub("\\|.*", "", safe)
         m.bot.private_message(m.location, "https://en.wikipedia.org/wiki/" + safe)
 
 
