@@ -53,8 +53,7 @@ class Bot(object):
         self.message_q = queue.Queue()
         self.executor = Executor(self, self.message_q, self.shutdown)
         self.header = {"User-Agent": "GorillaBot (https://github.com/molly/GorillaBot)"}
-        configurator = Configurator()
-        self.initialize(configurator)
+
 
     def action(self, target, message):
         """Perform an action to target on the server."""
@@ -376,3 +375,5 @@ class Bot(object):
 
 if __name__ == "__main__":
     bot = Bot()
+    configurator = Configurator()
+    bot.initialize(configurator)

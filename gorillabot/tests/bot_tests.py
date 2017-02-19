@@ -3,6 +3,7 @@ from socket import socket
 import logging
 
 from bot import Bot
+from configure import Configurator
 
 
 class MockSocket(socket):
@@ -25,6 +26,7 @@ class MockSocket(socket):
     def get_messages(self):
         return self.messages
 
+
 class MockLogger(logging._loggerClass):
     def __init__(self):
         super(MockLogger, self).__init__("Test")
@@ -38,19 +40,13 @@ class MockLogger(logging._loggerClass):
     def error(self, msg, *args, **kwargs):
         pass
 
-class TestBot(unittest.TestCase):
 
+class TestBot(unittest.TestCase):
     def testConnectToConfiguredServer(self):
         class MockBot(Bot):
-            def initialize(self):
-                self.configuration_name = "test_config"
-                self.configuration = {"server": "localhost",
-                                      "password": None,
-                                      "nick": "test_bot",
-                                      "ident": "test_bot",
-                                      "realname": "test_bot",
-                                      "nickserv_auth": False,
-                                      "chans": []}
+            def initialize(self, configurator):
+                self.configuration_name = configurator.configure()
+                self.configuration = configurator.get_settings()
                 self.logger = MockLogger()
 
             def _get_socket(self):
@@ -59,8 +55,22 @@ class TestBot(unittest.TestCase):
             def update_configuration(self, updated_configuration):
                 pass
 
+        class MockConfigurator(Configurator):
+            def configure(self):
+                return "test_config"
+
+            def get_settings(self):
+                return {"server": "localhost",
+                        "password": None,
+                        "nick": "test_bot",
+                        "ident": "test_bot",
+                        "realname": "test_bot",
+                        "nickserv_auth": False,
+                        "chans": []}
+
         bot = MockBot()
-        bot.initialize()
+        mock_configurator = MockConfigurator()
+        bot.initialize(mock_configurator)
         bot.connect()
         self.assertEqual(bot.socket.address, "localhost")
 
@@ -135,6 +145,3 @@ class TestBot(unittest.TestCase):
         sent_messages = bot.get_sent_messages()
         nickserv_messages = [x for x in sent_messages if x.startswith("PRIVMSG NickServ")]
         self.assertEqual(len(nickserv_messages), 1, "Did not send a message to nickserv")
-
-
-
