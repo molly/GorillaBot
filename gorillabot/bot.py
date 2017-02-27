@@ -16,6 +16,7 @@
 # NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+import sys
 
 from configure import Configurator
 from executor import Executor
@@ -53,7 +54,6 @@ class Bot(object):
         self.executor = Executor(self, self.message_q, self.shutdown)
         self.header = {"User-Agent": "GorillaBot (https://github.com/molly/GorillaBot)"}
 
-        self.initialize()
 
     def action(self, target, message):
         """Perform an action to target on the server."""
@@ -72,11 +72,11 @@ class Bot(object):
     def connect(self):
         """Connect to the IRC server."""
         self.logger.debug('Thread created.')
-        self.socket = socket.socket()
+        self.socket = self._get_socket()
         self.socket.settimeout(5)
         try:
             self.logger.info('Initiating connection.')
-            self.socket.connect(("chat.freenode.net", 6667))
+            self.socket.connect((self.configuration["server"], 6667))
         except OSError:
             self.logger.error("Unable to connect to IRC server. Check your Internet connection.")
             self.shutdown.set()
@@ -86,8 +86,16 @@ class Bot(object):
             self.send("NICK {0}".format(self.configuration["nick"]))
             self.send("USER {0} 0 * :{1}".format(self.configuration["ident"],
                                                  self.configuration["realname"]))
-            self.private_message("NickServ", "ACC")
+            if self.configuration["nickserv_auth"]:
+                self.private_message("NickServ", "ACC")
+            else:
+                self.join()
             self.loop()
+
+    def _get_socket(self):
+        """A very lightweight shim around the system socket library that allows us to replace real sockets with mocks in
+        unit tests"""
+        return socket.socket()
 
     def dispatch(self, line):
         """Inspect this line and determine if further processing is necessary."""
@@ -171,7 +179,7 @@ class Bot(object):
             return None
         return self.configuration["chans"][chan]["settings"][setting]
 
-    def initialize(self):
+    def initialize(self, configurator):
         """Initialize the bot. Parse command-line options, configure, and set up logging."""
         self.admin_commands, self.commands = self.load_commands()
         self.setup_logging()
@@ -181,7 +189,9 @@ class Bot(object):
               '|__) /  \  |  \x1b[0m\n|   "   | \x1b[32m  \__| \__/ |  \ | |__ '
               '|__ |  | |__) \__/  |  \x1b[0m \n \(\_/)/\n')
         try:
-            self.configuration_name = Configurator().configure()
+            self.configuration_name = configurator.configure()
+            if not self.configuration_name:
+                sys.exit()
             self.configuration = self.get_configuration()
         except KeyboardInterrupt:
             self.logger.info("Caught KeyboardInterrupt. Shutting down.")
@@ -301,9 +311,12 @@ class Bot(object):
                 self.logger.debug("Sent: " + message)
             self.last_message_sent = time()
 
+    def _get_logger(self, name):
+        return logging.getLogger(name)
+
     def setup_logging(self):
         """Set up logging to a logfile and the console."""
-        self.logger = logging.getLogger('GorillaBot')
+        self.logger = self._get_logger("GorillaBot")
 
         # Set logging level
         self.logger.setLevel(logging.DEBUG)
@@ -362,3 +375,5 @@ class Bot(object):
 
 if __name__ == "__main__":
     bot = Bot()
+    configurator = Configurator()
+    bot.initialize(configurator)
