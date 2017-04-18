@@ -113,11 +113,12 @@ class Configurator(object):
             print('\n')
             name = ""
             while name == "":
-                name = input("Unique name for this configuration: ")
+                name = self.prompt("Unique name for this configuration: ")
                 if name in existing.keys():
                     print('The name "{0}" is not unique.'.format(name))
                     name = ""
             settings = {name: {}}
+            settings[name]["server"] = self.prompt("Server")
             settings[name]["nick"] = self.prompt("Nick", "GorillaBot")
             settings[name]["realname"] = self.prompt("Ident", "GorillaBot")
             settings[name]["ident"] = self.prompt("Realname", "GorillaBot")
@@ -126,6 +127,11 @@ class Configurator(object):
             settings[name]["password"] = self.prompt("Server password (optional)", hidden=True)
             settings[name]["youtube"] = self.prompt("YouTube API key (optional)", hidden=True)
             settings[name]["forecast"] = self.prompt("Forecast.io API key (optional)", hidden=True)
+            nickserv_auth_response = self.prompt("Authenticate with NickServ (y/n)")
+            if nickserv_auth_response == 'y':
+                settings[name]["nickserv_auth"] = True
+            else:
+                settings[name]["nickserv_auth"] = False
             settings[name]["chans"] = {}
             settings[name]["botops"] = {}
             for chan in chans:
