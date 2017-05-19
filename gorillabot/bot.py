@@ -38,6 +38,7 @@ class Bot(object):
     def __init__(self):
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.config_path = os.path.abspath(os.path.join(self.base_path, "..", "config.json"))
+        self.remind_path = os.path.abspath(os.path.join(self.base_path, "remind.json"))
         self.log_path = os.path.abspath(os.path.join(self.base_path, 'logs'))
 
         self.configuration = None
@@ -88,6 +89,14 @@ class Bot(object):
                                                  self.configuration["realname"]))
             self.private_message("NickServ", "ACC")
             self.loop()
+
+    def create_required_files(self):
+        """Creates files that are expected to exist for the bot to run correctly."""
+        try:
+            with open(self.remind_path, "x") as f:
+                f.write("{}")
+        except FileExistsError:
+            pass
 
     def dispatch(self, line):
         """Inspect this line and determine if further processing is necessary."""
@@ -175,6 +184,7 @@ class Bot(object):
         """Initialize the bot. Parse command-line options, configure, and set up logging."""
         self.admin_commands, self.commands = self.load_commands()
         self.setup_logging()
+        self.create_required_files()
         print('\n  ."`".'
               '\n / _=_ \\ \x1b[32m    __   __   __  . .   .    __   __   __  '
               '___\x1b[0m\n(,(oYo),) \x1b[32m  / _` /  \ |__) | |   |   |__| '
