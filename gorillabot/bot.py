@@ -94,7 +94,7 @@ class Bot(object):
         """Creates files that are expected to exist for the bot to run correctly."""
         try:
             with open(self.remind_path, "x") as f:
-                f.write("{}")
+                f.write("[]")
         except FileExistsError:
             pass
 

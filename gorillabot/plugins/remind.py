@@ -46,14 +46,29 @@ def remind(m):
         m.bot.private_message(m.location, "I don't understand your reminder. Please see "
                                           "http://molly.github.io/GorillaBot for help with this command.")
         return
+
     parsed_time_str = str(parsed_time)
-    new_reminder = {"hostmask": hostmask, "location": m.location, "reminder": "" if reminder is None else reminder}
+    new_reminder = {"hostmask": hostmask,
+                    "location": m.location,
+                    "reminder": "" if reminder is None else reminder
+                    }
     with open(m.bot.remind_path, 'r') as f:
         blob = json.load(f)
-    if parsed_time_str in blob:
-        # Handle the very improbable case where two reminders are set for the same exact time
-        blob[parsed_time_str].append(new_reminder)
+    if not blob:
+        blob.append({parsed_time_str: [new_reminder]})
     else:
-        blob[parsed_time_str] = [new_reminder]
+        is_set = False
+        for ind, reminder in enumerate(blob):
+            parsed_list_time = parse(list(reminder)[0], settings={'TIMEZONE': 'US/Eastern'})
+            if parsed_time < parsed_list_time:
+                blob.insert(ind, {parsed_time_str: [new_reminder]})
+                is_set = True
+                break
+            elif parsed_time == parsed_list_time:
+                blob[ind][parsed_time_str].append(new_reminder)
+                is_set = True
+        if not is_set:
+            blob.append({parsed_time_str: [new_reminder]})
+
     with open(m.bot.remind_path, "w") as f:
         json.dump(blob, f, indent=4)
