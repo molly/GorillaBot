@@ -83,5 +83,5 @@ def quit(m):
     #- Quits the bot from the network and shuts down.
 
     msg = " ".join(m.line[1:]) if len(m.line) > 1 else ""
-    m.bot.send("QUIT :" + msg)
+    m.bot.shutdown_message = msg
     m.bot.shutdown.set()

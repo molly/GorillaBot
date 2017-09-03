@@ -47,6 +47,7 @@ class Bot(object):
         self.last_received = None
         self.logger = None
         self.shutdown = threading.Event()
+        self.shutdown_message = None
         self.response_lock = threading.Lock()
         self.socket = None
         self.message_q = queue.Queue()
@@ -67,6 +68,7 @@ class Bot(object):
                 self.ping()
             elif now - self.last_received > 60:
                 self.logger.warning('No ping response in 60 seconds. Shutting down.')
+                self.shutdown_message = 'No ping response in 60 seconds.'
                 self.shutdown.set()
 
     def connect(self):
@@ -260,7 +262,7 @@ class Bot(object):
                     if line != "":
                         self.dispatch(line)
             self.caffeinate()
-        self.send("QUIT :Shut down from command line.")
+        self.send("QUIT :" + self.shutdown_message if self.shutdown_message else "")
         self.socket.close()
 
     def parse_hostmask(self, nick):
@@ -294,6 +296,7 @@ class Bot(object):
             message = re.sub(r'(\n|\r)', "", message)
             self.socket.sendall(bytes((message[:510] + "\r\n"), "utf-8"))
         except socket.error:
+            self.shutdown_message = "Send failed."
             self.shutdown.set()
             self.logger.error("Message '" + message + "' failed to send. Shutting down.")
         else:
@@ -344,6 +347,7 @@ class Bot(object):
                 io_thread.join(1)
         except KeyboardInterrupt:
             self.logger.info("Caught KeyboardInterrupt. Shutting down.")
+            self.shutdown_message = 'Shut down from command line.'
             self.shutdown.set()
 
     def update_configuration(self, updated_configuration):
