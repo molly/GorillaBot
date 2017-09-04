@@ -45,9 +45,11 @@ class Bot(object):
         self.last_message_sent = time()
         self.last_ping_sent = time()
         self.last_received = None
+        self.last_reconnect = None
         self.logger = None
         self.shutdown = threading.Event()
         self.shutdown_message = None
+        self.reconnect_time = 5                   # Seconds to wait before reconnecting, or none to not reconnect
         self.response_lock = threading.Lock()
         self.socket = None
         self.message_q = queue.Queue()
@@ -82,6 +84,7 @@ class Bot(object):
         except OSError:
             self.logger.error("Unable to connect to IRC server. Check your Internet connection.")
             self.shutdown.set()
+            self.maybe_reconnect()
         else:
             if self.configuration["password"]:
                 self.send("PASS {0}".format(self.configuration["password"]), hide=True)
@@ -246,7 +249,6 @@ class Bot(object):
                 pass
             except IOError:
                 # Something actually went wrong
-                # TODO: Reconnect
                 self.logger.exception("Unexpected socket error")
                 break
             else:
@@ -263,7 +265,31 @@ class Bot(object):
                         self.dispatch(line)
             self.caffeinate()
         self.send("QUIT :" + self.shutdown_message if self.shutdown_message else "")
-        self.socket.close()
+        self.maybe_reconnect()
+
+    def maybe_reconnect(self):
+        if not self.reconnect_time:
+            self.socket.close()
+            return
+        elif self.reconnect_time > 600:
+            # Backing off isn't helping; stop trying
+            self.reconnect_time = None
+            self.logger.info("Stopping reconnect attempts after too many tries.")
+            self.socket.close()
+            return
+
+        if self.last_reconnect and time() - self.last_reconnect < 600:
+            # Back off if the last reconnect was within the past 10 min
+            self.reconnect_time = self.reconnect_time * 3
+        else:
+            # Reset reconnect time if we haven't tried to reconnect lately
+            self.reconnect_time = 5
+        self.logger.info("Waiting " + str(self.reconnect_time) + " seconds and then attempting to reconnect.")
+        sleep(self.reconnect_time)
+        self.last_reconnect = time()
+        self.shutdown_message = None
+        self.shutdown.clear()
+        self.start()
 
     def parse_hostmask(self, nick):
         """Parse out the parts of the hostmask."""
@@ -348,6 +374,7 @@ class Bot(object):
         except KeyboardInterrupt:
             self.logger.info("Caught KeyboardInterrupt. Shutting down.")
             self.shutdown_message = 'Shut down from command line.'
+            self.reconnect_time = None
             self.shutdown.set()
 
     def update_configuration(self, updated_configuration):

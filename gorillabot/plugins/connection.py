@@ -84,4 +84,5 @@ def quit(m):
 
     msg = " ".join(m.line[1:]) if len(m.line) > 1 else ""
     m.bot.shutdown_message = msg
+    m.bot.reconnect_time = None
     m.bot.shutdown.set()
