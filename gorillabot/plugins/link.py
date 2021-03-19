@@ -94,7 +94,7 @@ def xkcd(m):
     #-  it tries to return the xkcd comic that most closely matches that query.
 
     if len(m.line) == 1:
-        url = "http://c.xkcd.com/random/comic/"
+        url = "https://c.xkcd.com/random/comic/"
         html = get_url(m, url)
         message = xkcd_direct(html)
         if message is None:
